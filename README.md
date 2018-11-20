@@ -1,6 +1,8 @@
 # Monoplasma?
 
 [![Build Status](https://travis-ci.com/streamr-dev/monoplasma.svg?token=9unddqKugX2cPcyhtVxp&branch=master)](https://travis-ci.com/streamr-dev/monoplasma)
+![web3 1.0.0](https://img.shields.io/badge/web3-1.0.0-green.svg?longCache=true "web3 1.0.0")
+![truffle 5.0.0](https://img.shields.io/badge/truffle-5.0.0-green.svg?longCache=true "truffle 5.0.0")
 
 Monoplasma is a unidirectional token distribution channel. It was created to enable the **Community Products** feature on the [Streamr Marketplace](https://github.com/streamr-dev/marketplace) (see also the [Contracts repo](https://github.com/streamr-dev/marketplace-contracts)).
 
