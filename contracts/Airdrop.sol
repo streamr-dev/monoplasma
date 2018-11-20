@@ -33,9 +33,9 @@ contract Airdrop is AbstractRootChain, Ownable {
      * Called from AbstractRootChain.proveSidechainBalance, perform payout directly
      */
     function onVerifySuccess(address account, uint balance) internal {
-        require(withdrawn[account] > balance, "err_oldEarnings");
-        uint withdrawable = balance.sub(withdrawn[msg.sender]);
+        require(withdrawn[account] < balance, "err_oldEarnings");
+        uint withdrawable = balance.sub(withdrawn[account]);
         withdrawn[account] = balance;
-        require(token.transfer(msg.sender, withdrawable), "err_transfer");
+        require(token.transfer(account, withdrawable), "err_transfer");
     }
 }

@@ -69,7 +69,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
      */
     function withdrawAll(uint blockTimestamp, uint totalEarnings, bytes32[] proof) external {
         proveSidechainBalance(blockTimestamp, msg.sender, totalEarnings, proof);
-        uint withdrawable = earnings[msg.sender].sub(totalEarnings);
+        uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
         withdraw(withdrawable);
     }
 

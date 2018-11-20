@@ -13,7 +13,7 @@ contract('Ownable', function (accounts) {
 
   it('should have an owner', async function () {
     const owner = await ownable.owner();
-    assert.isTrue(owner !== 0);
+    assert(owner !== 0);
   });
 
   it('changes pendingOwner after transfer', async function () {
@@ -21,7 +21,7 @@ contract('Ownable', function (accounts) {
     await ownable.transferOwnership(newOwner);
     const pendingOwner = await ownable.pendingOwner();
 
-    assert.isTrue(pendingOwner === newOwner);
+    assert(pendingOwner === newOwner);
   });
 
   it('should prevent to claimOwnership from no pendingOwner', async function () {
@@ -32,7 +32,7 @@ contract('Ownable', function (accounts) {
     const other = accounts[2];
     const owner = await ownable.owner.call();
 
-    assert.isTrue(owner !== other);
+    assert(owner !== other);
     assertFails(ownable.transferOwnership(other, { from: other }));
   });
 
@@ -48,7 +48,7 @@ contract('Ownable', function (accounts) {
       await ownable.claimOwnership({ from: newOwner });
       const owner = await ownable.owner();
 
-      assert.isTrue(owner === newOwner);
+      assert(owner === newOwner);
     });
   });
 });
