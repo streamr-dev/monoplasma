@@ -1,0 +1,8 @@
+{
+    "error_alreadyExists": "Already added",
+    "error_notFound": "Not found",
+    "error_oldEarnings": "Earnings already recorded, cannot change to lower number",
+    "error_zeroWithdraw": "Can't withdraw zero tokens",
+    "error_overdraft": "Can't withdraw that many tokens",
+    "error_transfer": "Error during token transfer; does contract have enough tokens?"
+}

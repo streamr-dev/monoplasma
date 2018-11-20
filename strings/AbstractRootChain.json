@@ -1,0 +1,6 @@
+{
+    "error_notPermitted": "Not permitted to call this function.",
+    "error_frozen": "Block is still frozen, try again later",
+    "error_proof": "Bad proof",
+    "error_blockNotFound": "Block not found"
+}
