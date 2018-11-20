@@ -1,5 +1,7 @@
 # Monoplasma?
 
+[![Build Status](https://travis-ci.com/streamr-dev/monoplasma.svg?token=9unddqKugX2cPcyhtVxp&branch=master)](https://travis-ci.com/streamr-dev/monoplasma)
+
 Monoplasma is a unidirectional token distribution channel. It was created to enable the **Community Products** feature on the [Streamr Marketplace](https://github.com/streamr-dev/marketplace) (see also the [Contracts repo](https://github.com/streamr-dev/marketplace-contracts)).
 
 Name was so chosen because we wanted a sidechain to handle the token distribution calculation, and chose Plasma as the inspiration. Of course Plasma is not a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).

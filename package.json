@@ -4,6 +4,7 @@
   "description": "Unidirectional payment sidechain with monotonically increasing balances (no in-chain transfers)",
   "main": "deploy.js",
   "scripts": {
+    "lint": "./node_modules/.bin/eslint src",
     "test-js": "./node_modules/.bin/mocha test/mocha",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run test-js && npm run test-contracts"
