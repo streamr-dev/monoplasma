@@ -22,9 +22,12 @@
     "collections": "^5.1.5",
     "eth-lib": "^0.2.8",
     "express": "^4.16.3",
+    "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
     "openzeppelin-solidity": "2.0.0",
     "promise-events": "^0.1.4",
+    "source-map-support": "^0.5.9",
+    "truffle-resolver": "^4.0.4",
     "web3": "1.0.0-beta.36"
   }
 }
