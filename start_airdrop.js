@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const fs = require('mz/fs')
 const readline = require('readline')
 
@@ -7,7 +5,7 @@ const TruffleResolver = require("truffle-resolver")
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
 
-const plasma = require("./src/monoplasma")
+const Monoplasma = require("./src/monoplasma")
 
 const {
     INITIAL_BALANCES_FILE,
@@ -88,7 +86,7 @@ async function getAirdropAddress(oldTokenAddress) {
 
 async function readBalances(path) {
     log(`Reading balances from ${path}...`)
-    const balances = {}
+    const balances = []
     return new Promise((done, fail) => {
         const rl = readline.createInterface({
             input: fs.createReadStream(path),
@@ -97,7 +95,7 @@ async function readBalances(path) {
         rl.on('line', line => {
             if (line.length < 40) { return }
             const [address, balance] = line.split(/\s/)
-            balances[address] = balance
+            balances.push([address, { address, balance }])
         })
         rl.on("close", () => done(balances))
         rl.on("SIGINT", () => fail(new Error("Interrupted by user")))
@@ -109,8 +107,9 @@ async function start() {
     const airdrop = Airdrop.at(CONTRACT_ADDRESS || await getAirdropAddress(TOKEN_ADDRESS))
 
     log("Deployment done, let's try recording a block...")
-    const resp = await airdrop.recordBlock(1, "0x123", "asdf")
-    log(JSON.stringify(resp))
+    const plasma = new Monoplasma(balances)
+    const resp = await airdrop.recordBlock(1, plasma.getRootHash(), "")
+    log("Events produced: " + resp.logs.map(log => JSON.stringify(log.args)))
 }
 
 start().catch(console.error)

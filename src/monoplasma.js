@@ -8,7 +8,7 @@ const SortedMap = require("collections/sorted-map")
  */
 class Monoplasma {
     constructor(initialMembers) {
-        this.members = initialMembers || new SortedMap()
+        this.members = new SortedMap(initialMembers || [])
         this.tree = new MerkleTree(this.members)
     }
 
