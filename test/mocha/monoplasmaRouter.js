@@ -2,7 +2,7 @@
 
 const Monoplasma = require("../../src/monoplasma")
 const plasma = new Monoplasma()
-const expressApp = require("../../src/expressApp")(plasma)
+const expressApp = require("../../src/monoplasmaRouter")(plasma)
 const fetch = require("node-fetch")
 const assert = require("assert")
 const http = require("http")

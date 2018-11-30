@@ -8,9 +8,10 @@
             "type": "node",
             "request": "launch",
             "name": "Truffle test current file",
-            "program": "${workspaceFolder}/node_modules/.bin/truffle",
-            "args": [
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/truffle",
+            "runtimeArgs": [
                 "test",
+                "--inspect-brk",
                 "${file}"
             ],
             "internalConsoleOptions": "openOnSessionStart"
@@ -18,8 +19,8 @@
             "type": "node",
             "request": "launch",
             "name": "Mocha test current file",
-            "program": "${workspaceFolder}/node_modules/.bin/mocha",
-            "args": [
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/mocha",
+            "runtimeArgs": [
                 "${file}"
             ],
             "internalConsoleOptions": "openOnSessionStart"
@@ -51,7 +52,10 @@
             "type": "node",
             "request": "launch",
             "name": "Start Monoplasma operator",
-            "program": "${workspaceFolder}/start_operator.js"
+            "program": "${workspaceFolder}/start_operator.js",
+            "env": {
+                "LOGGING": "1"
+            }
         }, {
             "type": "node",
             "request": "launch",

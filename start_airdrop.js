@@ -95,7 +95,7 @@ async function readBalances(path) {
         rl.on('line', line => {
             if (line.length < 40) { return }
             const [address, balance] = line.split(/\s/)
-            balances.push([address, { address, balance }])
+            balances.push({ address, balance })
         })
         rl.on("close", () => done(balances))
         rl.on("SIGINT", () => fail(new Error("Interrupted by user")))
@@ -104,12 +104,18 @@ async function readBalances(path) {
 
 async function start() {
     const balances = INITIAL_BALANCES_FILE ? await readBalances(INITIAL_BALANCES_FILE) : {}
+    // state.balances = Object.assign({}, state.balances, initialBalances)
     const airdrop = Airdrop.at(CONTRACT_ADDRESS || await getAirdropAddress(TOKEN_ADDRESS))
 
     log("Deployment done, let's try recording a block...")
     const plasma = new Monoplasma(balances)
     const resp = await airdrop.recordBlock(1, plasma.getRootHash(), "")
     log("Events produced: " + resp.logs.map(log => JSON.stringify(log.args)))
+
+    log("Mint tokens...")
+    const tokenAddress = await airdrop.token()
+    const tokenAddress2 = await getTokenAddress()
+    log("Got token at " + tokenAddress + " should be == " + tokenAddress2)
 }
 
 start().catch(console.error)

@@ -7,8 +7,13 @@ const SortedMap = require("collections/sorted-map")
  * Member API to Monoplasma object
  */
 class Monoplasma {
+    /**
+     *
+     * @param {Array} initialMembers objects containing { address, earnings }
+     */
     constructor(initialMembers) {
-        this.members = new SortedMap(initialMembers || [])
+        // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
+        this.members = new SortedMap(Array.isArray(initialMembers) ? initialMembers.map(m => [m.address, m]) : [])
         this.tree = new MerkleTree(this.members)
     }
 
