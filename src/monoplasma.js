@@ -9,7 +9,7 @@ const SortedMap = require("collections/sorted-map")
 class Monoplasma {
     /**
      *
-     * @param {Array} initialMembers objects containing { address, earnings }
+     * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
     constructor(initialMembers) {
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]

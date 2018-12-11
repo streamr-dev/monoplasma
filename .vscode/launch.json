@@ -51,10 +51,31 @@
         }, {
             "type": "node",
             "request": "launch",
-            "name": "Start Monoplasma operator",
+            "name": "operator (Ganache)",
             "program": "${workspaceFolder}/start_operator.js",
             "env": {
-                "LOGGING": "1"
+                "GANACHE_PORT": "3010"
+            }
+        }, {
+            "type": "node",
+            "request": "launch",
+            "name": "operator (localhost:8545)",
+            "program": "${workspaceFolder}/start_operator.js",
+            "env": {
+                "ETHEREUM_SERVER": "http://localhost:8545/",
+                "ETHEREUM_PRIVATE_KEY": "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
+            }
+        }, {
+            "type": "node",
+            "request": "launch",
+            "name": "operator (rinkeby infura)",
+            "program": "${workspaceFolder}/start_operator.js",
+            "env": {
+                "ETHEREUM_NETWORK_ID": "4",
+                "ETHEREUM_PRIVATE_KEY": "0x6E340F41A1C6E03E6E0A4E9805D1CEA342F6A299E7C931D6F3DA6DD34CB6E17D",
+                "__ADDRESS_FOR_THE_ABOVE_KEY": "0xb3428050eA2448eD2E4409bE47E1a50EBac0B2d2",
+                "TOKEN_ADDRESS": "0x0c89795f75eEA923Cd1faEea50777c1B87787A06",
+                "CONTRACT_ADDRESS": "0xC2fA5C809C293aFE830F20037eE33d5521e9e036"
             }
         }, {
             "type": "node",
@@ -68,7 +89,6 @@
             "program": "${workspaceFolder}/start_airdrop.js",
             "env": {
                 "INITIAL_BALANCES_FILE": "10_addresses.txt",
-                "LOGGING": "1"
             }
         }
     ]

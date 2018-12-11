@@ -18,18 +18,27 @@ There could be fraud proofs for this particular scenario: (interactive) proof th
 
 But in case the operator simply doesn't provide the fudged accounts book (operator availability failure), exits from old blocks could be used as proxy for suspicion of admin's behaviour. Freeze period could, for instance, be extended in case members use on old block to exit, giving other members more time to react. This must be balanced with DoS griefing, but should definitely increase the likelihood of everyone getting their tokens out in case of operator fails.
 
-# Running side-chain operator
+# What it is
+
+It's lean
+
+# What it's not
+
+It's not Plasma as specified in [Plasma white-paper]()
+
+# Revenue sharing demo
+## Running side-chain operator
 
 `node ./start_operator.js`
 
 Options:
 * `--port` (default 3000)
 
-# Running side-chain validator
+## Running side-chain validator
 
 `node ./start_validator.js <rootchain> <watched_account1> <watched_account2> ...`
 
-# Airdrop example
+# Airdrop demo
 
 As a simple example application a simple "poor man's airdrop" is presented. It's a mix between a faucet (you have to explicitly ask for the tokens to actually get them on-chain) and airdrop (tokens are allocated to all).
 

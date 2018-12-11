@@ -5,17 +5,21 @@
   "main": "deploy.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
+    "build": "truffle compile && ./flatten",
     "test-js": "./node_modules/.bin/mocha test/mocha",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
-    "test": "npm run test-js && npm run test-contracts"
+    "test": "npm run test-js && npm run test-contracts",
+    "clean": "rm build/contracts/* && rm static_web/data/*"
   },
   "author": "",
   "license": "AGPL-3.0",
   "devDependencies": {
     "eslint": "^4.19.1",
+    "ganache-cli": "^6.2.3",
     "mocha": "^5.2.0",
     "node-fetch": "^2.2.0",
-    "truffle": "5.0.0-next.16"
+    "truffle": "5.0.0-next.16",
+    "truffle-flattener": "^1.2.10"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -25,6 +29,7 @@
     "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
     "openzeppelin-solidity": "2.0.0",
+    "prettyjson": "^1.2.1",
     "promise-events": "^0.1.4",
     "source-map-support": "^0.5.9",
     "truffle-resolver": "^4.0.4",

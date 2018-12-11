@@ -1,88 +1,51 @@
 const fs = require('mz/fs')
 const readline = require('readline')
 
-const TruffleResolver = require("truffle-resolver")
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
 
-const Monoplasma = require("./src/monoplasma")
-
-const { mergeEventLists } = require("./src/ethSync")
+const Operator = require("./src/monoplasmaOperator")
+const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
 
 const {
     ETHEREUM_SERVER,
     ETHEREUM_NETWORK_ID,
+    ETHEREUM_PRIVATE_KEY,
     TOKEN_ADDRESS,
     CONTRACT_ADDRESS,
     BLOCK_FREEZE_SECONDS,
-    RESET_STATE,
+    GANACHE_PORT,
+    RESET,
     STORE,
-    LOGGING,
+    QUIET,
 } = process.env
 
-const log = LOGGING ? console.log : () => {}
-
-const blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || 3600
-
-// network ids: 1 = mainnet, 2 = morden, 3 = ropsten, 4 = rinkeby (current testnet)
-const defaultServers = {
-    "1": "wss://mainnet.infura.io/ws",
-    "3": "wss://ropsten.infura.io/ws",
-    "4": "wss://rinkeby.infura.io/ws",
+let ganacheServer = null
+const log = QUIET ? () => {} : console.log
+const error = (e, ...args) => {
+    console.error(e.stack, args)
+    if (ganacheServer) { ganacheServer.close() }
+    process.exit(1)
 }
 
 const storePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
 
-const ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
-log(`Connecting to ${ethereumServer || "Ganache Ethereum simulator"}...`)
-const web3 = new Web3(ethereumServer || Ganache.provider({
-    mnemonic: "testrpc",
-}))
-
-// ignore saved state if using ganache
-const resetState = RESET_STATE || !ethereumServer
-
-function throwIfSetButNotContract(envVarName) {
-    const value = process.env[envVarName]
-    if (!value) { return }
-    if (!web3.utils.isAddress(value)) {
-        throw new Error(`Environment variable ${envVarName}: Bad Ethereum address ${value}`)
-    }
-    //TODO: move init into async
-    //if (await web3.eth.getBytecode(value) === "0x") {
-    //    throw new Error(`Environment variable ${envVarName}: No contract at ${value}`)
-    //}
+let ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
+if (!ethereumServer) {
+    const ganachePort = GANACHE_PORT || 3010
+    ethereumServer = `http://localhost:${ganachePort}/`
+    log(`Starting Ganache Ethereum simulator in port ${ganachePort}...`)
+    ganacheServer = Ganache.server({ mnemonic: "testrpc" })
+    ganacheServer.listen(ganachePort, log)
 }
-throwIfSetButNotContract("TOKEN_ADDRESS")
-throwIfSetButNotContract("CONTRACT_ADDRESS")
+log(`Connecting to ${ethereumServer}...`)
+const web3 = new Web3(ethereumServer)
 
-// TODO: figure out signing when run from command-line...
-const contractDefaults = {
-    from: "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab",
-    gas: 4000000,
-}
+// with ganache, use account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
+const privateKey = !ganacheServer ? ETHEREUM_PRIVATE_KEY : "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
 
-const resolver = new TruffleResolver(Object.assign({
-    contracts_build_directory: "build/contracts",
-    working_directory: ".",
-    provider: web3.currentProvider,
-    network_id: 1, // await web3.eth.net.getId(),
-}, contractDefaults))
-const Token = resolver.require("./ERC20Mintable.sol")
-const Airdrop = resolver.require("./Airdrop.sol")
-
-async function getTokenAddress() {
-    log("Deploying a dummy token contract...")
-    const token = await Token.new()
-    return token.address
-}
-
-async function getAirdropAddress(oldTokenAddress) {
-    const tokenAddress = oldTokenAddress || await getTokenAddress()
-    log(`Deploying Airdrop contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
-    airdrop = await Airdrop.new(tokenAddress, blockFreezePeriodSeconds)
-    return airdrop.address
-}
+// ignore config / saved state if using ganache
+const resetConfig = RESET || !!ganacheServer
 
 async function loadStateFromFile(path) {
     log(`Loading operator state from ${path}...`)
@@ -91,63 +54,26 @@ async function loadStateFromFile(path) {
     return JSON.parse(raw)
 }
 
-async function saveStateToFile(path) {
+async function saveStateToFile(path, state) {
     const raw = JSON.stringify(state)
     log(`Saving operator state to ${path}: ${raw}`)
     return fs.writeFile(path, raw)
 }
 
-let state
 async function start() {
-    log("Initializing...")
-    state = resetState ? {} : await loadStateFromFile(storePath)
-    state.contractAddress = CONTRACT_ADDRESS || state.contractAddress || await getAirdropAddress(TOKEN_ADDRESS || state.tokenAddress)
-    const airdrop = new web3.eth.Contract(Airdrop.abi, state.contractAddress, contractDefaults)
-    state.tokenAddress = await airdrop.methods.token().call()
-    const token = new web3.eth.Contract(Token.abi, state.tokenAddress, contractDefaults)
-    const plasma = new Monoplasma(state.balances)
+    await throwIfSetButNotContract(web3, TOKEN_ADDRESS, "Environment variable TOKEN_ADDRESS")
+    await throwIfSetButNotContract(web3, CONTRACT_ADDRESS, "Environment variable CONTRACT_ADDRESS")
 
-    log("Playing back root chain events...")
-    const toBlock = await web3.eth.getBlockNumber()
-    const fromBlock = state.rootChainBlock + 1 || 0
-    if (fromBlock <= toBlock) {
-        log(`  Playing back blocks ${fromBlock}...${toBlock}`)
-        const transferEvents = await token.getPastEvents("Transfer", { filter: { to: state.contractAddress }, fromBlock, toBlock })
-        const joinPartEvents = await airdrop.getPastEvents("allEvents", { fromBlock, toBlock })
-        const allEvents = mergeEventLists(transferEvents, joinPartEvents)
-        allEvents.forEach(e => {
-            switch (e.event) {
-                case "RecipientAdded": {
-                    log(` + ${e.returnValues.recipient} joined`)
-                    plasma.addMember(e.returnValues.recipient)
-                    break
-                }
-                case "RecipientRemoved": {
-                    log(` - ${e.returnValues.recipient} left`)
-                    plasma.removeMember(e.returnValues.recipient)
-                    break
-                }
-                case "Transfer": {
-                    log(` => ${e.returnValues.tokens} received`)
-                    const income = e.returnValues.tokens
-                    plasma.addRevenue(income)
-                    break
-                }
-            }
-        })
-        state.rootChainBlock = toBlock
-        await saveStateToFile(storePath)
-    }
+    // augment the config / saved state with variables that may be useful for the validators
+    const config = resetConfig ? {} : await loadStateFromFile(storePath)
+    config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress
+    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress
+    config.blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezePeriodSeconds || 3600
+    config.ethereumServer = ethereumServer
+    config.ethereumNetworkId = ETHEREUM_NETWORK_ID
 
-    log("Init done, let's try recording a block...")
-    plasma.addMember("0xdc353aa3d81fc3d67eb49f443df258029b01d8ab")
-    const resp = await airdrop.methods.recordBlock(1, plasma.getRootHash(), "").send()
-    log("Events produced: " + JSON.stringify(resp.events))
-
-    log("Mint tokens...")
-    const tokenAddress = await airdrop.methods.token().call()
-    const tokenAddress2 = await getTokenAddress()
-    log("Got token at " + tokenAddress + " should be == " + tokenAddress2)
+    const operator = new Operator(web3, privateKey, config, saveStateToFile.bind(null, storePath), log, error)
+    await operator.start()
 }
 
-start().catch(console.error)
+start().catch(error)
