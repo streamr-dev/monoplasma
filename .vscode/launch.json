@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "node",
             "request": "launch",
@@ -85,10 +86,32 @@
         }, {
             "type": "node",
             "request": "launch",
-            "name": "Start airdrop server",
+            "name": "Start airdrop (simulated)",
             "program": "${workspaceFolder}/start_airdrop.js",
             "env": {
-                "INITIAL_BALANCES_FILE": "10_addresses.txt",
+                "INPUT_FILE": "10_addresses.txt"
+            }
+        }, {
+            "type": "node",
+            "request": "launch",
+            "name": "Start airdrop (local)",
+            "program": "${workspaceFolder}/start_airdrop.js",
+            "env": {
+                "ETHEREUM_SERVER": "http://localhost:8545",
+                "ETHEREUM_PRIVATE_KEY": "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0",
+                "INPUT_FILE": "10_addresses.txt"
+            }
+        }, {
+            "type": "node",
+            "request": "launch",
+            "name": "Start airdrop (rinkeby)",
+            "program": "${workspaceFolder}/start_airdrop.js",
+            "env": {
+                "ETHEREUM_NETWORK_ID": "4",
+                "ETHEREUM_PRIVATE_KEY": "0x6E340F41A1C6E03E6E0A4E9805D1CEA342F6A299E7C931D6F3DA6DD34CB6E17D",
+                "TOKEN_ADDRESS": "0x0c89795f75eEA923Cd1faEea50777c1B87787A06",
+                "CONTRACT_ADDRESS": "0x430ba685740fd234399Dd2757b2c9795d1B9F669",
+                "INPUT_FILE": "10_addresses.txt"
             }
         }
     ]

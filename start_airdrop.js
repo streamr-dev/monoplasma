@@ -1,25 +1,27 @@
 const fs = require('mz/fs')
 const readline = require('readline')
 
-const TruffleResolver = require("truffle-resolver")
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
 
 const Monoplasma = require("./src/monoplasma")
 
 const {
-    INITIAL_BALANCES_FILE,
+    INPUT_FILE,
     ETHEREUM_SERVER,
     ETHEREUM_NETWORK_ID,
+    ETHEREUM_PRIVATE_KEY,
     TOKEN_ADDRESS,
     CONTRACT_ADDRESS,
     BLOCK_FREEZE_SECONDS,
-    LOGGING,
+    GAS_PRICE_GWEI,
+    QUIET,
 } = process.env
 
-const log = LOGGING ? console.log : () => {}
+const log = !QUIET ? console.log : () => {}
 
-const blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || 3600
+// Block freeze functionality is kind of pointless for airdrops, since all distributed tokens are operator's to begin with
+const blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || 1
 
 // network ids: 1 = mainnet, 2 = morden, 3 = ropsten, 4 = rinkeby (current testnet)
 const defaultServers = {
@@ -34,6 +36,19 @@ const web3 = new Web3(ethereumServer || Ganache.provider({
     mnemonic: "testrpc",
 }))
 
+// with ganache, use account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
+const privateKey = ethereumServer ? ETHEREUM_PRIVATE_KEY : "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
+if (!privateKey) { throw new Error("Private key required to deploy the airdrop contract. Deploy transaction must be signed.") }
+const key = privateKey.startsWith("0x") ? privateKey : "0x" + privateKey
+if (key.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
+const deployerAccount = web3.eth.accounts.wallet.add(key)
+
+const contractDefaults = {
+    from: deployerAccount.address,
+    gas: 4000000,
+    gasPrice: web3.utils.toWei(GAS_PRICE_GWEI || "10", "Gwei")
+}
+
 function throwIfEnvIsBadEthereumAddress(envVarName) {
     const value = process.env[envVarName]
     if (value && !web3.utils.isAddress(value)) {
@@ -43,45 +58,25 @@ function throwIfEnvIsBadEthereumAddress(envVarName) {
 throwIfEnvIsBadEthereumAddress("TOKEN_ADDRESS")
 throwIfEnvIsBadEthereumAddress("CONTRACT_ADDRESS")
 
-const resolver = new TruffleResolver({
-    contracts_build_directory: "build/contracts",
-    working_directory: ".",
-    provider: web3.currentProvider,
-    network_id: 1, // await web3.eth.net.getId(),
-    from: "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab",
-    gas: 4000000,
-})
-const Token = resolver.require("./ERC20Mintable.sol")
-const Airdrop = resolver.require("./Airdrop.sol")
+const TokenJson = require("./build/contracts/ERC20Mintable.json")
+const AirdropJson = require("./build/contracts/Airdrop.json")
 
-async function getTokenAddress() {
-    const token = await (Token.isDeployed() ? Token.deployed() : deployToken())
-    log("Using token deployed @ " + token.address)
-    return token.address
+async function deployContract(oldTokenAddress) {
+    const tokenAddress = oldTokenAddress || await deployToken()
+    log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
+    const Airdrop = new web3.eth.Contract(AirdropJson.abi)
+    const contract = await Airdrop.deploy({
+        data: AirdropJson.bytecode,
+        arguments: [tokenAddress, blockFreezePeriodSeconds]
+    }).send(contractDefaults)
+    return contract.options.address
 }
 
 async function deployToken() {
     log("Deploying a dummy token contract...")
-    return Token.new()
-}
-
-async function getAirdropAddress(oldTokenAddress) {
-    let airdrop
-    if (Airdrop.isDeployed()) {
-        airdrop = await Airdrop.deployed()
-        const deployedTokenAddress = await airdrop.token()
-        if (oldTokenAddress && oldTokenAddress != deployedTokenAddress) {
-            airdrop = null
-        } else {
-            log(`Using existing Airdrop contract @ ${airdrop.address}, token @ ${deployedTokenAddress}...`)
-        }
-    }
-    if (!airdrop) {
-        const tokenAddress = oldTokenAddress || await getTokenAddress()
-        log(`Deploying Airdrop contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
-        airdrop = await Airdrop.new(tokenAddress, blockFreezePeriodSeconds)
-    }
-    return airdrop.address
+    const Token = new web3.eth.Contract(TokenJson.abi)
+    const token = await Token.deploy({data: TokenJson.bytecode}).send(contractDefaults)
+    return token.options.address
 }
 
 async function readBalances(path) {
@@ -103,19 +98,27 @@ async function readBalances(path) {
 }
 
 async function start() {
-    const balances = INITIAL_BALANCES_FILE ? await readBalances(INITIAL_BALANCES_FILE) : {}
-    // state.balances = Object.assign({}, state.balances, initialBalances)
-    const airdrop = Airdrop.at(CONTRACT_ADDRESS || await getAirdropAddress(TOKEN_ADDRESS))
+    const balances = INPUT_FILE ? await readBalances(INPUT_FILE) : {}
 
+    const contractAddress = CONTRACT_ADDRESS || await deployContract(TOKEN_ADDRESS)
+    const airdrop = new web3.eth.Contract(AirdropJson.abi, contractAddress, contractDefaults)
+    const tokenAddress = await airdrop.methods.token().call()
+    const token = new web3.eth.Contract(TokenJson.abi, tokenAddress, contractDefaults)
+
+    let resp
     log("Deployment done, let's try recording a block...")
     const plasma = new Monoplasma(balances)
-    const resp = await airdrop.recordBlock(1, plasma.getRootHash(), "")
-    log("Events produced: " + resp.logs.map(log => JSON.stringify(log.args)))
+    resp = await airdrop.methods.recordBlock(1, plasma.getRootHash(), "").send()
+    log("Events produced: " + Object.keys(resp.events))
+    log(JSON.stringify(resp.events.BlockCreated.returnValues))
 
-    log("Mint tokens...")
-    const tokenAddress = await airdrop.token()
-    const tokenAddress2 = await getTokenAddress()
-    log("Got token at " + tokenAddress + " should be == " + tokenAddress2)
+    log("Mint tokens into the Airdrop contract...")
+    const totalTokens = balances.map(account => account.balance).reduce((x, sum) => sum + x, 0)
+    resp = await token.methods.mint(airdrop.options.address, totalTokens).send()
+    log("Events produced: " + Object.keys(resp.events))
+    log(JSON.stringify(resp.events.Transfer.returnValues))
+
+    // TODO: instantiate template pages to static_web/airdrop/<address>/index.html
 }
 
-start().catch(console.error)
+start().catch(e => { console.error(e.stack) })

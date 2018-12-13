@@ -20,9 +20,9 @@ async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, s
 async function deployToken(web3, sendOptions, log) {
     log("Deploying a dummy token contract...")
     const Token = new web3.eth.Contract(TokenJson.abi)
-    const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
+    //const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
 
-    /* using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
+    using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
     const token = await new Promise((done, fail) => {
         Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
             .on("transactionHash", console.log)
@@ -30,7 +30,6 @@ async function deployToken(web3, sendOptions, log) {
             .on("error", fail)
     })
     console.log("asdf")
-    */
 
     return token.options.address
 }
@@ -43,6 +42,7 @@ module.exports = class MonoplasmaOperator {
         this.saveState = saveStateFunc
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
+        this.publishedBlocks = []
 
         this.state.gasPrice = this.state.gasPrice || 4000000000  // 4 gwei
 

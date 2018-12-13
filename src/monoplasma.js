@@ -1,6 +1,7 @@
 const MerkleTree = require("./merkletree")
 
-// TODO: instead of SortedMap, the accounts maybe should have "fixed" indices, e.g. join-order
+const BN = require("number-to-bn")      // big (arbitrary precision) numbers
+
 const SortedMap = require("collections/sorted-map")
 
 /**
@@ -22,11 +23,10 @@ class Monoplasma {
     // ///////////////////////////////////
 
     getMembers() {
-        return this.members.filter(m => m.active).map(m => ({
-            name: m.name,
-            address: m.address,
-            earnings: m.earnings,
-        }))
+        // ES6 version of _.pick
+        return this.members
+            .filter(m => m.active)
+            .map(({address, earnings}) => ({address, earnings}))
     }
 
     getMember(address) {
@@ -36,7 +36,7 @@ class Monoplasma {
     }
 
     /**
-     * Get proof of earnings
+     * Get proof of earnings for withdrawal ("payslip")
      * @param address with earnings to be verified
      * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
      */
@@ -54,7 +54,6 @@ class Monoplasma {
     // ///////////////////////////////////
 
     // TODO: BigIntegers for earnings
-    // TODO: lazy adding: accumulate revenues until someone asks, only then tree.update
     addRevenue(amount) {
         const activeMembers = this.members.filter(m => m.active)
         const activeCount = activeMembers.length

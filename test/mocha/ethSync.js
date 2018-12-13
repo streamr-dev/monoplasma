@@ -1,7 +1,7 @@
 const assert = require("assert")
 const { mergeEventLists } = require("../../src/ethSync")
 
-describe("Ethereum root chain syncing routines", () => {
+describe("Ethereum root chain syncing routines / utils / helpers", () => {
     it("merges event lists correctly", () => {
         const events1 = [
             { event: "A", blockNumber: 5, transactionIndex: 1, logIndex: 1 },
