@@ -1,6 +1,7 @@
 const MerkleTree = require("./merkletree")
 
-const BN = require("number-to-bn")      // big (arbitrary precision) numbers
+const BN = require("bn.js")
+const numberToBN = require("number-to-bn")      // big (arbitrary precision) numbers
 
 const SortedMap = require("collections/sorted-map")
 
@@ -26,12 +27,13 @@ class Monoplasma {
         // ES6 version of _.pick
         return this.members
             .filter(m => m.active)
-            .map(({address, earnings}) => ({address, earnings}))
+            .map(({name, address, earnings}) => ({name, address, earnings: earnings.toNumber()}))
     }
 
     getMember(address) {
         const m = this.members.get(address)
-        const proof = m && m.earnings > 0 ? this.getProof(address) : {}
+        const proof = m && m.earnings.gt(new BN(0)) ? this.getProof(address) : {}
+        m.earnings = m.earnings.toNumber()
         return Object.assign({}, m, { proof })
     }
 
@@ -56,15 +58,15 @@ class Monoplasma {
     // TODO: BigIntegers for earnings
     addRevenue(amount) {
         const activeMembers = this.members.filter(m => m.active)
-        const activeCount = activeMembers.length
+        const activeCount = new BN(activeMembers.length)
         if (activeCount === 0) {
             console.error("No active members in community!")
             return
         }
 
-        const share = Math.floor(amount / activeCount)
+        const share = new BN(amount).divRound(activeCount)
         activeMembers.forEach(m => {
-            m.earnings += share
+            m.earnings = m.earnings.add(share)
         })
         this.tree.update(this.members)
     }
@@ -76,7 +78,7 @@ class Monoplasma {
         if (Number.isNaN(Number(address)) || address.length !== 42) {
             throw new Error(`Bad Ethereum address: ${address}`)
         }
-        this.members.set(address, {address, name, earnings: 0, active: true})
+        this.members.set(address, {address, name, earnings: new BN(0), active: true})
         // tree.update(members)     // no need for update since no revenue allocated
     }
 
