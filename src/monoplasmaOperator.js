@@ -22,7 +22,7 @@ async function deployToken(web3, sendOptions, log) {
     const Token = new web3.eth.Contract(TokenJson.abi)
     //const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
 
-    using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
+    // using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
     const token = await new Promise((done, fail) => {
         Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
             .on("transactionHash", console.log)
