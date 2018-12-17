@@ -1,5 +1,5 @@
-const fs = require('mz/fs')
-const readline = require('readline')
+const fs = require("mz/fs")
+const readline = require("readline")
 
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
@@ -87,7 +87,7 @@ async function readBalances(path) {
             input: fs.createReadStream(path),
             crlfDelay: Infinity,
         })
-        rl.on('line', line => {
+        rl.on("line", line => {
             if (line.length < 40) { return }
             const [address, balance] = line.split(/\s/)
             balances.push({ address, balance })
