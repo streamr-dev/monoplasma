@@ -1,7 +1,5 @@
 const MerkleTree = require("./merkletree")
 
-const BN = require("number-to-bn")      // big (arbitrary precision) numbers
-
 const SortedMap = require("collections/sorted-map")
 
 /**

@@ -1,18 +1,25 @@
 /* global before after */
 
-const Monoplasma = require("../../src/monoplasma")
-const plasma = new Monoplasma()
-const expressApp = require("../../src/monoplasmaRouter")(plasma)
+const express = require("express")
+const bodyParser = require("body-parser")
+
 const fetch = require("node-fetch")
 const assert = require("assert")
 const http = require("http")
+
+const Monoplasma = require("../../src/monoplasma")
+const plasma = new Monoplasma()
+const router = require("../../src/monoplasmaRouter")(plasma)
 
 describe("Express app / monoplasma server", () => {
     const port = 3030
     const serverURL = `http://localhost:${port}`
     let server
     before(() => {
-        server = http.createServer(expressApp)
+        const app = express()
+        app.use(bodyParser.json())
+        app.use("/", router)
+        server = http.createServer(app)
         server.listen(port)
     })
 
@@ -47,7 +54,6 @@ describe("Express app / monoplasma server", () => {
 
             assert.deepStrictEqual(await fetchMembers(), [{
                 earnings: 0,
-                name: "Tester",
                 address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
             }])
         })
