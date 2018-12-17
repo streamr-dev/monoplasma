@@ -20,26 +20,7 @@ async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, s
 async function deployToken(web3, sendOptions, log) {
     log("Deploying a dummy token contract...")
     const Token = new web3.eth.Contract(TokenJson.abi)
-//    const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
-
-
-    // using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
-    const token = await new Promise((done, fail) => {
-        Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
-            .on("transactionHash", h => {
-                console.log(h)
-            })
-            .on("receipt", r => {
-                console.log(r)
-                done(r)
-            })
-            .on("error", e => {
-                fail(e)
-            })
-    })
-    console.log("asdf")
-
-
+    const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
     return token.options.address
 }
 
