@@ -11,5 +11,6 @@ jobs:
   include:
     - script:
         - "npm run lint"
+        - "npm run build"
         - "npm run test"
       stage: "lint & tests"
