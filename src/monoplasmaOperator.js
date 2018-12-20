@@ -4,6 +4,8 @@ const { mergeEventLists, replayEvents, replayEvent } = require("./ethSync")
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
 
+const { throwIfSetButNotContract } = require("./src/ethSync")
+
 module.exports = class MonoplasmaOperator {
 
     constructor(web3, startState, saveStateFunc, logFunc, errorFunc) {
@@ -27,7 +29,7 @@ module.exports = class MonoplasmaOperator {
 
         this.log("Initializing...")
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
-        this.state.tokenAddress = await contract.methods.token().call()
+        this.state.tokenAddress = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.plasma = new Monoplasma(this.state.balances)
 
@@ -39,7 +41,7 @@ module.exports = class MonoplasmaOperator {
         }
 
         this.log("Listening to root chain events...")
-        const transferFilter = token.events.Transfer({ filter: { to: this.state.contractAddress } })
+        const transferFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         transferFilter.on("data", e => { this.onTokensReceived(e).then() })
         transferFilter.on("changed", e => { this.error("Event removed in re-org!", e) })
         transferFilter.on("error", this.error)
