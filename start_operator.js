@@ -70,6 +70,17 @@ async function start() {
 
     const operator = new Operator(web3, config, saveState.bind(null, storePath), log, error)
     await operator.start()
+
+    //    event BlockCreated(uint rootChainBlockNumber, uint timestamp, bytes32 rootHash, string ipfsHash);
+    const blockFilter = operator.contract.events.BlockCreated()
+    const blockPromise = () => new Promise((done, fail) => {
+        blockFilter.on("data", e => {
+            done(e.returnValues.rootHash)
+        })
+    }
+
+    await operator.token.methods.mint(operator.options.address, 1000)
+    const hash = await blockPromise()
 }
 
 async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
