@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require("fs")
 const assert = require("assert")
 
 // project root dir
 const cwd = __dirname.split("/test/e2e")[0],
 
-execSync("node start_airdrop.js", [] {
+log("Mint tokens into the admin account...")
+const totalTokens = balances.map(account => account.balance).reduce((x, sum) => sum + x, 0)
+resp = await token.methods.mint(airdrop.options.address, totalTokens).send()
+log("Events produced: " + Object.keys(resp.events))
+log(JSON.stringify(resp.events.Transfer))
+
+const proc = spawn("./start_airdrop.js", [] {
     cwd
     env: {
         "INITIAL_BALANCES_FILE": "10_addresses.txt",

@@ -33,7 +33,6 @@
     "express": "^4.16.3",
     "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
-    "number-to-bn": "^1.7.0",
     "openzeppelin-solidity": "2.0.0",
     "prettyjson": "^1.2.1",
     "promise-events": "^0.1.4",
