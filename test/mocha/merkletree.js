@@ -2,7 +2,7 @@ const assert = require("assert")
 const SortedMap = require("collections/sorted-map")
 const MonoplasmaMember = require("../../src/monoplasmaMember")
 const MerkleTree = require("../../src/merkletree")
-const { hash, hashCombined } = MerkleTree.forTesting
+const { hash, hashCombined } = MerkleTree
 
 // calculate the root hash using the path (sync with SidechainCommunity.sol:rootHash)
 function calculateRootHash(hash, path) {

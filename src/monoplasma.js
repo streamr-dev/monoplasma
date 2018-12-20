@@ -22,21 +22,18 @@ class Monoplasma {
     // ///////////////////////////////////
 
     getMembers() {
-        // ES6 version of _.pick
         return this.members
             .filter(m => m.isActive())
-            .map((m) => m.toObject())
+            .map(m => m.toObject())
     }
 
     getMember(address) {
         const m = this.members.get(address)
-        if (m) {
-            const obj = m.toObject()
-            obj.active = m.isActive()
-            obj.proof = m.getProof(this.tree)
-            return obj
-        }
-        return {}
+        if (!m) { return {} }
+        const obj = m.toObject()
+        obj.active = m.isActive()
+        obj.proof = m.getProof(this.tree)
+        return obj
     }
 
     /**

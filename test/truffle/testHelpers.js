@@ -1,3 +1,5 @@
+const BN = require("bn.js")
+
 /**
  * Assert equality in web3 return value sense, modulo conversions to "normal" JS strings and numbers
  */
@@ -13,7 +15,7 @@ function assertEqual(actual, expected) {
     // convert BigNumbers if expecting a number
     // NB: there's a reason BigNumbers are used! Keep your numbers small!
     // if the number coming back from contract is big, then expect a BigNumber to avoid this conversion
-    if (typeof expected === "number") {
+    if (typeof expected === "number" || expected.constructor === BN) {
         assert.equal(+actual, +expected)
         return
     }

@@ -39,8 +39,9 @@ class MonoplasmaMember {
         return obj
     }
 
+    /** Produces a hashable string representation in hex form (starts with "0x") */
     toStringData() {
-        return this.address.slice(2) + this.earnings.toString(16, 64)
+        return this.address + this.earnings.toString(16, 64)
     }
 
     getProof(tree) {

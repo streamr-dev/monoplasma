@@ -46,16 +46,6 @@ contract("Airdrop", accounts => {
     }
 
     describe("Recipient", () => {
-        it("can withdraw earnings", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
-            const proof = plasma.getProof(recipient)
-            const { earnings } = plasma.getMember(recipient)
-            assertEqual(await token.balanceOf(recipient), 0)
-            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof)
-            assertEqual(await token.balanceOf(recipient), earnings)
-        })
         it("can not withdraw earnings before freeze period is over", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
@@ -81,31 +71,38 @@ contract("Airdrop", accounts => {
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",
             ]))
         })
+        it("can withdraw earnings", async () => {
+            plasma.addRevenue(1000)
+            const block = await publishBlock()
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            const proof = plasma.getProof(recipient)
+            const { earnings } = plasma.getMember(recipient)
+            assertEqual(await token.balanceOf(recipient), 0)
+            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof)
+            assertEqual(await token.balanceOf(recipient), earnings)
+        })
     })
 
     describe("AbstractRootChain", () => {
         // see test/merklepath.js
         it("proveSidechainBalance & proofIsCorrect & calculateRootHash correctly validate a proof", async () => {
-            const members = new SortedMap(accounts.map(address => [
-                address, { address, earnings: 100 },
-            ]))
-            const tester = accounts[5]
-            const tree = new MerkleTree(members)
-            const path = tree.getPath(tester)
-            const root = tree.getRootHash()
+            plasma.addRevenue(1000)
+            const member = plasma.members.get(anotherRecipient)
+            const root = plasma.tree.getRootHash()
+            const proof = plasma.getProof(anotherRecipient)
             const block = await publishBlock(root)
             // check that block was published correctly
             assertEqual(block.rootHash, root)
             // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.forTesting.hashMember(members.get(tester)).toString("hex")
-            assertEqual(await airdrop.calculateRootHash(hash, path), root)
+            const hash = "0x" + MerkleTree.hash(member.toStringData()).toString("hex")
+            assertEqual(await airdrop.calculateRootHash(hash, proof), root)
             // check that contract checks proof correctly
-            assert(await airdrop.proofIsCorrect(block.rootChainBlockNumber, tester, 100, path))
+            assert(await airdrop.proofIsCorrect(block.rootChainBlockNumber, member.address, member.earnings, proof))
             // check that contract proves earnings correctly (freeze period)
-            assertEqual(await token.balanceOf(tester), 0)
+            assertEqual(await token.balanceOf(member.address), 0)
             await increaseTime(blockFreezePeriodSeconds + 1)
-            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, tester, 100, path)
-            assertEqual(await token.balanceOf(tester), 100)
+            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
+            assertEqual(await token.balanceOf(member.address), member.earnings)
         })
     })
 })

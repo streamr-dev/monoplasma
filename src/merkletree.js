@@ -127,10 +127,7 @@ class MerkleTree {
         return `0x${hashes[1].toString("hex")}`
     }
 }
-
-MerkleTree.forTesting = {
-    hash,
-    hashCombined,
-}
+MerkleTree.hash = hash
+MerkleTree.hashCombined = hashCombined
 
 module.exports = MerkleTree
