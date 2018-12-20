@@ -1,7 +1,5 @@
-const TruffleResolver = require("truffle-resolver")
-
 const Monoplasma = require("./monoplasma")
-const { mergeEventLists, replayEvents, replayEvent, now } = require("./ethSync")
+const { mergeEventLists, replayEvents, replayEvent } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
@@ -20,17 +18,7 @@ async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, s
 async function deployToken(web3, sendOptions, log) {
     log("Deploying a dummy token contract...")
     const Token = new web3.eth.Contract(TokenJson.abi)
-    //const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
-
-    // using ganache as lib, crashes mysteriously; gets txHash but process.exits before receipt call
-    const token = await new Promise((done, fail) => {
-        Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
-            .on("transactionHash", console.log)
-            .on("receipt", done)
-            .on("error", fail)
-    })
-    console.log("asdf")
-
+    const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
     return token.options.address
 }
 
@@ -43,6 +31,9 @@ module.exports = class MonoplasmaOperator {
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
         this.publishedBlocks = []
+        this.lastBlockNumber = 0
+        this.minIntervalBlocks = this.state.minIntervalBlocks || 2  // TODO: think about it more closely
+        this.explorerUrl = this.state.explorerUrl
 
         this.state.gasPrice = this.state.gasPrice || 4000000000  // 4 gwei
 
@@ -68,7 +59,7 @@ module.exports = class MonoplasmaOperator {
 
         this.log("Listening to root chain events...")
         const transferFilter = token.events.Transfer({ filter: { to: this.state.contractAddress } })
-        transferFilter.on("data", replayEvent.bind(null, this.plasma))
+        transferFilter.on("data", e => { this.onTokensReceived(e).then() })
         transferFilter.on("changed", e => { this.error("Event removed in re-org!", e) })
         transferFilter.on("error", this.error)
         const joinPartFilter = contract.events.allEvents()
@@ -77,6 +68,19 @@ module.exports = class MonoplasmaOperator {
         joinPartFilter.on("error", this.error)
 
         await this.saveState(this.state)
+    }
+
+    async onTokensReceived(event) {
+        replayEvent(this.plasma)
+        // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
+        if (event.blockNumber >= this.lastBlockNumber + this.minIntervalBlocks) {
+            const ee = this.publishBlock(event.blockNumber)
+            if (this.explorerUrl) {
+                ee.on("transactionHash", hash => {
+                    this.log(`Sent tx to ${this.explorerUrl}${hash}`)
+                })
+            }
+        }
     }
 
     async playback(fromBlock, toBlock) {
@@ -90,20 +94,12 @@ module.exports = class MonoplasmaOperator {
         this.state.rootChainBlock = toBlock
     }
 
-    async publishBlock() {
+    async publishBlock(blockNumber) {
         const contract = await this.getContract()
-        const blockNumber = await this.web3.eth.getBlockNumber()
-        const rootHash = this.plasma.getRootHash()
-        const call = contract.methods.recordBlock(blockNumber, rootHash, ipfsHash)
-        const data = call.encodeABI()
-        const gas = await call.estimateGas()
-        const to = contract.options.address
-        const signed = await updaterAccount.signTransaction({ to, data, gas, gasPrice: this.state.gasPrice })
-        this.log(`  Publishing block ${blockNumber}: ${rootHash}`)
-        contract.events.BlockCreated.once("data", () => this.log(`  Block ${blockNumber} successfully published`))
-        const tx = web3.eth.sendSignedTransaction(signed.rawTransaction)
-        tx.on("transactionHash", hash => this.log(`  Sent https://${networkId == 1 ? "" : "rinkeby."}etherscan.io/tx/${hash}`))
-        return tx
+        const bnum = blockNumber || await this.web3.eth.getBlockNumber()
+        const hash = this.plasma.getRootHash()
+        const ipfsHash = ""
+        return contract.methods.recordBlock(bnum, hash, ipfsHash).send()
     }
 
     async getContract() {

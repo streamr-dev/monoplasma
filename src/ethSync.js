@@ -1,3 +1,9 @@
+const {
+    QUIET,
+} = process.env
+
+const log = QUIET ? () => {} : console.log
+
 /** "empty", for the purposes of event lists */
 function empty(x) {
     return !Array.isArray(x) || x.length < 1
@@ -15,7 +21,7 @@ function mergeEventLists(events1, events2) {
     let txi2 = events2[0].transactionIndex
     let li1 = events1[0].logIndex
     let li2 = events2[0].logIndex
-    while (true) {
+    for (;;) {
         if (block1 < block2 || block1 === block2 && (txi1 < txi2 || txi1 === txi2 && li1 < li2)) {
             ret.push(events1[i1++])
             if (i1 >= events1.length) {
@@ -35,8 +41,6 @@ function mergeEventLists(events1, events2) {
         }
     }
 }
-
-const log = process.env.LOGGING ? console.log : () => {}
 
 function replayEvent(plasma, e) {
     switch (e.event) {
@@ -87,7 +91,6 @@ async function throwIfNotContract(web3, address, context) {
         throw new Error(`${context || "Error"}: No contract at ${address}`)
     }
 }
-
 
 module.exports = {
     mergeEventLists,

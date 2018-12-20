@@ -25,11 +25,9 @@ describe("Monoplasma", () => {
         })
         it("has all read-only functions", () => {
             assert.deepStrictEqual(plasma.getMembers(), [{
-                name: "tester1",
                 address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
                 earnings: "50",
             }, {
-                name: "tester2",
                 address: "0xe5019d79c3fc34c811e68e68c9bd9966f22370ef",
                 earnings: "50",
             }])

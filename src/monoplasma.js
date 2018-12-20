@@ -1,9 +1,6 @@
 const MonoplasmaMember = require("./monoplasmaMember")
-
 const MerkleTree = require("./merkletree")
-
 const BN = require("bn.js")
-
 const SortedMap = require("collections/sorted-map")
 
 /**

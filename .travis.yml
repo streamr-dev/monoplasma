@@ -11,5 +11,6 @@ jobs:
   include:
     - script:
         - "npm run lint"
+        - "truffle compile"
         - "npm run test"
       stage: "lint & tests"
