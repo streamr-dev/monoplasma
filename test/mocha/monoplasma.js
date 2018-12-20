@@ -37,13 +37,13 @@ describe("Monoplasma", () => {
                 name: "tester1",
                 address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
                 earnings: "50",
-                proof: ["0xf6109b947fe5e7fac8c205f96618c5c175f3fe5ce55fb3e319030695cb971664"],
+                proof: ["0x0cd8ff0e152617ea9db4349156ef64660037b5c35f2ed7b4db55e5a85ebca4e5"],
                 active: true,
             })
-            assert.strictEqual(plasma.getRootHash(), "0xee93860ac71d3f1cbdef175a373496b911e9649ad3b2c54ce2305f10d908be64")
+            assert.strictEqual(plasma.getRootHash(), "0x47aada6e4397871179b68a2766e5ce2afb02fbef17108755651caf951ff0fe8e")
             assert.deepStrictEqual(
                 plasma.getProof("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"),
-                ["0xf6109b947fe5e7fac8c205f96618c5c175f3fe5ce55fb3e319030695cb971664"],
+                ["0x0cd8ff0e152617ea9db4349156ef64660037b5c35f2ed7b4db55e5a85ebca4e5"],
             )
         })
         it("doesn't have any write functions", () => {

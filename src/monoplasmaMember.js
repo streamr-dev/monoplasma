@@ -40,7 +40,7 @@ class MonoplasmaMember {
     }
 
     toStringData() {
-        return this.address.slice(2) + this.earnings.toString()
+        return this.address.slice(2) + this.earnings.toString(16, 64)
     }
 
     getProof(tree) {

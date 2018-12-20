@@ -2,17 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8eea53c9-8626-4c3c-81e1-23d73c5cb620" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/build/contracts/Airdrop.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/contracts/Airdrop.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/contracts/ERC20Mintable.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/contracts/ERC20Mintable.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/contracts/Monoplasma.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/contracts/Monoplasma.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/merkletree.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/merkletree.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/monoplasma.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/monoplasma.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/monoplasmaOperator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/monoplasmaOperator.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/validator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/validator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monoplasmaMember.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/monoplasmaMember.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/mocha/merkletree.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/merkletree.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/mocha/monoplasma.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/monoplasma.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/mocha/monoplasmaMember.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/monoplasmaMember.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,7 +25,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="js" value="58" />
+          <entry key="js" value="63" />
           <entry key="json" value="3" />
           <entry key="md" value="1" />
           <entry key="sol" value="8" />
@@ -41,7 +34,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="JSON" value="3" />
-          <entry key="JavaScript" value="58" />
+          <entry key="JavaScript" value="63" />
           <entry key="Markdown" value="1" />
           <entry key="PLAIN_TEXT" value="8" />
         </counts>
@@ -53,12 +46,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="js" value="2870" />
+          <entry key="js" value="2997" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JavaScript" value="2870" />
+          <entry key="JavaScript" value="2997" />
         </counts>
       </usages-collector>
     </session>
@@ -66,31 +59,42 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/merkletree.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="23" column="46" lean-forward="true" selection-start-line="23" selection-start-column="46" selection-end-line="23" selection-end-column="46" />
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/monoplasma.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="30" column="35" lean-forward="true" selection-start-line="30" selection-start-column="35" selection-end-line="30" selection-end-column="35" />
+            <state relative-caret-position="612">
+              <caret line="36" column="36" selection-start-line="36" selection-start-column="36" selection-end-line="36" selection-end-column="36" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/mocha/merkletree.js">
+        <entry file="file://$PROJECT_DIR$/start_airdrop.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2261">
-              <caret line="133" column="81" selection-start-line="133" selection-start-column="81" selection-end-line="133" selection-end-column="81" />
+            <state relative-caret-position="833">
+              <caret line="49" column="1" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/mocha/ethSync.js">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1921">
+              <caret line="113" column="5" selection-start-line="113" selection-start-column="5" selection-end-line="113" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/start_operator.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="620">
+              <caret line="68" column="62" selection-start-line="68" selection-start-column="62" selection-end-line="68" selection-end-column="62" />
             </state>
           </provider>
         </entry>
@@ -98,26 +102,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/monoplasmaMember.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="355">
-              <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/validator.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
-              <caret line="30" column="95" selection-start-line="30" selection-start-column="95" selection-end-line="30" selection-end-column="95" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaMember.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="884">
-              <caret line="52" column="78" selection-start-line="52" selection-start-column="78" selection-end-line="52" selection-end-column="78" />
+            <state relative-caret-position="304">
+              <caret line="27" column="27" lean-forward="true" selection-start-line="27" selection-start-column="27" selection-end-line="27" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -125,34 +111,38 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/mocha/monoplasma.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="20" column="77" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="77" />
+            <state relative-caret-position="765">
+              <caret line="45" column="84" selection-start-line="45" selection-start-column="84" selection-end-line="45" selection-end-column="84" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/mocha/merkletree.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="307">
+              <caret line="134" column="44" lean-forward="true" selection-start-line="134" selection-start-column="44" selection-end-line="134" selection-end-column="44" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaRouter.js">
+        <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaMember.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="629">
-              <caret line="37" column="11" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="11" />
+            <state relative-caret-position="314">
+              <caret line="24" column="27" lean-forward="true" selection-start-line="24" selection-start-column="27" selection-end-line="24" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/merkletree.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="238">
+              <caret line="14" column="47" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="47" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/mocha/testHelpers.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="910">
-              <caret line="105" column="17" selection-start-line="105" selection-start-column="17" selection-end-line="105" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -174,13 +164,13 @@
       <list>
         <option value="$PROJECT_DIR$/src/index.js" />
         <option value="$PROJECT_DIR$/src/monoplasmaOperator.js" />
-        <option value="$PROJECT_DIR$/test/mocha/monoplasmaMember.js" />
         <option value="$PROJECT_DIR$/src/monoplasma.js" />
-        <option value="$PROJECT_DIR$/test/mocha/monoplasma.js" />
         <option value="$PROJECT_DIR$/src/merkletree.js" />
-        <option value="$PROJECT_DIR$/test/mocha/merkletree.js" />
-        <option value="$PROJECT_DIR$/src/monoplasmaMember.js" />
         <option value="$PROJECT_DIR$/src/validator.js" />
+        <option value="$PROJECT_DIR$/src/monoplasmaMember.js" />
+        <option value="$PROJECT_DIR$/test/mocha/monoplasmaMember.js" />
+        <option value="$PROJECT_DIR$/test/mocha/monoplasma.js" />
+        <option value="$PROJECT_DIR$/test/mocha/merkletree.js" />
       </list>
     </option>
   </component>
@@ -208,14 +198,25 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="monoplasma" type="b2602c69:ProjectViewProjectNode" />
               <item name="monoplasma" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="monoplasma" type="b2602c69:ProjectViewProjectNode" />
+              <item name="monoplasma" type="462c0819:PsiDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="monoplasma" type="b2602c69:ProjectViewProjectNode" />
+              <item name="monoplasma" type="462c0819:PsiDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+              <item name="contracts" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="monoplasma" type="b2602c69:ProjectViewProjectNode" />
@@ -249,6 +250,10 @@
               <item name="test" type="462c0819:PsiDirectoryNode" />
               <item name="truffle" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="monoplasma" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -258,7 +263,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1544795729980" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1545294542242" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -280,7 +285,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Mocha.monoplasmaMember">
+  <component name="RunManager" selected="Mocha.Merkle tree">
     <configuration name="Merkle tree" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
       <node-interpreter>project</node-interpreter>
       <node-options />
@@ -325,48 +330,50 @@
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="Monoplasma" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
+    <configuration name="Merkle tree.is constructed correctly for 1 item" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
       <node-interpreter>project</node-interpreter>
       <node-options />
       <working-directory>$PROJECT_DIR$</working-directory>
       <pass-parent-env>true</pass-parent-env>
       <ui>bdd</ui>
       <extra-mocha-options />
-      <test-kind>SUITE</test-kind>
-      <test-file>$PROJECT_DIR$/test/mocha/monoplasma.js</test-file>
+      <test-kind>TEST</test-kind>
+      <test-file>$PROJECT_DIR$/test/mocha/merkletree.js</test-file>
       <test-names>
-        <name value="Monoplasma" />
+        <name value="Merkle tree" />
+        <name value="is constructed correctly for 1 item" />
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="monoplasmaMember" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
+    <configuration name="Merkle tree.is constructed correctly for 5 items" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
       <node-interpreter>project</node-interpreter>
       <node-options />
       <working-directory>$PROJECT_DIR$</working-directory>
       <pass-parent-env>true</pass-parent-env>
       <ui>bdd</ui>
       <extra-mocha-options />
-      <test-kind>SUITE</test-kind>
-      <test-file>$PROJECT_DIR$/test/mocha/monoplasmaMember.js</test-file>
+      <test-kind>TEST</test-kind>
+      <test-file>$PROJECT_DIR$/test/mocha/merkletree.js</test-file>
       <test-names>
-        <name value="monoplasmaMember" />
+        <name value="Merkle tree" />
+        <name value="is constructed correctly for 5 items" />
       </test-names>
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Mocha.Merkle tree.is constructed correctly for 5 items" />
+      <item itemvalue="Mocha.Merkle tree.is constructed correctly for 1 item" />
       <item itemvalue="Mocha.Merkle tree.gives a correct path for 5 items" />
       <item itemvalue="Mocha.Merkle tree.gives a correct path for 100 items" />
       <item itemvalue="Mocha.Merkle tree" />
-      <item itemvalue="Mocha.Monoplasma" />
-      <item itemvalue="Mocha.monoplasmaMember" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Mocha.monoplasmaMember" />
-        <item itemvalue="Mocha.Monoplasma" />
         <item itemvalue="Mocha.Merkle tree" />
         <item itemvalue="Mocha.Merkle tree.gives a correct path for 100 items" />
         <item itemvalue="Mocha.Merkle tree.gives a correct path for 5 items" />
+        <item itemvalue="Mocha.Merkle tree.is constructed correctly for 1 item" />
+        <item itemvalue="Mocha.Merkle tree.is constructed correctly for 5 items" />
       </list>
     </recent_temporary>
   </component>
@@ -386,45 +393,45 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.14 at 14h 34m 59s.xml">
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_5_items - 2018.12.20 at 09h 25m 27s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 5 items" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_5_items - 2018.12.20 at 09h 26m 45s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 5 items" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_5_items - 2018.12.20 at 09h 26m 57s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 5 items" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_5_items - 2018.12.20 at 09h 27m 09s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 5 items" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_5_items - 2018.12.20 at 09h 27m 25s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 5 items" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_1_item - 2018.12.20 at 09h 27m 31s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 1 item" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_is_constructed_correctly_for_1_item - 2018.12.20 at 09h 27m 52s.xml">
+      <configuration name="Merkle tree.is constructed correctly for 1 item" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.20 at 09h 28m 03s.xml">
       <configuration name="Merkle tree.gives a correct path for 5 items" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.14 at 14h 35m 57s.xml">
+    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.20 at 09h 28m 21s.xml">
       <configuration name="Merkle tree.gives a correct path for 5 items" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.14 at 14h 36m 41s.xml">
-      <configuration name="Merkle tree.gives a correct path for 5 items" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.14 at 14h 36m 59s.xml">
-      <configuration name="Merkle tree.gives a correct path for 5 items" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_5_items - 2018.12.14 at 14h 37m 31s.xml">
-      <configuration name="Merkle tree.gives a correct path for 5 items" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_100_items - 2018.12.14 at 14h 50m 58s.xml">
+    <history-entry file="Merkle_tree_gives_a_correct_path_for_100_items - 2018.12.20 at 09h 28m 33s.xml">
       <configuration name="Merkle tree.gives a correct path for 100 items" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Merkle_tree_gives_a_correct_path_for_100_items - 2018.12.14 at 14h 51m 31s.xml">
-      <configuration name="Merkle tree.gives a correct path for 100 items" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Merkle_tree - 2018.12.14 at 14h 51m 39s.xml">
-      <configuration name="Merkle tree" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="Monoplasma - 2018.12.14 at 14h 51m 44s.xml">
-      <configuration name="Monoplasma" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="monoplasmaMember - 2018.12.14 at 14h 51m 50s.xml">
-      <configuration name="monoplasmaMember" configurationId="mocha-javascript-test-runner" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="33890000" />
+    <option name="totallyTimeSpent" value="34856000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
+    <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14702381" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13869047" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -433,7 +440,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.20292887" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.20292887" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39958158" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -465,7 +472,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/merkletree.js</url>
           <line>64</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
@@ -562,17 +568,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="54" lean-forward="true" selection-start-line="4" selection-start-column="54" selection-end-line="4" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/index.js" />
     <entry file="file://$PROJECT_DIR$/start_operator.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="10" selection-start-line="17" selection-start-column="10" selection-end-line="17" selection-end-column="10" />
+        <state relative-caret-position="620">
+          <caret line="68" column="62" selection-start-line="68" selection-start-column="62" selection-end-line="68" selection-end-column="62" />
         </state>
       </provider>
     </entry>
@@ -586,8 +586,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/start_airdrop.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="81" column="35" selection-start-line="81" selection-start-column="35" selection-end-line="81" selection-end-column="35" />
+        <state relative-caret-position="833">
+          <caret line="49" column="1" selection-start-line="49" selection-start-column="1" selection-end-line="49" selection-end-column="1" />
         </state>
       </provider>
     </entry>
@@ -635,55 +635,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/merkletree.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="23" column="46" lean-forward="true" selection-start-line="23" selection-start-column="46" selection-end-line="23" selection-end-column="46" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/mocha/merkletree.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2261">
-          <caret line="133" column="81" selection-start-line="133" selection-start-column="81" selection-end-line="133" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/mocha/monoplasma.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="20" column="77" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="77" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaMember.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="52" column="78" selection-start-line="52" selection-start-column="78" selection-end-line="52" selection-end-column="78" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="910">
-          <caret line="105" column="17" selection-start-line="105" selection-start-column="17" selection-end-line="105" selection-end-column="17" />
+        <state relative-caret-position="1921">
+          <caret line="113" column="5" selection-start-line="113" selection-start-column="5" selection-end-line="113" selection-end-column="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/monoplasma.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="30" column="35" lean-forward="true" selection-start-line="30" selection-start-column="35" selection-end-line="30" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/monoplasmaMember.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
+        <state relative-caret-position="612">
+          <caret line="36" column="36" selection-start-line="36" selection-start-column="36" selection-end-line="36" selection-end-column="36" />
         </state>
       </provider>
     </entry>
@@ -691,6 +653,65 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
           <caret line="30" column="95" selection-start-line="30" selection-start-column="95" selection-end-line="30" selection-end-column="95" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="42" column="26" selection-start-line="42" selection-start-column="13" selection-end-line="42" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/monoplasmaMember.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="27" column="27" lean-forward="true" selection-start-line="27" selection-start-column="27" selection-end-line="27" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/truffle-config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="850">
+          <caret line="50" column="16" selection-start-line="50" selection-start-column="16" selection-end-line="50" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/contracts/ERC20Mintable.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5304">
+          <caret line="312" column="2" selection-start-line="312" selection-start-column="2" selection-end-line="312" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/merkletree.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="47" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="47" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaMember.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="24" column="27" lean-forward="true" selection-start-line="24" selection-start-column="27" selection-end-line="24" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/mocha/monoplasma.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="45" column="84" selection-start-line="45" selection-start-column="84" selection-end-line="45" selection-end-column="84" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/mocha/merkletree.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="307">
+          <caret line="134" column="44" lean-forward="true" selection-start-line="134" selection-start-column="44" selection-end-line="134" selection-end-column="44" />
         </state>
       </provider>
     </entry>
