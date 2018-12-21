@@ -9,7 +9,7 @@
     "test-js": "./node_modules/.bin/mocha test/mocha",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run test-js && npm run test-contracts",
-    "clean": "rm build/contracts/* && rm static_web/data/*"
+    "clean": "rm -f build/contracts/* && rm -f static_web/data/* && npm run build"
   },
   "author": "",
   "license": "AGPL-3.0",

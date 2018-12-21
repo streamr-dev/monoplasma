@@ -16,6 +16,26 @@ contract Monoplasma is AbstractRootChain, Ownable {
     event RecipientAdded(address recipient);
     event RecipientRemoved(address recipient);
 
+    /**
+     * Freeze period during which all side-chain participants should be able to
+     *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
+     *   and validate that the published rootHash is correct
+     * In case of incorrect rootHash, all members should issue withdrawals from the
+     *   latest block they have validated (that is older than blockFreezeSeconds)
+     * So: too short freeze period + bad availability => ether (needlessly) spent withdrawing earnings
+     *     long freeze period == lag between purchase and withdrawal => bad UX
+     * Blocks older than blockFreezeSeconds can be used to withdraw funds
+     */
+    uint public blockFreezeSeconds;
+
+    /**
+     * Block number => timestamp
+     * Publish time of a block, where the block freeze period starts from.
+     * Note that block number is the "root-chain block number" that corresponds to the
+     *   published blockHash with same number, not e.g. block where BlockCreated was emitted
+     */
+    mapping (uint => uint) public blockTimestamp;
+
     uint public recipientCount;
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
@@ -23,9 +43,8 @@ contract Monoplasma is AbstractRootChain, Ownable {
 
     IERC20 public token;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds)
-        AbstractRootChain(blockFreezePeriodSeconds)
-        Ownable() public {
+    constructor(address tokenAddress, uint blockFreezePeriodSeconds) public {
+        blockFreezeSeconds = blockFreezePeriodSeconds;
         token = IERC20(tokenAddress);
     }
 
@@ -46,8 +65,9 @@ contract Monoplasma is AbstractRootChain, Ownable {
     /**
      * Owner creates the side-chain blocks
      */
-    function canRecordBlock(uint, bytes32, string) internal returns (bool) {
-        return msg.sender == owner;
+    function onRecordBlock(uint rootChainBlockNumber, bytes32, string) internal {
+        require(msg.sender == owner, "error_notPermitted");
+        blockTimestamp[rootChainBlockNumber] = now;
     }
 
     /**
@@ -56,19 +76,21 @@ contract Monoplasma is AbstractRootChain, Ownable {
      *   or just "cement" the earnings so far into root chain even without withdrawing
      *   (though it's probably a lot more expensive than withdrawing itself...)
      */
-    function onVerifySuccess(address account, uint totalEarnings) internal {
+    function onVerifySuccess(uint rootChainBlockNumber, address account, uint totalEarnings) internal {
+        uint blockFreezeStart = blockTimestamp[rootChainBlockNumber];
+        require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(earnings[account] < totalEarnings, "error_oldEarnings");
         earnings[account] = totalEarnings;
     }
 
     /**
      * Withdraw the whole revenue share from sidechain in one transaction
-     * @param blockTimestamp of the leaf to verify
+     * @param rootChainBlockNumber of the leaf to verify
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAll(uint blockTimestamp, uint totalEarnings, bytes32[] proof) external {
-        proveSidechainBalance(blockTimestamp, msg.sender, totalEarnings, proof);
+    function withdrawAll(uint rootChainBlockNumber, uint totalEarnings, bytes32[] proof) external {
+        proveSidechainBalance(rootChainBlockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
         withdraw(withdrawable);
     }

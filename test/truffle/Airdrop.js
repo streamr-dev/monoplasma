@@ -6,11 +6,6 @@ const { assertEqual, assertFails, increaseTime } = require("./testHelpers")
 const Monoplasma = require("../../src/monoplasma")
 const plasma = new Monoplasma()
 
-const SortedMap = require("collections/sorted-map")
-const MerkleTree = require("../../src/merkletree")
-
-const blockFreezePeriodSeconds = 1000
-
 let market
 let token
 let airdrop
@@ -20,7 +15,7 @@ contract("Airdrop", accounts => {
     const admin = accounts[9]
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
-        airdrop = await Airdrop.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})
+        airdrop = await Airdrop.new(token.address, {from: admin, gas: 4000000})
         await token.mint(airdrop.address, 1000000, {from: admin})
 
         // these should be performed by the watcher
@@ -28,15 +23,6 @@ contract("Airdrop", accounts => {
         plasma.addMember(anotherRecipient)
         plasma.addRevenue(1000)
     })
-
-    // TODO: upgrade to latest truffle and hence web3 1.0, get rid of this kind of wrappers...
-    async function getBlockNumber() {
-        return new Promise(done => {
-            web3.eth.getBlockNumber((err, blockNum) => {
-                done(blockNum)
-            })
-        })
-    }
 
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
@@ -46,17 +32,9 @@ contract("Airdrop", accounts => {
     }
 
     describe("Recipient", () => {
-        it("can not withdraw earnings before freeze period is over", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
-            const proof = plasma.getProof(recipient)
-            const { earnings } = plasma.getMember(recipient)
-            await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof))
-        })
         it("can not withdraw wrong amount", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
             const proof = plasma.getProof(recipient)
             const { earnings } = plasma.getMember(recipient)
             await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, 100000, proof))
@@ -64,45 +42,23 @@ contract("Airdrop", accounts => {
         it("can not withdraw with bad proof", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
             const { earnings } = plasma.getMember(recipient)
             await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",
             ]))
         })
-        it("can withdraw earnings", async () => {
+        it("can withdraw earnings only once", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
             const proof = plasma.getProof(recipient)
             const { earnings } = plasma.getMember(recipient)
             assertEqual(await token.balanceOf(recipient), 0)
             await airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof)
             assertEqual(await token.balanceOf(recipient), earnings)
-        })
-    })
 
-    describe("AbstractRootChain", () => {
-        // see test/merklepath.js
-        it("proveSidechainBalance & proofIsCorrect & calculateRootHash correctly validate a proof", async () => {
-            plasma.addRevenue(1000)
-            const member = plasma.members.get(anotherRecipient)
-            const root = plasma.tree.getRootHash()
-            const proof = plasma.getProof(anotherRecipient)
-            const block = await publishBlock(root)
-            // check that block was published correctly
-            assertEqual(block.rootHash, root)
-            // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.hash(member.toStringData()).toString("hex")
-            assertEqual(await airdrop.calculateRootHash(hash, proof), root)
-            // check that contract checks proof correctly
-            assert(await airdrop.proofIsCorrect(block.rootChainBlockNumber, member.address, member.earnings, proof))
-            // check that contract proves earnings correctly (freeze period)
-            assertEqual(await token.balanceOf(member.address), 0)
-            await increaseTime(blockFreezePeriodSeconds + 1)
-            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
-            assertEqual(await token.balanceOf(member.address), member.earnings)
+            // second time will fail with "error_oldEarnings"
+            await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof))
         })
     })
 })

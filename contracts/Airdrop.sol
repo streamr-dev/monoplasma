@@ -16,23 +16,21 @@ contract Airdrop is AbstractRootChain, Ownable {
     IERC20 public token;
     mapping (address => uint) public withdrawn;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds)
-        AbstractRootChain(blockFreezePeriodSeconds)
-        Ownable() public {
+    constructor(address tokenAddress) Ownable() public {
         token = IERC20(tokenAddress);
     }
 
     /**
      * Owner creates the side-chain blocks
      */
-    function canRecordBlock(uint, bytes32, string) internal returns (bool) {
-        return msg.sender == owner;
+    function onRecordBlock(uint, bytes32, string) internal {
+        require(msg.sender == owner, "error_notPermitted");
     }
 
     /**
      * Called from AbstractRootChain.proveSidechainBalance, perform payout directly
      */
-    function onVerifySuccess(address account, uint balance) internal {
+    function onVerifySuccess(uint, address account, uint balance) internal {
         require(withdrawn[account] < balance, "err_oldEarnings");
         uint withdrawable = balance.sub(withdrawn[account]);
         withdrawn[account] = balance;

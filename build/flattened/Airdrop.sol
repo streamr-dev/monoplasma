@@ -108,19 +108,7 @@ interface IERC20 {
  * TODO: plasma nomenclature to all interfaces!
  */
 contract AbstractRootChain {
-    event BlockCreated(uint rootChainBlockNumber, uint timestamp, bytes32 rootHash, string ipfsHash);
-
-    /**
-     * Freeze period during which all side-chain participants should be able to
-     *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
-     *   and validate that the published rootHash is correct
-     * In case of incorrect rootHash, all members should issue withdrawals from the
-     *   latest block they have validated (that is older than blockFreezeSeconds)
-     * So: too short freeze period + bad availability => ether (needlessly) spent withdrawing earnings
-     *     long freeze period == lag between purchase and withdrawal => bad UX
-     * Blocks older than blockFreezeSeconds can be used to withdraw funds
-     */
-    uint public blockFreezeSeconds;
+    event BlockCreated(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash);
 
     /**
      * Sidechain "blocks" are simply root hashes merkle-trees constructed from its state
@@ -130,26 +118,18 @@ contract AbstractRootChain {
     mapping (uint => bytes32) public blockHash;
 
     /**
-     * Publish time of a block, where the block freeze period starts from.
-     */
-    mapping (uint => uint) public blockTimestamp;
-
-    /**
      * Handler for proof of sidechain balances
      * It is up to the implementing contract to actually distribute out the balances
+     * @param rootChainBlockNumber the block whose hash was used for verification
      * @param account whose balances were successfully verified
      * @param balance the side-chain account balance
      */
-    function onVerifySuccess(address account, uint balance) internal;
-
-    constructor(uint blockFreezePeriodSeconds) public {
-        blockFreezeSeconds = blockFreezePeriodSeconds;
-    }
+    function onVerifySuccess(uint rootChainBlockNumber, address account, uint balance) internal;
 
     /**
      * Implementing contract should should do access checks for recordBlock
      */
-    function canRecordBlock(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash) internal returns (bool);
+    function onRecordBlock(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash) internal;
 
     /**
      * For convenience, also publish the ipfsHash of the balance book JSON object
@@ -158,11 +138,11 @@ contract AbstractRootChain {
      * @param ipfsHash where the whole balances object can be retrieved in JSON format
      */
     function recordBlock(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash) external {
+        require(blockHash[rootChainBlockNumber] == 0, "error_overwrite");
         string memory _hash = ipfsHash;
-        require(canRecordBlock(rootChainBlockNumber, rootHash, _hash), "error_notPermitted");
-        blockTimestamp[rootChainBlockNumber] = now;
+        onRecordBlock(rootChainBlockNumber, rootHash, _hash);
         blockHash[rootChainBlockNumber] = rootHash;
-        emit BlockCreated(rootChainBlockNumber, now, rootHash, _hash);
+        emit BlockCreated(rootChainBlockNumber, rootHash, _hash);
     }
 
     /**
@@ -173,10 +153,8 @@ contract AbstractRootChain {
      * @param proof list of hashes to prove the totalEarnings
      */
     function proveSidechainBalance(uint rootChainBlockNumber, address account, uint balance, bytes32[] memory proof) public {
-        uint blockFreezeStart = blockTimestamp[rootChainBlockNumber];
-        require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(proofIsCorrect(rootChainBlockNumber, account, balance, proof), "error_proof");
-        onVerifySuccess(account, balance);
+        onVerifySuccess(rootChainBlockNumber, account, balance);
     }
 
     /**
@@ -271,23 +249,21 @@ contract Airdrop is AbstractRootChain, Ownable {
     IERC20 public token;
     mapping (address => uint) public withdrawn;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds)
-        AbstractRootChain(blockFreezePeriodSeconds)
-        Ownable() public {
+    constructor(address tokenAddress) Ownable() public {
         token = IERC20(tokenAddress);
     }
 
     /**
      * Owner creates the side-chain blocks
      */
-    function canRecordBlock(uint, bytes32, string) internal returns (bool) {
-        return msg.sender == owner;
+    function onRecordBlock(uint, bytes32, string) internal {
+        require(msg.sender == owner, "error_notPermitted");
     }
 
     /**
      * Called from AbstractRootChain.proveSidechainBalance, perform payout directly
      */
-    function onVerifySuccess(address account, uint balance) internal {
+    function onVerifySuccess(uint, address account, uint balance) internal {
         require(withdrawn[account] < balance, "err_oldEarnings");
         uint withdrawable = balance.sub(withdrawn[account]);
         withdrawn[account] = balance;

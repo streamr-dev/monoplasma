@@ -27,21 +27,25 @@ contract("Monoplasma", accounts => {
         plasma.addRevenue(1000)
     })
 
-    // TODO: upgrade to latest truffle and hence web3 1.0, get rid of this kind of wrappers...
-    async function getBlockNumber() {
-        return new Promise(done => {
-            web3.eth.getBlockNumber((err, blockNum) => {
-                done(blockNum)
-            })
-        })
-    }
-
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
-        const rootChainBlockNumber = await getBlockNumber()
+        const rootChainBlockNumber = await web3.eth.getBlockNumber()
         const resp = await rootchain.recordBlock(rootChainBlockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
+
+    describe("recordBlock & blockHash", () => {
+        it("correctly saves and retrieves a block timestamp", async () => {
+            const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
+            const resp = await rootchain.recordBlock(123, root, "ipfs lol", {from: admin})
+            const event = resp.logs.find(L => L.event === "BlockCreated")
+            const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
+            assertEqual(event.args.rootChainBlockNumber, 123)
+            assertEqual(event.args.rootHash, root)
+            assertEqual(await rootchain.blockHash(123), root)
+            assertEqual(await rootchain.blockTimestamp(123), timestamp)
+        })
+    })
 
     describe("Admin", () => {
         it("can publish blocks", async () => {
