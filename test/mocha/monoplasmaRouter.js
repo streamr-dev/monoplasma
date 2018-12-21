@@ -53,8 +53,9 @@ describe("Express app / monoplasma server", () => {
             })
 
             assert.deepStrictEqual(await fetchMembers(), [{
-                earnings: 0,
+                earnings: "0",
                 address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
+                name: "Tester",
             }])
         })
 

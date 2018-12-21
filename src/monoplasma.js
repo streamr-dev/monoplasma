@@ -1,5 +1,6 @@
+const MonoplasmaMember = require("./monoplasmaMember")
 const MerkleTree = require("./merkletree")
-
+const BN = require("bn.js")
 const SortedMap = require("collections/sorted-map")
 
 /**
@@ -12,7 +13,7 @@ class Monoplasma {
      */
     constructor(initialMembers) {
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
-        this.members = new SortedMap(Array.isArray(initialMembers) ? initialMembers.map(m => [m.address, m]) : [])
+        this.members = new SortedMap(Array.isArray(initialMembers) ? initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]) : [])
         this.tree = new MerkleTree(this.members)
     }
 
@@ -21,16 +22,18 @@ class Monoplasma {
     // ///////////////////////////////////
 
     getMembers() {
-        // ES6 version of _.pick
         return this.members
-            .filter(m => m.active)
-            .map(({address, earnings}) => ({address, earnings}))
+            .filter(m => m.isActive())
+            .map(m => m.toObject())
     }
 
     getMember(address) {
         const m = this.members.get(address)
-        const proof = m && m.earnings > 0 ? this.getProof(address) : {}
-        return Object.assign({}, m, { proof })
+        if (!m) { return {} }
+        const obj = m.toObject()
+        obj.active = m.isActive()
+        obj.proof = m.getProof(this.tree)
+        return obj
     }
 
     /**
@@ -50,37 +53,29 @@ class Monoplasma {
     // ///////////////////////////////////
     //      ADMIN API
     // ///////////////////////////////////
-
-    // TODO: BigIntegers for earnings
     addRevenue(amount) {
-        const activeMembers = this.members.filter(m => m.active)
-        const activeCount = activeMembers.length
+        const activeMembers = this.members.filter(m => m.isActive())
+        const activeCount = new BN(activeMembers.length)
         if (activeCount === 0) {
             console.error("No active members in community!")
             return
         }
 
-        const share = Math.floor(amount / activeCount)
-        activeMembers.forEach(m => {
-            m.earnings += share
-        })
+        const share = new BN(amount).divRound(activeCount)
+        activeMembers.forEach(m => m.addRevenue(share))
         this.tree.update(this.members)
     }
 
     addMember(address, name) {
-        if (address.length === 40) {
-            address = `0x${address}`
-        }
-        if (Number.isNaN(Number(address)) || address.length !== 42) {
-            throw new Error(`Bad Ethereum address: ${address}`)
-        }
-        this.members.set(address, {address, name, earnings: 0, active: true})
+        this.members.set(address, new MonoplasmaMember(name, address))
         // tree.update(members)     // no need for update since no revenue allocated
     }
 
     removeMember(address) {
         const m = this.members.get(address)
-        m.active = false
+        if (m) {
+            m.setInactive()
+        }
         // tree.update(members)     // no need for update since no revenue allocated
     }
 

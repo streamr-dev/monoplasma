@@ -23,17 +23,6 @@ function hashCombined(data1, data2) {
     }
     return hash(Buffer.concat([data1, data2]))
 }
-function hashMember(m) {
-    const scratch = Buffer.alloc(52)            // 20 for address, 32 for balance
-    return _hashMember(m, scratch)
-}
-function _hashMember(m, scratch) {              // eslint-disable-line no-underscore-dangle
-    scratch.fill(0)
-    scratch.writeInt32LE(m.earnings)            // put the balance in the end of buffer
-    scratch.reverse()
-    scratch.write(m.address.slice(2), "hex")    // remove "0x" from beginning, address in the front
-    return hash(scratch)
-}
 
 function roundUpToPowerOfTwo(x) {
     let i = 1
@@ -53,10 +42,9 @@ function buildMerkleTree(leafContents) {
 
     // leaf hashes: hash(address + balance)
     let i = branchCount
-    const scratch = Buffer.alloc(52)        // 20 for address, 32 for balance
     leafContents.forEach(m => {
         indexOf[m.address] = i
-        hashes[i++] = _hashMember(m, scratch) // eslint-disable-line no-plusplus
+        hashes[i++] = hash(m.toStringData()) // eslint-disable-line no-plusplus
     })
 
     // Branch hashes: start from leaves, populate branches with hash(hash of left + right child)
@@ -139,11 +127,7 @@ class MerkleTree {
         return `0x${hashes[1].toString("hex")}`
     }
 }
-
-MerkleTree.forTesting = {
-    hash,
-    hashCombined,
-    hashMember,
-}
+MerkleTree.hash = hash
+MerkleTree.hashCombined = hashCombined
 
 module.exports = MerkleTree
