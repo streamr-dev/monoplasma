@@ -2,11 +2,15 @@
 
 const fs = require("mz/fs")
 const readline = require("readline")
+const BN = require("bn.js")
 
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
 
 const Monoplasma = require("./src/monoplasma")
+
+const deployDemoToken = require("./src/deployDemoToken")
+const formatDecimals = require("./src/formatDecimals")
 
 const {
     INPUT_FILE,
@@ -18,9 +22,21 @@ const {
     BLOCK_FREEZE_SECONDS,
     GAS_PRICE_GWEI,
     QUIET,
+
+    // these will be used  1) for demo token  2) if TOKEN_ADDRESS doesn't support name() and symbol()
+    TOKEN_SYMBOL,
+    TOKEN_NAME,
+    TOKEN_DECIMALS,
+
+    // if ETHEREUM_SERVER isn't specified, start a local Ethereum simulator (Ganache) in given port
+    GANACHE_PORT,
 } = process.env
 
 const log = !QUIET ? console.log : () => {}
+const error = e => {
+    console.error(e.stack)
+    process.exit(1)
+}
 
 // Block freeze functionality is kind of pointless for airdrops, since all distributed tokens are operator's to begin with
 const blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || 1
@@ -32,14 +48,14 @@ const defaultServers = {
     "4": "wss://rinkeby.infura.io/ws",
 }
 
-const TokenJson = require("./build/contracts/ERC20Mintable.json")
+const TokenJson = require("./build/contracts/DemoToken.json")
 const AirdropJson = require("./build/contracts/Airdrop.json")
 
 async function start() {
     const ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
     log(`Connecting to ${ethereumServer || "Ganache Ethereum simulator"}...`)
     function ganacheLog(msg) { log("        Ganache > " + msg) }
-    const web3 = new Web3(ethereumServer || await require("./src/startGanache")(ganacheLog)())
+    const web3 = new Web3(ethereumServer || await require("./src/startGanache")(GANACHE_PORT, ganacheLog, error))
 
     // with ganache, use account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
     const privateKey = ethereumServer ? ETHEREUM_PRIVATE_KEY : "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
@@ -70,25 +86,69 @@ async function start() {
     const tokenAddress = await airdrop.methods.token().call()
     const token = new web3.eth.Contract(TokenJson.abi, tokenAddress, contractDefaults)
 
-    let resp
-    log("Deployment done, let's try recording a block...")
-    const plasma = new Monoplasma(balances)
-    resp = await airdrop.methods.recordBlock(1, plasma.getRootHash(), "").send()
-    log("Events produced: " + Object.keys(resp.events))
-    log(JSON.stringify(resp.events.BlockCreated.returnValues))
+    log("Find token info:")
+    const tokenName = await token.methods.name().call().catch(e => {
+        log("Token name query failed: " + e.message)
+        return TOKEN_NAME || "Ethereum token"
+    })
+    const tokenSymbol = await token.methods.symbol().call().catch(e => {
+        log("Token symbol query failed: " + e.message)
+        return TOKEN_SYMBOL || "ERC20"
+    })
+    const tokenDecimals = await token.methods.decimals().call().catch(e => {
+        log("Token decimals query failed: " + e.message)
+        return TOKEN_DECIMALS || 18
+    })
+    log("    Token name:     " + tokenName)
+    log("    Token symbol:   " + tokenSymbol)
+    log("    Token decimals: " + tokenDecimals)
 
-    log("Mint tokens into the Airdrop contract...")
-    const totalTokens = balances.map(account => account.balance).reduce((x, sum) => sum + x, 0)
-    resp = await token.methods.mint(airdrop.options.address, totalTokens).send()
-    log("Events produced: " + Object.keys(resp.events))
-    log(JSON.stringify(resp.events.Transfer))
+    log("Checking token numbers match...")
+    const totalTokenWei = balances.map(account => account.balance).reduce((sum, x) => sum.add(new BN(x)), new BN(0))
+    const adminBalance = await token.methods.balanceOf(contractDefaults.from).call()
+    log("    Tokens allocated: " + totalTokenWei.toString())
+    log("    Tokens owned:     " + adminBalance.toString())
+    if (new BN(adminBalance).lt(totalTokenWei)) {
+        throw new Error(`Operator address ${contractDefaults.from} has only ${adminBalance} ${tokenSymbol}, but allocations have been done worth ${totalTokenWei} ${tokenSymbol}`)
+    }
+
+    log("Move tokens into the Airdrop contract...")
+    const moveResp = await token.methods.transfer(airdrop.options.address, totalTokenWei.toString()).send()
+    log("Events produced: " + Object.keys(moveResp.events))
+    log(JSON.stringify(moveResp.events.Transfer))
+
+    log("Deployment done, record balances into contract...")
+    const plasma = new Monoplasma(balances)
+    const blockNumber = await web3.eth.getBlockNumber()
+    const recordResp = await airdrop.methods.recordBlock(blockNumber, plasma.getRootHash(), "").send()
+    log("Events produced: " + Object.keys(recordResp.events))
+    log(JSON.stringify(recordResp.events.BlockCreated.returnValues))
 
     // instantiate template pages to static_web/airdrop/<address>/index.html
+    const template = (await fs.readFile("./static_web/airdrop/template/index.html")).toString()
+    for (const account of balances) {
+        const proof = plasma.getProof(account.address)
+        const html = template
+            .replace("TOKENNAME", web3.toWei)
+            .replace("TOKENAMOUNT", formatDecimals(account.balance, tokenDecimals))
+            .replace("SYMBOL", tokenSymbol)
+            .replace("ADDRESS", account.balance)
+            .replace("BLOCKNUMBER", blockNumber)
+            .replace("WEIAMOUNT", account.balance)
+            .replace("PROOFJSON", JSON.stringify(proof))
+            .replace("CONTRACTADDR", contractAddress)
+            .replace("CONTRACTABI", JSON.stringify(AirdropJson.abi.filter(f => f.name === "proveSidechainBalance")))
+            .replace("PROOFSTRING", proof.toString())
+        const dir = `./static_web/airdrop/${account.address}`
+        if (!fs.existsSync(dir)) { await fs.mkdirSync(dir) }
+        await fs.writeFile(`${dir}/index.html`, html)
+    }
 
+    log("DONE")
 }
 
 async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
-    const tokenAddress = oldTokenAddress || await deployToken(web3, sendOptions, log)
+    const tokenAddress = oldTokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, sendOptions, log)
     log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
     const Airdrop = new web3.eth.Contract(AirdropJson.abi)
     const airdrop = await Airdrop.deploy({
@@ -96,13 +156,6 @@ async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, s
         arguments: [tokenAddress, blockFreezePeriodSeconds]
     }).send(sendOptions)
     return airdrop.options.address
-}
-
-async function deployToken(web3, sendOptions, log) {
-    log("Deploying a dummy token contract...")
-    const Token = new web3.eth.Contract(TokenJson.abi)
-    const token = await Token.deploy({data: TokenJson.bytecode}).send(sendOptions)
-    return token.options.address
 }
 
 async function readBalances(path) {
@@ -123,4 +176,4 @@ async function readBalances(path) {
     })
 }
 
-start().catch(e => { console.error(e.stack) })
+start().catch(error)
