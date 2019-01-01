@@ -1,10 +1,8 @@
 const Monoplasma = require("./monoplasma")
-const { mergeEventLists, replayEvents, replayEvent } = require("./ethSync")
+const { mergeEventLists, replayEvents, replayEvent, throwIfSetButNotContract } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
-
-const { throwIfSetButNotContract } = require("./src/ethSync")
 
 module.exports = class MonoplasmaOperator {
 
@@ -23,9 +21,8 @@ module.exports = class MonoplasmaOperator {
         this.state.gasPrice = this.state.gasPrice || 4000000000  // 4 gwei
     }
 
-    async start(contractAddress) {
+    async start() {
         await throwIfSetButNotContract(this.web3, this.state.contractAddress, "startState contractAddress")
-        this.state.contractAddress = contractAddress
 
         this.log("Initializing...")
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
@@ -76,10 +73,13 @@ module.exports = class MonoplasmaOperator {
     }
 
     async publishBlock(blockNumber) {
-        const bnum = blockNumber || await this.web3.eth.getBlockNumber()
+        if (blockNumber <= this.lastBlockNumber) {
+            throw new Error(`Block #${this.lastBlockNumber} has alredy been published, can't publish #${blockNumber}`)
+        }
+        this.lastBlockNumber = blockNumber || await this.web3.eth.getBlockNumber()
         const hash = this.plasma.getRootHash()
         const ipfsHash = ""
-        return this.contract.methods.recordBlock(bnum, hash, ipfsHash).send({
+        return this.contract.methods.recordBlock(this.lastBlockNumber, hash, ipfsHash).send({
             from: this.address,
             gas: 4000000,
             gasPrice: this.state.gasPrice

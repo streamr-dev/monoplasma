@@ -8,6 +8,8 @@ const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
 const { loadState, saveState } = require("./src/fileStore")
 const deployDemoToken = require("./src/deployDemoToken")
 
+const MonoplasmaJson = require("./build/contracts/Monoplasma.json")
+
 const {
     ETHEREUM_SERVER,
     ETHEREUM_NETWORK_ID,
@@ -19,6 +21,11 @@ const {
     RESET,
     STORE,
     QUIET,
+
+    // these will be used  1) for demo token  2) if TOKEN_ADDRESS doesn't support name() and symbol()
+    TOKEN_SYMBOL,
+    TOKEN_NAME,
+    TOKEN_DECIMALS,
 
     // if ETHEREUM_SERVER isn't specified, start a local Ethereum simulator (Ganache) in given port
     GANACHE_PORT,
@@ -55,15 +62,15 @@ async function start() {
     const opts = {
         from: account.address,
         gas: 4000000,
-        gasPrice:
+        gasPrice: 4000000000,
     }
 
     // ignore the saved config / saved state if using ganache
     // augment the config / saved state with variables that may be useful for the validators
     const config = RESET || !ethereumServer ? {} : await loadState(storePath)
-    config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, opts, log)
-    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, blockFreezePeriodSeconds, opts, log)
+    config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
     config.blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezePeriodSeconds || 3600
+    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezePeriodSeconds, opts, log)
     config.ethereumServer = ethereumServer
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.operatorAddress = account.address
@@ -73,18 +80,22 @@ async function start() {
 
     //    event BlockCreated(uint rootChainBlockNumber, uint timestamp, bytes32 rootHash, string ipfsHash);
     const blockFilter = operator.contract.events.BlockCreated()
-    const blockPromise = () => new Promise((done, fail) => {
-        blockFilter.on("data", e => {
+    const blockPromise = new Promise((done, fail) => {
+        const filter = blockFilter.on("data", e => {
+            filter.unsubscribe()
             done(e.returnValues.rootHash)
         })
-    }
+    })
 
-    await operator.token.methods.mint(operator.options.address, 1000)
-    const hash = await blockPromise()
+    log("Minting tokens...")
+    await operator.token.methods.mint(operator.contract.options.address, 1000)
+    log("Waiting...")
+    const hash = await blockPromise
+    log(hash)
 }
 
 async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
-    const tokenAddress = oldTokenAddress || await deployToken(web3, sendOptions, log)
+    const tokenAddress = oldTokenAddress || await deployToken(web3, TOKEN_NAME, TOKEN_SYMBOL, sendOptions, log)
     log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
     const Monoplasma = new web3.eth.Contract(MonoplasmaJson.abi)
     const monoplasma = await Monoplasma.deploy({

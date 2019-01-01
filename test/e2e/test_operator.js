@@ -12,7 +12,7 @@ async function start() {
     const ganacheUrl = await startGanache()
     const web3 = new Web3(ganacheUrl)
 
-    const tokenAddress = await deployDemoToken(web3, opts, console.log)
+    const tokenAddress = await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, console.log)
 
     const proc = spawn("./start_operator.js", [], {
         env: {
