@@ -38,9 +38,6 @@ const error = e => {
     process.exit(1)
 }
 
-// Block freeze functionality is kind of pointless for airdrops, since all distributed tokens are operator's to begin with
-const blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || 1
-
 // network ids: 1 = mainnet, 2 = morden, 3 = ropsten, 4 = rinkeby (current testnet)
 const defaultServers = {
     "1": "wss://mainnet.infura.io/ws",
@@ -147,13 +144,13 @@ async function start() {
     log("DONE")
 }
 
-async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
+async function deployContract(web3, oldTokenAddress, sendOptions, log) {
     const tokenAddress = oldTokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, sendOptions, log)
-    log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
+    log(`Deploying root chain contract (token @ ${tokenAddress})...`)
     const Airdrop = new web3.eth.Contract(AirdropJson.abi)
     const airdrop = await Airdrop.deploy({
         data: AirdropJson.bytecode,
-        arguments: [tokenAddress, blockFreezePeriodSeconds]
+        arguments: [tokenAddress]
     }).send(sendOptions)
     return airdrop.options.address
 }
