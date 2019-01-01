@@ -12,6 +12,9 @@ const Monoplasma = require("./src/monoplasma")
 const deployDemoToken = require("./src/deployDemoToken")
 const formatDecimals = require("./src/formatDecimals")
 
+const TokenJson = require("./build/contracts/DemoToken.json")
+const AirdropJson = require("./build/contracts/Airdrop.json")
+
 const {
     INPUT_FILE,
     ETHEREUM_SERVER,
@@ -44,9 +47,6 @@ const defaultServers = {
     "3": "wss://ropsten.infura.io/ws",
     "4": "wss://rinkeby.infura.io/ws",
 }
-
-const TokenJson = require("./build/contracts/DemoToken.json")
-const AirdropJson = require("./build/contracts/Airdrop.json")
 
 async function start() {
     const ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]

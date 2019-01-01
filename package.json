@@ -5,11 +5,11 @@
   "main": "deploy.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
-    "build": "truffle compile && ./flatten",
+    "build": "rm -f build/contracts/* && truffle compile && ./flatten",
     "test-js": "./node_modules/.bin/mocha test/mocha",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run test-js && npm run test-contracts",
-    "clean": "rm -f build/contracts/* && rm -f static_web/data/* && npm run build"
+    "clean": "rm -f build/contracts/* && rm -f static_web/data/* && rm -rf static_web/airdrop/0x*"
   },
   "author": "",
   "license": "AGPL-3.0",
