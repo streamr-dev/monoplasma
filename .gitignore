@@ -1,3 +1,4 @@
 node_modules
 .idea
 build/contracts
+static_web/airdrop/0x*

@@ -1,28 +1,46 @@
 #!/usr/bin/env node
+const util = require("util")
+const exec = util.promisify(require("child_process").exec)
+const { spawn } = require("child_process")
 
-const { spawn } = require('child_process');
 const fs = require("fs")
 const assert = require("assert")
 
 // project root dir
-const cwd = __dirname.split("/test/e2e")[0],
+const cwd = __dirname.split("/test/e2e")[0]
 
-log("Mint tokens into the admin account...")
-const totalTokens = balances.map(account => account.balance).reduce((x, sum) => sum + x, 0)
-resp = await token.methods.mint(airdrop.options.address, totalTokens).send()
-log("Events produced: " + Object.keys(resp.events))
-log(JSON.stringify(resp.events.Transfer))
+function sleep(ms){
+    return new Promise(resolve => {
+        setTimeout(resolve,ms)
+    })
+}
 
-const proc = spawn("./start_airdrop.js", [] {
-    cwd
-    env: {
-        "INITIAL_BALANCES_FILE": "10_addresses.txt",
-    }
+describe("start_airdrop", () => {
+    it("should run correctly", async () => {
+        await exec("rm -rf "+cwd+"/static_web/airdrop/0x*") //clean up previously generated files
+
+        const env = Object.create( process.env )
+        env.INPUT_FILE = "10_addresses.txt"
+        const airdrop = spawn("node", ["start_airdrop.js"], { env: env })
+        airdrop.stdout.on("data", (data) => {
+            console.log(`${data}`)
+        })
+        airdrop.stderr.on("data", (data) => {
+            console.log(`stderr: ${data}`)
+        })
+        airdrop.on("close", (code) => {
+            console.log(`child process exited with code ${code}`)
+        })
+        airdrop.on("error", (err) => {
+            console.log(err)
+        })
+
+        await sleep(7000)// need to wait for start_airdrop to generate files before checking their content
+
+        const address = "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab"
+        const balance = "3.5"
+        const generatedPath = `${cwd}/static_web/airdrop/${address}/index.html`
+        const generated = fs.readFileSync(generatedPath)
+        assert.ok(generated.indexOf(balance) > -1, "Airdrop token amount not mentioned in " + generatedPath)
+    }).timeout(10000)
 })
-
-// row from 10_addresses.txt
-const address = "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab"
-const balance = "2888772330386780185465000"
-const generatedPath = cwd + "/static_web/airdrop/0xdc353aa3d81fc3d67eb49f443df258029b01d8ab/index.html"
-const generated = fs.readFileSync(generatedPath)
-assert.ok(generated.indexOf(balance.slice(0, -18)) > -1, "Airdrop token amount not mentioned in " + generatedPath)

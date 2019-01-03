@@ -70,11 +70,12 @@ module.exports = class MonoplasmaOperator {
         const allEvents = mergeEventLists(transferEvents, joinPartEvents)
         replayEvents(this.plasma, allEvents)
         this.state.rootChainBlock = toBlock
+        this.state.balances = this.plasma.getMembers()
     }
 
     async publishBlock(blockNumber) {
         if (blockNumber <= this.lastBlockNumber) {
-            throw new Error(`Block #${this.lastBlockNumber} has alredy been published, can't publish #${blockNumber}`)
+            throw new Error(`Block #${this.lastBlockNumber} has already been published, can't publish #${blockNumber}`)
         }
         this.lastBlockNumber = blockNumber || await this.web3.eth.getBlockNumber()
         const hash = this.plasma.getRootHash()
