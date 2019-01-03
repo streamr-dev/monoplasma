@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8eea53c9-8626-4c3c-81e1-23d73c5cb620" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/monoplasmaOperator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/monoplasmaOperator.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_airdrop.js" beforeDir="false" afterPath="$PROJECT_DIR$/start_airdrop.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static_web/airdrop/template/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/static_web/airdrop/template/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/e2e/test_airdrop.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/e2e/test_airdrop.js" afterDir="false" />
-    </list>
+    <list default="true" id="8eea53c9-8626-4c3c-81e1-23d73c5cb620" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,8 +98,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/e2e/test_airdrop.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="295">
-              <caret line="27" column="45" lean-forward="true" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
+            <state relative-caret-position="179">
+              <caret line="27" column="45" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -263,7 +256,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546511489593" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546511515978" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -388,7 +381,7 @@
       <workItem from="1544542211626" duration="14201000" />
       <workItem from="1544698047492" duration="19689000" />
       <workItem from="1545379087641" duration="521000" />
-      <workItem from="1546416175246" duration="27253000" />
+      <workItem from="1546416175246" duration="27736000" />
     </task>
     <servers />
   </component>
@@ -425,7 +418,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="63363000" />
+    <option name="totallyTimeSpent" value="63846000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
@@ -741,8 +734,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/e2e/test_airdrop.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="295">
-          <caret line="27" column="45" lean-forward="true" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
+        <state relative-caret-position="179">
+          <caret line="27" column="45" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
         </state>
       </provider>
     </entry>
