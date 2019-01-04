@@ -21,6 +21,7 @@ describe("start_airdrop", () => {
 
         const env = Object.create( process.env )
         env.INPUT_FILE = "10_addresses.txt"
+        env.GANACHE_PORT = 8546
         const airdrop = spawn("node", ["start_airdrop.js"], { env: env })
         airdrop.stdout.on("data", (data) => {
             console.log(`${data}`)
@@ -42,6 +43,5 @@ describe("start_airdrop", () => {
         const generatedPath = `${cwd}/static_web/airdrop/${address}/index.html`
         const generated = fs.readFileSync(generatedPath)
         assert.ok(generated.indexOf(balance) > -1, "Airdrop token amount not mentioned in " + generatedPath)
-        await exec("pkill -f ganache-cli") //need to exit ganache for subsequent tests
     }).timeout(10000)
 })

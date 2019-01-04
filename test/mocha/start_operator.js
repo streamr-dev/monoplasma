@@ -50,7 +50,5 @@ describe("start_operator", () => {
             }
         ]
         assert.deepStrictEqual(generatedState.balances, expectedBalances)
-        // await exec("pkill -f ganache-cli") //need to exit ganache for subsequent tests
-        await exec("kill $(ps | grep [g]anache-cli | grep -Eo '^[^ ]+')") // TravisCI doesn't know pkill apparently
     }).timeout(10000)
 })
