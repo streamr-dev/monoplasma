@@ -55,8 +55,8 @@ function replayEvent(plasma, e) {
             break
         }
         case "Transfer": {
-            log(` => ${e.returnValues.tokens} received`)
-            const income = e.returnValues.tokens
+            log(`${e.returnValues.value} tokens received`)
+            const income = e.returnValues.value
             plasma.addRevenue(income)
             break
         }

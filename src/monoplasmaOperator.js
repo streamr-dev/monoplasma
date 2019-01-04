@@ -9,7 +9,7 @@ module.exports = class MonoplasmaOperator {
     constructor(web3, startState, saveStateFunc, logFunc, errorFunc) {
         this.web3 = web3
         this.state = startState
-        this.saveState = saveStateFunc
+        this.saveStateFunc = saveStateFunc
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
         this.publishedBlocks = []
@@ -35,26 +35,36 @@ module.exports = class MonoplasmaOperator {
         const playbackStartingBlock = this.state.rootChainBlock + 1 || 0
         if (playbackStartingBlock <= latestBlock) {
             await this.playback(playbackStartingBlock, latestBlock)
+            this.lastBlockNumber = this.state.rootChainBlock + 1
         }
 
         this.log("Listening to root chain events...")
         const transferFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
-        transferFilter.on("data", e => { this.onTokensReceived(e).then() })
+        transferFilter.on("data", event => this.onTokensReceived(event))
         transferFilter.on("changed", e => { this.error("Event removed in re-org!", e) })
         transferFilter.on("error", this.error)
-        const joinPartFilter = this.contract.events.allEvents()
-        joinPartFilter.on("data", replayEvent.bind(null, this.plasma))
-        joinPartFilter.on("changed", e => { this.error("Event removed in re-org!", e) })
-        joinPartFilter.on("error", this.error)
+        const recipientAddedFilter = this.contract.events.RecipientAdded()
+        recipientAddedFilter.on("data", event => {replayEvent(this.plasma, event)})
+        recipientAddedFilter.on("changed", error => this.error("Event removed in re-org!", error))
+        recipientAddedFilter.on("error", this.error)
+        const recipientRemovedFilter = this.contract.events.RecipientRemoved()
+        recipientRemovedFilter.on("data", event => {replayEvent(this.plasma, event)})
+        recipientRemovedFilter.on("changed", error => this.error("Event removed in re-org!", error))
+        recipientRemovedFilter.on("error", this.error)
 
-        await this.saveState(this.state)
+        await this.saveState()
+    }
+
+    async saveState(){
+        this.state.balances = this.plasma.getMembers()
+        this.saveStateFunc(this.state)
     }
 
     async onTokensReceived(event) {
-        replayEvent(this.plasma)
+        replayEvent(this.plasma, event)
         // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
         if (event.blockNumber >= this.lastBlockNumber + this.minIntervalBlocks) {
-            const ee = this.publishBlock(event.blockNumber)
+            const ee = await this.publishBlock(event.blockNumber)
             if (this.explorerUrl) {
                 ee.on("transactionHash", hash => {
                     this.log(`Sent tx to ${this.explorerUrl}${hash}`)
@@ -64,7 +74,7 @@ module.exports = class MonoplasmaOperator {
     }
 
     async playback(fromBlock, toBlock) {
-        this.log(`  Playing back blocks ${fromBlock}...${toBlock}`)
+        this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
         const joinPartEvents = await this.contract.getPastEvents("allEvents", { fromBlock, toBlock })
         const allEvents = mergeEventLists(transferEvents, joinPartEvents)
