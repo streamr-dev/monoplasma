@@ -50,5 +50,6 @@ describe("start_operator", () => {
             }
         ]
         assert.deepStrictEqual(generatedState.balances, expectedBalances)
+        await exec("pkill -f ganache-cli") //need to exit ganache for subsequent tests
     }).timeout(10000)
 })

@@ -23,7 +23,7 @@ describe("monoplasmaOperator", () => {
         return {
             event: "Transfer",
             returnValues: {
-                tokens,
+                value: tokens,
             }
         }
     }
@@ -54,7 +54,14 @@ describe("monoplasmaOperator", () => {
                 }
                 return listener
             },
-            allEvents: () => {
+            RecipientAdded: () => {
+                const listener = {}
+                listener.on = (eventCode, func) => {
+                    listener.eventCode = func
+                }
+                return listener
+            },
+            RecipientRemoved: () => {
                 const listener = {}
                 listener.on = (eventCode, func) => {
                     listener.eventCode = func
@@ -100,7 +107,7 @@ describe("monoplasmaOperator", () => {
 
     it("Monoplasma member is saved to the state", async () => {
         const operator = getOperator(savedState, 10, [], [getRecipientAddedEvent("0x5ffe8050112448ed2e4409be47e1a50ebac0b299")])
-        const spySaveState = sinon.spy(operator, "saveState")
+        const spySaveState = sinon.spy(operator, "saveStateFunc")
         await operator.start()
         assert(spySaveState.calledOnce)
         const newBalances = [
@@ -113,7 +120,7 @@ describe("monoplasmaOperator", () => {
 
     it("Monoplasma member is removed from the state", async () => {
         const operator = getOperator(savedState, 10, [], [getRecipientRemovedEvent("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2")])
-        const spySaveState = sinon.spy(operator, "saveState")
+        const spySaveState = sinon.spy(operator, "saveStateFunc")
         await operator.start()
         assert(spySaveState.calledOnce)
         const newBalances = [
@@ -124,7 +131,7 @@ describe("monoplasmaOperator", () => {
 
     it("Tokens are shared between members and the state is updated", async () => {
         const operator = getOperator(savedState, 10, [], [getTransferEvent(100)])
-        const spySaveState = sinon.spy(operator, "saveState")
+        const spySaveState = sinon.spy(operator, "saveStateFunc")
         await operator.start()
         assert(spySaveState.calledOnce)
         const newBalances = [

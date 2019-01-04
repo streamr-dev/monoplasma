@@ -3,11 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="8eea53c9-8626-4c3c-81e1-23d73c5cb620" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ethSync.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/ethSync.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monoplasmaOperator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/monoplasmaOperator.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/startGanache.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/startGanache.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_operator.js" beforeDir="false" afterPath="$PROJECT_DIR$/start_operator.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static_web/data/operator.json" beforeDir="false" afterPath="$PROJECT_DIR$/static_web/data/operator.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/mocha/start_airdrop.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/start_airdrop.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/mocha/start_operator.js" beforeDir="false" afterPath="$PROJECT_DIR$/test/mocha/start_operator.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -50,14 +49,14 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="js" value="8730" />
+          <entry key="js" value="8852" />
           <entry key="json" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="JSON" value="8" />
-          <entry key="JavaScript" value="8730" />
+          <entry key="JavaScript" value="8852" />
         </counts>
       </usages-collector>
     </session>
@@ -67,8 +66,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="952">
-              <caret line="56" lean-forward="true" selection-start-line="56" selection-end-line="56" />
+            <state relative-caret-position="350">
+              <caret line="41" column="51" lean-forward="true" selection-start-line="41" selection-start-column="51" selection-end-line="41" selection-end-column="51" />
             </state>
           </provider>
         </entry>
@@ -76,8 +75,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/start_operator.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="77" column="46" selection-start-line="77" selection-start-column="40" selection-end-line="77" selection-end-column="46" />
+            <state relative-caret-position="668">
+              <caret line="102" column="37" lean-forward="true" selection-start-line="102" selection-start-column="37" selection-end-line="102" selection-end-column="37" />
             </state>
           </provider>
         </entry>
@@ -85,8 +84,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/mocha/start_airdrop.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-10">
-              <caret line="9" column="40" selection-start-line="9" selection-start-column="40" selection-end-line="9" selection-end-column="40" />
+            <state relative-caret-position="399">
+              <caret line="37" column="21" selection-start-line="37" selection-start-column="21" selection-end-line="37" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -95,16 +94,16 @@
         <entry file="file://$PROJECT_DIR$/test/mocha/ethSync.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="578">
-              <caret line="34" column="24" lean-forward="true" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
+              <caret line="34" column="24" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/mocha/start_operator.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="37" column="22" selection-start-line="37" selection-start-column="22" selection-end-line="37" selection-end-column="22" />
+            <state relative-caret-position="578">
+              <caret line="52" column="86" selection-start-line="52" selection-start-column="86" selection-end-line="52" selection-end-column="86" />
             </state>
           </provider>
         </entry>
@@ -112,17 +111,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/startGanache.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="22" column="43" lean-forward="true" selection-start-line="22" selection-start-column="43" selection-end-line="22" selection-end-column="43" />
+            <state relative-caret-position="187">
+              <caret line="11" column="17" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="17" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-430">
-              <caret line="56" column="21" selection-start-line="56" selection-start-column="12" selection-end-line="56" selection-end-column="21" />
+            <state relative-caret-position="425">
+              <caret line="25" column="23" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -187,16 +186,16 @@
         <option value="$PROJECT_DIR$/test/mocha/merkletree.js" />
         <option value="$PROJECT_DIR$/test/mocha/monoplasma.js" />
         <option value="$PROJECT_DIR$/test/mocha/monoplasmaMember.js" />
-        <option value="$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js" />
         <option value="$PROJECT_DIR$/start_airdrop.js" />
         <option value="$PROJECT_DIR$/test/e2e/test_airdrop.js" />
-        <option value="$PROJECT_DIR$/test/mocha/start_airdrop.js" />
         <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/src/startGanache.js" />
         <option value="$PROJECT_DIR$/src/ethSync.js" />
-        <option value="$PROJECT_DIR$/src/monoplasmaOperator.js" />
         <option value="$PROJECT_DIR$/start_operator.js" />
+        <option value="$PROJECT_DIR$/src/startGanache.js" />
         <option value="$PROJECT_DIR$/test/mocha/start_operator.js" />
+        <option value="$PROJECT_DIR$/test/mocha/start_airdrop.js" />
+        <option value="$PROJECT_DIR$/src/monoplasmaOperator.js" />
+        <option value="$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js" />
       </list>
     </option>
   </component>
@@ -296,7 +295,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546614153353" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546616134220" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -326,7 +325,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Node.js.start_operator.js">
+  <component name="RunManager" selected="Mocha.monoplasmaOperator">
     <configuration name="start_operator.js" type="NodeJSConfigurationType" factoryName="Node.js" temporary="true" nameIsGenerated="true" path-to-js-file="start_operator.js" working-dir="$PROJECT_DIR$">
       <method v="2" />
     </configuration>
@@ -344,7 +343,7 @@
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="monoplasmaOperator.Tokens are shared between members and the state is updated" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
+    <configuration name="monoplasmaOperator.Monoplasma member is saved to the state" type="mocha-javascript-test-runner" factoryName="Mocha" temporary="true" nameIsGenerated="true">
       <node-interpreter>project</node-interpreter>
       <node-options />
       <working-directory>$PROJECT_DIR$</working-directory>
@@ -355,7 +354,7 @@
       <test-file>$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js</test-file>
       <test-names>
         <name value="monoplasmaOperator" />
-        <name value="Tokens are shared between members and the state is updated" />
+        <name value="Monoplasma member is saved to the state" />
       </test-names>
       <method v="2" />
     </configuration>
@@ -389,18 +388,18 @@
     </configuration>
     <list>
       <item itemvalue="Mocha.monoplasmaOperator" />
-      <item itemvalue="Mocha.monoplasmaOperator.Tokens are shared between members and the state is updated" />
       <item itemvalue="Mocha.runs correctly" />
       <item itemvalue="Mocha.start_airdrop" />
       <item itemvalue="Node.js.start_operator.js" />
+      <item itemvalue="Mocha.monoplasmaOperator.Monoplasma member is saved to the state" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Mocha.monoplasmaOperator" />
+        <item itemvalue="Mocha.monoplasmaOperator.Monoplasma member is saved to the state" />
         <item itemvalue="Node.js.start_operator.js" />
         <item itemvalue="Mocha.start_airdrop" />
         <item itemvalue="Mocha.runs correctly" />
-        <item itemvalue="Mocha.monoplasmaOperator" />
-        <item itemvalue="Mocha.monoplasmaOperator.Tokens are shared between members and the state is updated" />
       </list>
     </recent_temporary>
   </component>
@@ -417,32 +416,11 @@
       <workItem from="1544542211626" duration="14201000" />
       <workItem from="1544698047492" duration="19689000" />
       <workItem from="1545379087641" duration="521000" />
-      <workItem from="1546416175246" duration="41273000" />
+      <workItem from="1546416175246" duration="43015000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="runs_correctly - 2019.01.02 at 17h 53m 11s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 17h 53m 40s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 17h 57m 28s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 17h 57m 40s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 17h 58m 10s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 18h 01m 35s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="runs_correctly - 2019.01.02 at 18h 02m 09s.xml">
-      <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
     <history-entry file="runs_correctly - 2019.01.03 at 09h 42m 09s.xml">
       <configuration name="runs correctly" configurationId="mocha-javascript-test-runner" />
     </history-entry>
@@ -452,15 +430,36 @@
     <history-entry file="start_airdrop - 2019.01.03 at 10h 32m 11s.xml">
       <configuration name="start_airdrop" configurationId="mocha-javascript-test-runner" />
     </history-entry>
+    <history-entry file="monoplasmaOperator - 2019.01.04 at 16h 30m 07s.xml">
+      <configuration name="monoplasmaOperator" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator - 2019.01.04 at 16h 30m 37s.xml">
+      <configuration name="monoplasmaOperator" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator_Monoplasma_member_is_saved_to_the_state - 2019.01.04 at 16h 31m 53s.xml">
+      <configuration name="monoplasmaOperator.Monoplasma member is saved to the state" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator_Monoplasma_member_is_saved_to_the_state - 2019.01.04 at 16h 32m 04s.xml">
+      <configuration name="monoplasmaOperator.Monoplasma member is saved to the state" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator_Monoplasma_member_is_saved_to_the_state - 2019.01.04 at 16h 32m 44s.xml">
+      <configuration name="monoplasmaOperator.Monoplasma member is saved to the state" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator - 2019.01.04 at 16h 33m 32s.xml">
+      <configuration name="monoplasmaOperator" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="monoplasmaOperator - 2019.01.04 at 16h 34m 21s.xml">
+      <configuration name="monoplasmaOperator" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="77383000" />
+    <option name="totallyTimeSpent" value="79125000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1680" y="23" width="1920" height="1057" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1328125" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1328125" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -469,8 +468,8 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.30933064" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39958158" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.30933064" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39858013" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -502,6 +501,12 @@
           <url>file://$PROJECT_DIR$/src/merkletree.js</url>
           <line>64</line>
           <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js</url>
+          <line>117</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="19" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -741,13 +746,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/startGanache.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="43" lean-forward="true" selection-start-line="22" selection-start-column="43" selection-end-line="22" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/mocha/monoplasmaMember.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -755,24 +753,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-430">
-          <caret line="56" column="21" selection-start-line="56" selection-start-column="12" selection-end-line="56" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/mocha/start_airdrop.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-10">
-          <caret line="9" column="40" selection-start-line="9" selection-start-column="40" selection-end-line="9" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/mocha/ethSync.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="578">
-          <caret line="34" column="24" lean-forward="true" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
+          <caret line="34" column="24" selection-start-line="34" selection-start-column="24" selection-end-line="34" selection-end-column="24" />
         </state>
       </provider>
     </entry>
@@ -790,24 +774,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
+    <entry file="file://$PROJECT_DIR$/src/startGanache.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="952">
-          <caret line="56" lean-forward="true" selection-start-line="56" selection-end-line="56" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/start_operator.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="77" column="46" selection-start-line="77" selection-start-column="40" selection-end-line="77" selection-end-column="46" />
+        <state relative-caret-position="187">
+          <caret line="11" column="17" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/mocha/start_operator.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="37" column="22" selection-start-line="37" selection-start-column="22" selection-end-line="37" selection-end-column="22" />
+        <state relative-caret-position="578">
+          <caret line="52" column="86" selection-start-line="52" selection-start-column="86" selection-end-line="52" selection-end-column="86" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/mocha/start_airdrop.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="37" column="21" selection-start-line="37" selection-start-column="21" selection-end-line="37" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/start_operator.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="668">
+          <caret line="102" column="37" lean-forward="true" selection-start-line="102" selection-start-column="37" selection-end-line="102" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/monoplasmaOperator.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="350">
+          <caret line="41" column="51" lean-forward="true" selection-start-line="41" selection-start-column="51" selection-end-line="41" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/mocha/MonoplasmaOperator.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="23" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
         </state>
       </provider>
     </entry>

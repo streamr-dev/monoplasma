@@ -35,12 +35,13 @@ describe("start_airdrop", () => {
             console.log(err)
         })
 
-        await sleep(7000)// need to wait for start_airdrop to generate files before checking their content
+        await sleep(5000)// need to wait for start_airdrop to generate files before checking their content
 
         const address = "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab"
         const balance = "3.5"
         const generatedPath = `${cwd}/static_web/airdrop/${address}/index.html`
         const generated = fs.readFileSync(generatedPath)
         assert.ok(generated.indexOf(balance) > -1, "Airdrop token amount not mentioned in " + generatedPath)
+        await exec("pkill -f ganache-cli") //need to exit ganache for subsequent tests
     }).timeout(10000)
 })
