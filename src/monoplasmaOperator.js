@@ -17,10 +17,13 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         this.state.gasPrice = this.state.gasPrice || 4000000000  // 4 gwei
     }
 
-    async onTokensReceived(event) {
-        super.onTokensReceived(event)
+    async start() {
+        await super.start()
+        this.filters.tokensReceived.on("data", event => { this.onTokensReceived(event) })
+    }
 
-        // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
+    // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
+    async onTokensReceived(event) {
         if (event.blockNumber >= this.lastBlockNumber + this.minIntervalBlocks) {
             const ee = await this.publishBlock(event.blockNumber)
             if (this.explorerUrl) {

@@ -39,18 +39,16 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to root chain events...")
-        this.filters.transfer = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
-            .on("data", event => { this.onTokensReceived(event) })
-            .on("changed", event => { this.error("Event removed in re-org!", event) })
-            .on("error", this.error)
+        this.filters.tokensReceived = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.filters.recipientAdded = this.contract.events.RecipientAdded({})
-            .on("data", event => { replayEvent(this.plasma, event) })
-            .on("changed", event => { this.error("Event removed in re-org!", event) })
-            .on("error", this.error)
-        this.filters.RecipientRemoved = this.contract.events.RecipientRemoved({})
-            .on("data", event => { replayEvent(this.plasma, event) })
-            .on("changed", event => { this.error("Event removed in re-org!", event)} )
-            .on("error", this.error)
+        this.filters.recipientRemoved = this.contract.events.RecipientRemoved({})
+
+        Object.values(this.filters).forEach(filter => {
+            filter
+                .on("data", event => { replayEvent(this.plasma, event) })
+                .on("changed", event => { this.error("Event removed in re-org!", event) })
+                .on("error", this.error)
+        })
 
         await this.saveState()
     }
@@ -64,10 +62,6 @@ module.exports = class MonoplasmaWatcher {
     async saveState(){
         this.state.balances = this.plasma.getMembers()
         this.saveStateFunc(this.state)
-    }
-
-    async onTokensReceived(event) {
-        replayEvent(this.plasma, event)
     }
 
     async playback(fromBlock, toBlock) {
