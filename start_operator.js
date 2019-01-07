@@ -87,11 +87,41 @@ async function start() {
         })
     })
 
-    log("Minting tokens...")
-    await operator.token.methods.mint(operator.contract.options.address, 1000)
+    log("Root chain event: Adding member 0xa6743286b55f36afa5f4e7e35b6a80039c452dbd...")
+    await operator.contract.methods.addRecipient("0xa6743286b55f36afa5f4e7e35b6a80039c452dbd").send(opts)
+    log("Current monoplasma members and their earnings: ")
+    log(operator.plasma.getMembers())
+
+    log("Root chain event: Minting 1000 tokens...")
+    await operator.token.methods.mint(operator.contract.options.address, 1000).send(opts)
+    console.log("Current monoplasma members and their earnings: ")
+    console.log(operator.plasma.getMembers())
+
+    log("Root chain event: Adding member 0x795063367ebfeb994445d810b94461274e4f109a...")
+    await operator.contract.methods.addRecipient("0x795063367ebfeb994445d810b94461274e4f109a").send(opts)
+    log("Current monoplasma members and their earnings: ")
+    log(operator.plasma.getMembers())
+
+    log("Root chain event: Adding member 0x505d48552ac17ffd0845ffa3783c2799fd4aad78...")
+    await operator.contract.methods.addRecipient("0x505d48552ac17ffd0845ffa3783c2799fd4aad78").send(opts)
+    log("Current monoplasma members and their earnings: ")
+    log(operator.plasma.getMembers())
+
+    log("Root chain event: removing member 0x795063367ebfeb994445d810b94461274e4f109a...")
+    await operator.contract.methods.removeRecipient("0x795063367ebfeb994445d810b94461274e4f109a").send(opts)
+    log("Current monoplasma members and their earnings: ")
+    log(operator.plasma.getMembers())
+
+    log("Root chain event: Minting 500 tokens...")
+    await operator.token.methods.mint(operator.contract.options.address, 500).send(opts)
+    console.log("Current monoplasma members and their earnings: ")
+    console.log(operator.plasma.getMembers())
+
     log("Waiting...")
     const hash = await blockPromise
-    log(hash)
+    log(`More than 2 blocks since last publication => Block created and published with hash: ${hash}`)
+
+    await operator.saveState()
 }
 
 async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {

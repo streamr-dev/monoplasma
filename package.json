@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "build": "rm -f build/contracts/* && truffle compile && ./flatten",
-    "test-js": "./node_modules/.bin/mocha test/mocha",
+    "test-js": "./node_modules/.bin/mocha test/mocha  --exit",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run test-js && npm run test-contracts",
     "clean": "rm -f build/contracts/* && rm -f static_web/data/* && rm -rf static_web/airdrop/0x*"
@@ -39,6 +39,7 @@
     "sinon": "^7.2.2",
     "source-map-support": "^0.5.9",
     "truffle-resolver": "^4.0.4",
-    "web3": "1.0.0-beta.37"
+    "web3": "1.0.0-beta.37",
+    "websocket": "^1.0.28"
   }
 }

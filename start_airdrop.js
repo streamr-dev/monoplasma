@@ -78,7 +78,7 @@ async function start() {
 
     const balances = INPUT_FILE ? await readBalances(INPUT_FILE) : {}
 
-    const contractAddress = CONTRACT_ADDRESS || await deployContract(web3, TOKEN_ADDRESS, blockFreezePeriodSeconds, contractDefaults, log)
+    const contractAddress = CONTRACT_ADDRESS || await deployContract(web3, TOKEN_ADDRESS, contractDefaults, log)
     const airdrop = new web3.eth.Contract(AirdropJson.abi, contractAddress, contractDefaults)
     const tokenAddress = await airdrop.methods.token().call()
     const token = new web3.eth.Contract(TokenJson.abi, tokenAddress, contractDefaults)
@@ -129,14 +129,14 @@ async function start() {
             .replace("TOKENNAME", web3.toWei)
             .replace("TOKENAMOUNT", formatDecimals(account.balance, tokenDecimals))
             .replace("SYMBOL", tokenSymbol)
-            .replace("ADDRESS", account.balance)
+            .replace("ADDRESS", account.address)
             .replace("BLOCKNUMBER", blockNumber)
             .replace("WEIAMOUNT", account.balance)
             .replace("PROOFJSON", JSON.stringify(proof))
             .replace("CONTRACTADDR", contractAddress)
             .replace("CONTRACTABI", JSON.stringify(AirdropJson.abi.filter(f => f.name === "proveSidechainBalance")))
             .replace("PROOFSTRING", proof.toString())
-        const dir = `./static_web/airdrop/${account.address}`
+        const dir = `./static_web/airdrop/${account.address.toLowerCase()}`
         if (!fs.existsSync(dir)) { await fs.mkdirSync(dir) }
         await fs.writeFile(`${dir}/index.html`, html)
     }
