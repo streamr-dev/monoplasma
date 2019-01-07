@@ -4,7 +4,9 @@ const BN = require("bn.js")
 const SortedMap = require("collections/sorted-map")
 
 /**
- * Member API to Monoplasma object
+ * Monoplasma state object
+ *
+ * Contains the logic of revenue distribution as well as current balances of/and participants
  */
 class Monoplasma {
     /**
