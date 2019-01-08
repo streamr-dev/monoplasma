@@ -15,7 +15,8 @@ class Monoplasma {
      */
     constructor(initialMembers) {
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
-        this.members = new SortedMap(Array.isArray(initialMembers) ? initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]) : [])
+        this.members = new SortedMap(Array.isArray(initialMembers) ?
+            initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]) : [])
         this.tree = new MerkleTree(this.members)
     }
 

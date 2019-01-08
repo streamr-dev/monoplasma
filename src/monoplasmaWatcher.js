@@ -45,12 +45,16 @@ module.exports = class MonoplasmaWatcher {
 
         Object.values(this.filters).forEach(filter => {
             filter
-                .on("data", event => { replayEvent(this.plasma, event) })
+                .on("data", event => { this.onEvent(event) })
                 .on("changed", event => { this.error("Event removed in re-org!", event) })
                 .on("error", this.error)
         })
 
         await this.saveState()
+    }
+
+    async onEvent(event) {
+        replayEvent(this.plasma, event)
     }
 
     async stop() {

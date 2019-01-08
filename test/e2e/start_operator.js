@@ -8,7 +8,7 @@ const assert = require("assert")
 const { loadState } = require("../../src/fileStore")
 
 // project root dir
-const cwd = __dirname.split("/test/mocha")[0]
+const cwd = __dirname.split("/test/e2e")[0]
 
 function sleep(ms){
     return new Promise(resolve => {

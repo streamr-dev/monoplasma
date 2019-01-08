@@ -1,5 +1,4 @@
 const Monoplasma = require("./monoplasma")
-const { mergeEventLists, replayEvents, replayEvent, throwIfSetButNotContract } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")

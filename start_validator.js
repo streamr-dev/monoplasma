@@ -40,8 +40,15 @@ async function start() {
     const ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID] || config.ethereumServer
     if (!ethereumServer) { throw new Error("ethereumServer not found in config, please supply ETHEREUM_SERVER or ETHEREUM_NETWORK_ID you'd like to connect to as environment variable!") }
 
+    let address = null
     const accountList = WATCHED_ACCOUNTS ? WATCHED_ACCOUNTS.split(",") : []
-    if (accountList.length > 0 && !ETHEREUM_PRIVATE_KEY) { throw new Error("Environment variable ETHEREUM_PRIVATE_KEY is needed to send exit transaction for the WATCHED_ACCOUNTS!") }
+    if (accountList.length > 0) {
+        if (!ETHEREUM_PRIVATE_KEY) { throw new Error("Environment variable ETHEREUM_PRIVATE_KEY is needed to send exit transaction for the WATCHED_ACCOUNTS!") }
+        const key = privateKey.startsWith("0x") ? privateKey : "0x" + privateKey
+        if (key.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
+        const account = web3.eth.accounts.wallet.add(key)
+        address = account.address
+    }
 
     // TODO: guess private key if missing?
     // with ganache, operator uses account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
@@ -49,7 +56,7 @@ async function start() {
 
     log(`Connecting to ${ethereumServer}...`)
     const web3 = new Web3(ethereumServer)
-    const validator = new Validator(web3, ETHEREUM_PRIVATE_KEY, config, accountList, log, error)
+    const validator = new Validator(accountList, address, web3, config, saveState.bind(null, storePath), log, error)
     await validator.start()
 }
 
