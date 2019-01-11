@@ -14,6 +14,8 @@ const router = require("../../src/monoplasmaRouter")(plasma)
 describe("Express app / monoplasma server", () => {
     const port = 3030
     const serverURL = `http://localhost:${port}`
+    const { fetchMember, fetchMembers, postMember } = require("../utils/operatorApi")(serverURL)
+
     let server
     before(() => {
         const app = express()
@@ -22,24 +24,6 @@ describe("Express app / monoplasma server", () => {
         server = http.createServer(app)
         server.listen(port)
     })
-
-    function fetchMembers() {
-        return fetch(`${serverURL}/members`)
-            .then(res => res.json())
-    }
-
-    function fetchMember(address) {
-        return fetch(`${serverURL}/members/${address}`)
-            .then(res => res.json())
-    }
-
-    function postMember(body) {
-        fetch(`${serverURL}/members`, {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers: { "Content-Type": "application/json" },
-        }).then(res => res.json())
-    }
 
     describe("Admin API", () => {
         it("initially has no members", async () => {

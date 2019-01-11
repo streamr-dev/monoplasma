@@ -11,11 +11,13 @@ Released   : 20120611
 -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<meta name="keywords" content="monoplasma airdrop demo" />
+	<meta name="keywords" content="monoplasma revenue sharing ethereum token sidechain demo" />
 	<meta name="description" content="See https://github.com/streamr-dev/monoplasma" />
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title>Airdrop demo</title>
+	<title>Revenue sharing demo</title>
 	<link href="http://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link href="template-style.css" rel="stylesheet" type="text/css" media="screen" />
 	<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
 <body>
@@ -25,87 +27,80 @@ Released   : 20120611
 			<h1><a href="#">Airdrop demo</a></h1>
 		</div>
 	</div>
-	<!-- end #header -->
-	<div id="menu">
-		<ul>
-			<li class="current_page_item"><a href="https://github.com/streamr-dev/monoplasma">Github</a></li>
-			<li><a href="#">Blog</a></li>
-			<li><a href="#">Photos</a></li>
-			<li><a href="#">About</a></li>
-			<li><a href="#">Links</a></li>
-			<li class="last"><a href="#">Contact</a></li>
-		</ul>
-	</div>
-	<div id="two-columns">
+	<div class="two-columns">
 		<div id="col1">
-			<h2>Withdraw tokens</h2>
-			<p>Pellentesque viverra vulputate enim. Aliquam erat volutpat. Pellentesque tristique ante ut risus. Quisque dictum. Integer nisl risus, sagittis convallis, rutrum id, elementum congue, nibh. Suspendisse dictum porta lectus. Donec placerat odio vel elit. Nullam ante orci, pellentesque eget, tempus quis, ultrices in, est. Curabitur sit amet nulla. </p>
-			<p>Donec placerat odio vel elit. Nullam ante orci, pellentesque eget, tempus quis, ultrices in, est. Curabitur sit amet nulla. Nam in massa. Sed vel tellus. Curabitur sem urna, consequat vel, suscipit in, mattis placerat, nulla. Sed ac leo. Pellentesque imperdiet.<br />
-			</p>
-			<p><a href="#" class="link-style2">Etiam posuere augue</a></p>
+			<h2>Ethereum user accounts</h2>
+			<div id="account-table-parent">
+				<table id="account-table"></table>
+			</div>
 		</div>
 		<div id="col2">
-			<h2>Balances</h2>
-			<div id="balances-table"></div>
-		</div>
-	</div>
-	<!-- end #menu -->
-	<div id="three-columns">
-		<div id="column1">
-			<h2>Maecenas luctus</h2>
-			<p>Etiam non felis. Donec ut ante. In id eros. Suspendisse lacus turpis, cursus egestas at sem. Mauris quam enim, molestie.</p>
-			<p><a href="#" class="link-style">Read More</a></p>
-		</div>
-		<div id="column2">
-			<h2>Fusce fringilla</h2>
-			<p>Etiam non felis. Donec ut ante. In id eros. Suspendisse lacus turpis, cursus egestas at sem. Mauris quam enim, molestie.</p>
-			<p><a href="#" class="link-style">Read More</a></p>
-		</div>
-		<div id="column3">
-			<h2>Praesent mattis</h2>
-			<p>Etiam non felis. Donec ut ante. In id eros. Suspendisse lacus turpis, cursus egestas at sem. Mauris quam enim, molestie.</p>
-			<p><a href="#" class="link-style">Read More</a></p>
-		</div>
-	</div>
-	<div id="welcome">
-		<h2 class="title"><a href="#">Welcome to SimpleDisplay</a></h2>
-		<div class="entry">
-			<p>This is <strong>SimpleDisplay </strong>, a free, fully standards-compliant CSS template designed by <a href="http://templated.co" rel="nofollow">TEMPLATED</a>.  The photo used in this template is from <a href="http://fotogrph.com/">Fotogrph</a>.  This free template is released under the <a href="http://creativecommons.org/licenses/by/3/">Creative Commons Attribution</a> license, so you’re pretty much free to do whatever you want with it (even use it commercially) provided you give us credit for it. Have fun :)</p>
-		</div>
-	</div>
-	<div id="page">
-		<div id="page-bgtop">
-			<div id="page-bgbtm">
-				<div id="content">
-					<div class="post">
-						<h2 class="title"><a href="#">Lorem ipsum sed aliquam</a></h2>
-						<div class="entry">
-							<p>Sed lacus. Donec lectus. Nullam pretium nibh ut turpis. Nam bibendum. In nulla tortor, elementum vel, tempor at, varius non, purus. Mauris vitae nisl nec metus placerat consectetuer. Donec ipsum. Proin imperdiet est. Phasellus <a href="#">dapibus semper urna</a>. Pellentesque ornare, orci in consectetuer hendrerit, urna elit eleifend nunc, ut consectetuer nisl felis ac diam. Etiam non felis. Donec ut ante. In id eros. Suspendisse lacus turpis, cursus egestas at sem.  Mauris quam enim, molestie in, rhoncus ut, lobortis a, est.	Pellentesque viverra vulputate enim. Aliquam erat volutpat. Pellentesque tristique ante ut risus. Quisque dictum. Integer nisl risus, sagittis convallis, rutrum.</p>
-						</div>
-					</div>
-				</div>
-				<!-- end #content -->
-				<div id="sidebar">
-					<ul>
-						<li>
-							<h2>Praesent scelerisque</h2>
-							<ul>
-								<li><a href="#">Aliquam libero</a></li>
-								<li><a href="#">Consectetuer adipiscing elit</a></li>
-								<li><a href="#">Metus aliquam pellentesque</a></li>
-								<li><a href="#">Suspendisse iaculis mauris</a></li>
-								<li><a href="#">Urnanet non molestie semper</a></li>
-								<li><a href="#">Proin gravida orci porttitor</a></li>
-							</ul>
-						</li>
-					</ul>
-				</div>
-				<!-- end #sidebar -->
-				<div style="clear: both;">&nbsp;</div>
+			<h2>Revenues</h2>
+			<div id="revenues-parent">
+				<p>Please select a user in the list</p>
+				<table>
+					<tr><td>Earnings withdrawn so far:</td><td><span id="withdrawn-label">0</span><span class="token-symbol"></span></td></tr>
+					<tr><td>Earnings withdrawable:</td><td><span class="withdrawable-label">0</span></td></tr>
+					<tr><td>Earnings still frozen:</td><td><span class="frozen-label">0</span></td></tr>
+				</table>
 			</div>
 		</div>
 	</div>
-	<!-- end #page -->
+	<div class="one-column">
+		<h2 class="title"><a href="#">Demo control panel</a></h2>
+	</div>
+	<div class="three-columns">
+		<div id="column1">
+			<h2>Operator</h2>
+			<button class="btn btn-lg btn-warning">Kick user out</button>
+			<p>De-activates the currently selected user <span class="selected-user-name"></span>. This user will not receive revenue share from income while de-activated.</p>
+			<div id="publish" class="countdown-button">
+				<svg class="countdown">
+						<circle class="countdown-circle" r="60" cx="70" cy="70"></circle>
+				</svg>
+				<button class="round-button">Force publish</button>
+			</div>
+			<p>
+				Normally side-chain blocks are published when the first revenue transaction arrives after a cooldown period.
+				This cooldown period plus the block freeze period is the time it takes for a member to be able to withdraw
+					tokens after the token transaction where it earned them.
+				The point of the cooldown period is to not unnecessarily pay for block publishing if revenue arrives rapidly.
+				All tokens earned during this period are in the hands of the operator (similarly to tokens in an exchange).
+				The member can lose only those tokens in case of total breakdown of the operator.
+				By pressing the "Force publish" button, you can ask the operator to publish a block even during the
+					cooldown period, or if no revenue has been added.
+			</p>
+		</div>
+		<div id="column2">
+			<h2>Tokens</h2>
+			<p>Token balance: <span id="token-balance">0</span><span class="token-symbol"></span></p>
+			<button class="btn btn-lg btn-success">Mint tokens</button>
+			<p>Mints new tokens and deposits them to the currently selected account in Metamask</p>
+			<button class="btn btn-lg btn-success">Add revenue</button>
+			<p>Sends tokens to the Monoplasma contract</p>
+		</div>
+		<div id="column3">
+			<h2>Testing</h2>
+			<button class="btn btn-lg btn-danger">Steal all tokens</button>
+			<p>Operator can try to publish a block where all tokens have been allocated to it</p>
+		</div>
+	</div>
+	<div class="one-column">
+		<h2 class="title"><a href="#">What does it do</a></h2>
+		<div class="entry">
+			<p>
+				This is <strong>Monoplasma revenue sharing demo</strong>, demonstration of how the Monoplasma
+				contracts can be used to implement a rudimentary ERC20-token revenue sharing facility.
+
+				There are several roles in the system:
+				<ul>
+					<li><strong>Operator</strong> who owns the root chain contract and publishes side-chain blocks</li>
+					<li><strong>Validator</strong> who also runs a side-chain and checks the published blocks</li>
+					<li><string>Member</string> of the revenue sharing community who has the primary interest in ensuring the operator is honest</li>
+				</ul>
+			</p>
+		</div>
+	</div>
 </div>
 <div id="footer">
 	<p>Design by <a href="https://templated.co/simpledisplay" rel="nofollow">TEMPLATED</a>, licenced under <a href="http://creativecommons.org/licenses/by/3.0/">CC-BY 3.0</a>.</p>

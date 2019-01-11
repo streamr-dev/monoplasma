@@ -44,10 +44,9 @@ module.exports = class MonoplasmaWatcher {
         this.filters.recipientRemoved = this.contract.events.RecipientRemoved({})
 
         Object.values(this.filters).forEach(filter => {
-            filter
-                .on("data", event => { this.onEvent(event) })
-                .on("changed", event => { this.error("Event removed in re-org!", event) })
-                .on("error", this.error)
+            filter.on("data", event => { this.onEvent(event) })
+            filter.on("changed", event => { this.error("Event removed in re-org!", event) })
+            filter.on("error", this.error)
         })
 
         await this.saveState()

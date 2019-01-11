@@ -3,9 +3,12 @@ const {
     assertEvent,
     assertEventBySignature,
     assertFails,
+} = require("../utils/web3Assert")
+
+const {
     now,
-    // increaseTime,  // tested separately in truffle/increaseTime.js, requires a running ganache
-} = require("../truffle/testHelpers")
+//  increaseTime,  // tested separately in test/truffle/increaseTime.js, requires a running ganache
+} = require("../utils/fakeTime")
 
 // simulate what Truffle provides
 const Web3 = require("web3")

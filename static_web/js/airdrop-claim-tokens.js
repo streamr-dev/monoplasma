@@ -50,8 +50,13 @@ window.addEventListener("load", function () {
 })
 
 // From https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Interact_with_the_clipboard
-function copyABI() {
-    var textArea = document.getElementById("abi")
+function copyAbi() {
+    var textArea = document.getElementById("abi-text")
+    textArea.select()
+    document.execCommand("copy")
+}
+function copyProof() {
+    var textArea = document.getElementById("proof-text")
     textArea.select()
     document.execCommand("copy")
 }

@@ -4,7 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
+        {
+            "name": "Revenue sharing demo web page",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost/index.html",
+            "webRoot": "${workspaceFolder}/static_web"
+        },
+        {
+            "name": "Revenue sharing demo web page",
+            "type": "chrome",
+            "request": "launch",
+            "file": "${workspaceFolder}/static_web/index.html"
+        },
         {
             "type": "node",
             "request": "launch",

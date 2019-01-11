@@ -3,9 +3,12 @@
 const fs = require("mz/fs")
 const readline = require("readline")
 const BN = require("bn.js")
+const onProcessExit = require("exit-hook")
 
 const Web3 = require("web3")
 const Ganache = require("ganache-core")
+
+const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
 
 const Monoplasma = require("./src/monoplasma")
 
@@ -35,48 +38,58 @@ const {
     GANACHE_PORT,
 } = process.env
 
-const log = !QUIET ? console.log : () => {}
-const error = e => {
-    console.error(e.stack)
+const log = QUIET ? () => {} : console.log
+const error = (e, ...args) => {
+    console.error(e.stack, args)
     process.exit(1)
 }
 
-// network ids: 1 = mainnet, 2 = morden, 3 = ropsten, 4 = rinkeby (current testnet)
-const defaultServers = {
-    "1": "wss://mainnet.infura.io/ws",
-    "3": "wss://ropsten.infura.io/ws",
-    "4": "wss://rinkeby.infura.io/ws",
+let ganache = null
+function stopGanache() {
+    if (ganache) {
+        log("Shutting down Ethereum simulator...")
+        ganache.shutdown()
+        ganache = null
+    }
 }
+onProcessExit(stopGanache)
 
 async function start() {
-    const ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
-    log(`Connecting to ${ethereumServer || "Ganache Ethereum simulator"}...`)
-    function ganacheLog(msg) { log("        Ganache > " + msg) }
-    const web3 = new Web3(ethereumServer || await require("./src/startGanache")(GANACHE_PORT, ganacheLog, error))
 
-    // with ganache, use account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
-    const privateKey = ethereumServer ? ETHEREUM_PRIVATE_KEY : "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
-    if (!privateKey) { throw new Error("Private key required to deploy the airdrop contract. Deploy transaction must be signed.") }
-    const key = privateKey.startsWith("0x") ? privateKey : "0x" + privateKey
-    if (key.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
-    const deployerAccount = web3.eth.accounts.wallet.add(key)
+    log(`Reading the airdropped token amounts from ${INPUT_FILE || "(no INPUT_FILE, generating 1.5 tokens to 0xa3d1F77ACfF0060F7213D7BF3c7fEC78df847De1 for demo)"}...`)
+    const balances = INPUT_FILE ? await readBalances(INPUT_FILE) : [{
+        address: "0xa3d1F77ACfF0060F7213D7BF3c7fEC78df847De1",
+        balance: "1500000000000000000"
+    }]
+
+    let privateKey
+    let ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
+    if (ethereumServer) {
+        if (!ETHEREUM_PRIVATE_KEY) { throw new Error("Private key required to deploy the airdrop contract. Deploy transaction must be signed.") }
+        privateKey = ETHEREUM_PRIVATE_KEY.startsWith("0x") ? ETHEREUM_PRIVATE_KEY : "0x" + ETHEREUM_PRIVATE_KEY
+        if (privateKey.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
+    } else {
+        // use account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
+        privateKey = "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
+        log("Starting Ethereum simulator...")
+        const ganachePort = GANACHE_PORT || 8545
+        const ganacheLog = msg => { log("        Ganache > " + msg) }
+        ganache = await require("./src/startGanache")(ganachePort, ganacheLog, error)
+        ethereumServer = ganache.url
+    }
+
+    log(`Connecting to ${ethereumServer}`)
+    const web3 = new Web3(ethereumServer)
+    const deployerAccount = web3.eth.accounts.wallet.add(privateKey)
+
+    await throwIfSetButNotContract(web3, TOKEN_ADDRESS, "Environment variable TOKEN_ADDRESS")
+    await throwIfSetButNotContract(web3, CONTRACT_ADDRESS, "Environment variable CONTRACT_ADDRESS")
 
     const contractDefaults = {
         from: deployerAccount.address,
         gas: 4000000,
         gasPrice: web3.utils.toWei(GAS_PRICE_GWEI || "10", "Gwei")
     }
-
-    function throwIfEnvIsBadEthereumAddress(envVarName) {
-        const value = process.env[envVarName]
-        if (value && !web3.utils.isAddress(value)) {
-            throw new Error(`Environment variable ${envVarName}: Bad Ethereum address ${value}`)
-        }
-    }
-    throwIfEnvIsBadEthereumAddress("TOKEN_ADDRESS")
-    throwIfEnvIsBadEthereumAddress("CONTRACT_ADDRESS")
-
-    const balances = INPUT_FILE ? await readBalances(INPUT_FILE) : {}
 
     const contractAddress = CONTRACT_ADDRESS || await deployContract(web3, TOKEN_ADDRESS, contractDefaults, log)
     const airdrop = new web3.eth.Contract(AirdropJson.abi, contractAddress, contractDefaults)
@@ -126,22 +139,24 @@ async function start() {
     for (const account of balances) {
         const proof = plasma.getProof(account.address)
         const html = template
-            .replace("TOKENNAME", web3.toWei)
-            .replace("TOKENAMOUNT", formatDecimals(account.balance, tokenDecimals))
-            .replace("SYMBOL", tokenSymbol)
-            .replace("ADDRESS", account.address)
-            .replace("BLOCKNUMBER", blockNumber)
-            .replace("WEIAMOUNT", account.balance)
-            .replace("PROOFJSON", JSON.stringify(proof))
-            .replace("CONTRACTADDR", contractAddress)
-            .replace("CONTRACTABI", JSON.stringify(AirdropJson.abi.filter(f => f.name === "proveSidechainBalance")))
-            .replace("PROOFSTRING", proof.toString())
-        const dir = `./static_web/airdrop/${account.address.toLowerCase()}`
+            .replace(/TOKENNAME/g, tokenName)
+            .replace(/TOKENAMOUNT/g, formatDecimals(account.balance, tokenDecimals))
+            .replace(/SYMBOL/g, tokenSymbol)
+            .replace(/ADDRESS/g, account.address)
+            .replace(/BLOCKNUMBER/g, blockNumber)
+            .replace(/WEIAMOUNT/g, account.balance)
+            .replace(/PROOFJSON/g, JSON.stringify(proof).replace(/"/g, "'"))
+            .replace(/CONTRACTADDR/g, contractAddress)
+            .replace(/CONTRACTABI/g, JSON.stringify(AirdropJson.abi.filter(f => f.name === "proveSidechainBalance")))
+            .replace(/PROOFSTRING/g, proof.toString())
+        const dir = `${__dirname}/static_web/airdrop/${account.address.toLowerCase()}`
         if (!fs.existsSync(dir)) { await fs.mkdirSync(dir) }
         await fs.writeFile(`${dir}/index.html`, html)
+        log(`Wrote file://${dir}/index.html`)
     }
 
     log("DONE")
+    process.exit(0)     // also shuts down Ganache
 }
 
 async function deployContract(web3, oldTokenAddress, sendOptions, log) {

@@ -15,7 +15,8 @@ Released   : 20120611
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<title>Airdrop demo</title>
 	<link href="http://fonts.googleapis.com/css?family=Arvo" rel="stylesheet" type="text/css" />
-	<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="../../res/template-style.css" rel="stylesheet" type="text/css" media="screen" />
+	<link href="../../res/style.css" rel="stylesheet" type="text/css" media="screen" />
 	<script src="../../js/airdrop-claim-tokens.js"></script>
 	<!--<script src="../../js/web3.min.js"></script>-->
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/ethjs@0.3.4/dist/ethjs.min.js"></script>
@@ -23,46 +24,39 @@ Released   : 20120611
 <body>
 <div id="wrapper">
 	<div id="header">
-		<div id="logo">
-			<h1><a href="#">Token airdrop</a></h1>
-		</div>
+		<h1>Token airdrop</h1>
 	</div>
-	<div id="two-columns">
-		<div id="col1">
-			<h2>You've received TOKENNAME!</h2>
-			<p>TOKENAMOUNT SYMBOL have been allocated to your address ADDRESS.</p>
-			<div id="account-found" hidden>
-				<p><button id="claim-tokens" onclick="claimTokens('BLOCKNUMBER', 'ADDRESS', 'WEIAMOUNT', PROOFJSON)">Click here to claim them</button></p>
-			</div>
-			<div id="no-accounts" hidden>
-				<p>You need to log in with your Metamask. Please click it open from your browser bar.</p>
-			</div>
-			<div id="no-metamask" hidden>
-				<p>Tokens can be claimed by using
-						<a href="https://metamask.io/" class="link-style2">Metamask browser plugin</a>
-						(pre-installed in the <a href="https://brave.com/" class="link-style2">Ethereum-friendly Brave browser</a>)
-				</p>
-				<p>Please install MetaMask and refresh this page.</p>
-			</div>
-
-			<h2>Claiming tokens manually</h2>
-			<p><a href="https://www.myetherwallet.com/#contracts" class="link-style2">MyEtherWallet</a> is a service that doesn't require installing plugins.
+	<div class="one-column">
+		<h2>You've received TOKENAMOUNT SYMBOL of TOKENNAME!</h2>
+		<p>TOKENAMOUNT SYMBOL have been allocated to your address ADDRESS.</p>
+		<div id="account-found" hidden>
+			<p><button id="claim-tokens" onclick="claimTokens('BLOCKNUMBER', 'ADDRESS', 'WEIAMOUNT', PROOFJSON)">Click here to claim them</button></p>
+		</div>
+		<div id="no-accounts" hidden>
+			<p>You need to log in with your Metamask. Please click it open from your browser bar.</p>
+		</div>
+		<div id="no-metamask" hidden>
+			<p>Tokens can be claimed by using
+					<a href="https://metamask.io/">Metamask browser plugin</a>
+					(pre-installed in the <a href="https://brave.com/">Ethereum-friendly Brave browser</a>)
 			</p>
-			<p>If you haven't created a wallet yet, start with <a href="https://www.myetherwallet.com/#generate-wallet">New Wallet wizard</a>.</p>
-			<p>Enter the following in <a href="https://www.myetherwallet.com/#contracts" class="link-style2">Interact with Contract form</a>:</p>
-			<table>
-				<tr><td>Contract Address:</td><td>CONTRACTADDR</td></tr>
-				<tr><td>ABI / JSON Interface:</td><td><textarea id="abi" rows="1">CONTRACTABI</textarea><button id="copy-abi" onclick="copyAbi()">copy</button></td></tr>
-				<tr><td>Select a function</td><td>proveSidechainBalance</td></tr>
-				<tr><td>rootChainBlockNumber</td><td>BLOCKNUMBER</td></tr>
-				<tr><td>account</td><td>ADDRESS</td></tr>
-				<tr><td>balance</td><td>WEIAMOUNT</td></tr>
-				<tr><td>proof</td><td>PROOFSTRING</td></tr>
-			</table>
+			<p>Please install MetaMask and refresh this page.</p>
 		</div>
-		<div id="col2">
-			<div class="large vertically-centered">AMOUNT SYMBOL</div>
-		</div>
+
+		<h2>Claiming tokens manually</h2>
+		<p><a href="https://www.myetherwallet.com/#contracts">MyEtherWallet</a> is a service that doesn't require installing plugins.
+		</p>
+		<p>If you haven't created a wallet yet, start with <a href="https://www.myetherwallet.com/#generate-wallet">New Wallet wizard</a>.</p>
+		<p>Enter the following in <a href="https://www.myetherwallet.com/#contracts">Interact with Contract form</a>:</p>
+		<table>
+			<tr><td>Contract Address:</td><td>CONTRACTADDR</td></tr>
+			<tr><td>ABI / JSON Interface:</td><td><textarea class="copy-text" id="abi-text" rows="4" contenteditable="false">CONTRACTABI</textarea><a href="#" class="link-style2" onclick="copyAbi()">Click to copy</a></td></tr>
+			<tr><td>Select a function</td><td>proveSidechainBalance</td></tr>
+			<tr><td>rootChainBlockNumber</td><td>BLOCKNUMBER</td></tr>
+			<tr><td>account</td><td>ADDRESS</td></tr>
+			<tr><td>balance</td><td>WEIAMOUNT</td></tr>
+			<tr><td>proof</td><td><textarea class="copy-text" id="proof-text" rows="4" contenteditable="false">PROOFSTRING</textarea><a href="#" class="link-style2" onclick="copyProof()">Click to copy</a></td></tr>
+		</table>
 	</div>
 </div>
 <div id="footer">
