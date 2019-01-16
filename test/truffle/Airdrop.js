@@ -1,7 +1,8 @@
 const Airdrop = artifacts.require("./Airdrop.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
-const { assertEqual, assertFails, increaseTime } = require("./testHelpers")
+const { assertEqual, assertFails } = require("../utils/web3Assert")
+const { increaseTime } = require("../utils/fakeTime")
 
 const Monoplasma = require("../../src/monoplasma")
 const plasma = new Monoplasma()

@@ -1,6 +1,6 @@
 // adapted from https://github.com/OpenZeppelin/openzeppelin-solidity/blob/v1.12.0/test/ownership/Claimable.test.js
 
-const { assertFails } = require('./testHelpers');
+const { assertFails } = require("../utils/web3Assert")
 
 const Ownable = artifacts.require('Ownable');
 
