@@ -30,7 +30,7 @@ Released   : 20120611
 		<h2>You've received TOKENAMOUNT SYMBOL of TOKENNAME!</h2>
 		<p>TOKENAMOUNT SYMBOL have been allocated to your address ADDRESS.</p>
 		<div id="account-found" hidden>
-			<p><button id="claim-tokens" onclick="claimTokens('BLOCKNUMBER', 'ADDRESS', 'WEIAMOUNT', PROOFJSON)">Click here to claim them</button></p>
+			<h3><a href="#" class="link-style2" id="claim-tokens" onclick="claimTokens('CONTRACTADDR', 'BLOCKNUMBER', 'ADDRESS', 'WEIAMOUNT', PROOFJSON)">Click here to claim them</a></h3>
 		</div>
 		<div id="no-accounts" hidden>
 			<p>You need to log in with your Metamask. Please click it open from your browser bar.</p>
@@ -42,7 +42,8 @@ Released   : 20120611
 			</p>
 			<p>Please install MetaMask and refresh this page.</p>
 		</div>
-
+	</div>
+	<div class="one-column">
 		<h2>Claiming tokens manually</h2>
 		<p><a href="https://www.myetherwallet.com/#contracts">MyEtherWallet</a> is a service that doesn't require installing plugins.
 		</p>
@@ -52,6 +53,9 @@ Released   : 20120611
 			<tr><td>Contract Address:</td><td>CONTRACTADDR</td></tr>
 			<tr><td>ABI / JSON Interface:</td><td><textarea class="copy-text" id="abi-text" rows="4" contenteditable="false">CONTRACTABI</textarea><a href="#" class="link-style2" onclick="copyAbi()">Click to copy</a></td></tr>
 			<tr><td>Select a function</td><td>proveSidechainBalance</td></tr>
+		</table>
+		<p>Function parameters:</p>
+		<table>
 			<tr><td>rootChainBlockNumber</td><td>BLOCKNUMBER</td></tr>
 			<tr><td>account</td><td>ADDRESS</td></tr>
 			<tr><td>balance</td><td>WEIAMOUNT</td></tr>

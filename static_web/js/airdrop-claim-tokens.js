@@ -33,19 +33,22 @@ window.addEventListener("load", function () {
         window.eth = new Eth(ethereum)
         ethereum.enable().then(function () {
             metamaskAddress = ethereum.selectedAddress
+            document.getElementById("account-found").hidden = !metamaskAddress
+            document.getElementById("no-accounts").hidden = !!metamaskAddress
         })
     } else if (window.web3) {
         //window.web3 = new Web3(web3.currentProvider);
         window.eth = new Eth(web3.currentProvider)
-        metamaskAddress = window.eth.accounts[0]
+        eth.accounts().then(function (accounts) {
+            metamaskAddress = accounts[0]
+            document.getElementById("account-found").hidden = !metamaskAddress
+            document.getElementById("no-accounts").hidden = !!metamaskAddress
+        })
     }
 
     if (!window.eth) {
         console.log("No Ethereum support detected. Consider installing https://metamask.io/");
         document.getElementById("no-metamask").hidden = false;
-    } else {
-        document.getElementById("account-found").hidden = !metamaskAddress
-        document.getElementById("no-accounts").hidden = !!metamaskAddress
     }
 })
 
@@ -61,19 +64,25 @@ function copyProof() {
     document.execCommand("copy")
 }
 
+window.claimingInProcess = false
 function claimTokens(contractAddress, blockNumber, address, balance, proof) {
-    var airdrop = new window.web3.eth.Contract(abi, contractAddress)
-    airdrop.methods.proveSidechainBalance(blockNumber, address, balance, proof).send({
+    if (!metamaskAddress) { throw new Error("Shouldn't call this without address from Metamask!") }
+    claimingInProcess = true
+    document.getElementById("claim-tokens").innerText = "Sending transaction...";
+    var airdrop = new eth.contract(abi, "", {
         from: metamaskAddress,
         gas: 4000000
-    }, claimSuccess)
-}
-
-function claimSuccess(err, receipt) {
-    if (err) {
-        console.error(err.stack)
-        alert("Transaction failed: " + err.message)
-    } else {
-        console.log("Receipt: " + receipt)
-    }
+    }).at(contractAddress)
+    airdrop.proveSidechainBalance(blockNumber, address, balance, proof).then(function (txHash) {
+        console.log("Transaction pending: https://etherscan.io/tx/" + txHash)
+        return eth.getTransactionSuccess(txHash)
+    }).then(function (receipt) {
+        console.log("Transaction successful: " + JSON.stringify(receipt))
+        document.getElementById("claim-tokens").innerText = "Success!";
+        claimingInProcess = false
+    }).catch(function (error) {
+        alert(error.message)
+        claimingInProcess = false
+        document.getElementById("claim-tokens").innerText = "Try again";
+    })
 }

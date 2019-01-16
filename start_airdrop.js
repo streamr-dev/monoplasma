@@ -65,7 +65,7 @@ async function start() {
     let privateKey
     let ethereumServer = ETHEREUM_SERVER || defaultServers[ETHEREUM_NETWORK_ID]
     if (ethereumServer) {
-        if (!ETHEREUM_PRIVATE_KEY) { throw new Error("Private key required to deploy the airdrop contract. Deploy transaction must be signed.") }
+        if (!ETHEREUM_PRIVATE_KEY) { throw new Error("ETHEREUM_PRIVATE_KEY environment variable required to deploy the airdrop contract. Deploy transaction must be signed.") }
         privateKey = ETHEREUM_PRIVATE_KEY.startsWith("0x") ? ETHEREUM_PRIVATE_KEY : "0x" + ETHEREUM_PRIVATE_KEY
         if (privateKey.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
     } else {
@@ -114,7 +114,7 @@ async function start() {
     log("    Token decimals: " + tokenDecimals)
 
     log("Checking token numbers match...")
-    const totalTokenWei = balances.map(account => account.balance).reduce((sum, x) => sum.add(new BN(x)), new BN(0))
+    const totalTokenWei = balances.map(account => account.earnings).reduce((sum, x) => sum.add(new BN(x)), new BN(0))
     const adminBalance = await token.methods.balanceOf(contractDefaults.from).call()
     log("    Tokens allocated: " + totalTokenWei.toString())
     log("    Tokens owned:     " + adminBalance.toString())
@@ -140,11 +140,11 @@ async function start() {
         const proof = plasma.getProof(account.address)
         const html = template
             .replace(/TOKENNAME/g, tokenName)
-            .replace(/TOKENAMOUNT/g, formatDecimals(account.balance, tokenDecimals))
+            .replace(/TOKENAMOUNT/g, formatDecimals(account.earnings, tokenDecimals))
             .replace(/SYMBOL/g, tokenSymbol)
             .replace(/ADDRESS/g, account.address)
             .replace(/BLOCKNUMBER/g, blockNumber)
-            .replace(/WEIAMOUNT/g, account.balance)
+            .replace(/WEIAMOUNT/g, account.earnings)
             .replace(/PROOFJSON/g, JSON.stringify(proof).replace(/"/g, "'"))
             .replace(/CONTRACTADDR/g, contractAddress)
             .replace(/CONTRACTABI/g, JSON.stringify(AirdropJson.abi.filter(f => f.name === "proveSidechainBalance")))
@@ -180,8 +180,8 @@ async function readBalances(path) {
         })
         rl.on("line", line => {
             if (line.length < 40) { return }
-            const [address, balance] = line.split(/\s/)
-            balances.push({ address, balance })
+            const [address, earnings] = line.split(/\s/)
+            balances.push({ address, earnings })
         })
         rl.on("close", () => done(balances))
         rl.on("SIGINT", () => fail(new Error("Interrupted by user")))

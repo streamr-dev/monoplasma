@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require("mz/fs")
 const readline = require("readline")
 const path = require("path")
@@ -12,7 +14,7 @@ const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
 const { loadState, saveState } = require("./src/fileStore")
 const deployDemoToken = require("./src/deployDemoToken")
 
-const router = require("../../src/monoplasmaRouter")
+const router = require("./src/monoplasmaRouter")
 
 const MonoplasmaJson = require("./build/contracts/Monoplasma.json")
 

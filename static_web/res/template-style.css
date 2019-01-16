@@ -193,6 +193,7 @@ a:hover {
 	border-radius: 10px;
 	font-size: 20px;
 	color: #FFFFFF;
+	vertical-align: top;
 }
 
 .one-column {
