@@ -9,7 +9,7 @@
     "test-js": "./node_modules/.bin/mocha test/mocha test/utils-test --exit",
     "test-e2e": "./node_modules/.bin/mocha test/e2e  --exit",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
-    "test": "npm run build && npm run test-js && npm run test-contracts && npm run test-e2e",
+    "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -f static_web/data/* && rm -rf static_web/airdrop/0x*"
   },
   "author": "",
