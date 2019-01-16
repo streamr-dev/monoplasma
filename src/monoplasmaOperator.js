@@ -1,8 +1,3 @@
-const Monoplasma = require("./monoplasma")
-
-const TokenJson = require("../build/contracts/ERC20Mintable.json")
-const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
-
 const MonoplasmaWatcher = require("./monoplasmaWatcher")
 
 module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {

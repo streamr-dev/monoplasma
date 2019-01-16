@@ -1,11 +1,11 @@
 const Monoplasma = require("./monoplasma")
 const MonoplasmaWatcher = require("./monoplasmaWatcher")
-const { replayEvents, replayEvent, partition } = require("./ethSync")
+const { replayEvents } = require("./ethSync")
 const partition = require("./partitionArray")
 
 module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
     constructor(watchedAccounts, myAddress, ...args) {
-        super.constructor(...args)
+        super(...args)
 
         this.watchedAccounts = watchedAccounts
         this.address = myAddress
@@ -17,7 +17,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         await super.start()
 
         this.filters.blockFilter = this.contract.events.BlockCreated({})
-            .on("data", event => { checkBlock(event.arguments)) })
+            .on("data", event => { this.checkBlock(event.arguments) })
             .on("changed", event => { this.error("Event removed in re-org!", event) })
             .on("error", this.error)
     }
@@ -62,9 +62,9 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         // There should be no hurry, so sequential execution is ok, and it might hurt to send() all at once.
         // TODO: Investigate
         //return Promise.all(members.map(m => community.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)))
-        members.forEach(m => {
-            await community.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)
-        })
+        for (const m of members) {
+            await this.community.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)
+        }
     }
 
     // TODO: validate also during playback
