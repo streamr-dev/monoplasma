@@ -241,12 +241,13 @@ a:hover {
 .two-columns #col2 {
 	float: right;
 	width: 280px;
-	background: #FFFFFF;
+	/* background: #FFFFFF; */
+	/* color: black; */
 }
 
 .two-columns h2 {
 	padding: 0px 0px 20px 0px;
-	color: #FFFFFF;
+	/* color: #FFFFFF; */
 }
 
 

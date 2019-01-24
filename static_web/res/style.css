@@ -1,76 +1,102 @@
 /* airdrop */
 
 .copy-text {
-	width: 600px;
+  width: 600px;
 }
 
 .large {
-	font-size: 30pt;
+  font-size: 30pt;
 }
 
 .vertically-centered {
-	top: 40%;
+  top: 40%;
 }
 
 /* revenue-sharing */
 
+#earnings {
+  width: 300px;
+  float: left;
+  padding: 20px;
+}
+
+#withdraw {
+  width: 300px;
+  float: right;
+  padding: 32px;
+}
+
+#address-selection-input {
+  width: 420px;
+  padding: 10px;
+  margin: 20px;
+}
+
+#address-list {
+  width: 100%;
+}
+
+.text-input {
+  color: black;
+}
+
 .code {
-    font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .round-button {
-	position: absolute;
-	left: 20px;
-	top: 20px;
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 22px;
+  color: white;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  background: #f1c40f;
+  cursor: pointer;
+  border: solid #ffcc1f;
+  border-width: 5px 10px 15px 10px;
+  clear: both;
+}
+.round-button:active {
+  border-width: 10px 10px 10px 10px;
+}
+.round-button:focus {
+  outline: 0;
+}
 
-	width: 100px;
-	height: 100px;
-	border-radius: 50%;
+.countdown-button {
+  position: relative;
+  height: 150px;
+}
 
-	padding: 0;
-	font-size: 22px;
-	color: white;
-	text-align: center;
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-	background: #f1c40f;
-	cursor: pointer;
-	border: solid #ffcc1f;
-	border-width: 5px 10px 15px 10px;
-  }
-  .round-button:active {
-	border-width: 10px 10px 10px 10px;
-  }
-  .round-button:focus {
-	outline: 0;
-  }
+.countdown {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  top: -20px;
+  left: -20px;
+}
 
-  .countdown-button {
-	position: relative;
-  }
+.countdown-circle {
+  stroke: blue;
+  fill: none;
+  stroke-width: 15px;
+  stroke-dasharray: 377px;
+  animation: cooldown 10s linear 1 forwards;
+  transform: rotate(90deg) rotateY(180deg);
+  transform-origin: 50% 50%;
+}
 
-  .countdown {
-	position: absolute;
-	width: 160px;
-	height: 160px;
-	top: -20px;
-	left: -20px;
+@keyframes cooldown {
+  from {
+    stroke-dashoffset: 0px;
   }
-
-  .countdown-circle {
-	stroke: blue;
-	fill: none;
-	stroke-width: 15px;
-	stroke-dasharray: 377px;
-	animation: cooldown 10s linear 1 forwards;
-	transform: rotate(90deg) rotateY(180deg);
-	transform-origin: 50% 50%;
+  to {
+    stroke-dashoffset: 377px;
   }
-
-  @keyframes cooldown {
-	from {
-	  stroke-dashoffset: 0px;
-	}
-	to {
-	  stroke-dashoffset: 377px;
-	}
-  }
+}
