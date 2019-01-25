@@ -10,13 +10,15 @@ const SortedMap = require("collections/sorted-map")
  */
 class Monoplasma {
     /**
-     *
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
-    constructor(initialMembers) {
+    constructor(initialMembers, store) {
+        this.store = store
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
+        /** @property {Map<MonoplasmaMember>} members */
         this.members = new SortedMap(Array.isArray(initialMembers) ?
             initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]) : [])
+        /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
     }
 
@@ -28,6 +30,16 @@ class Monoplasma {
         return this.members
             .filter(m => m.isActive())
             .map(m => m.toObject())
+    }
+
+    getMemberCount() {
+        const total = this.members.size
+        const active = this.members.filter(m => m.isActive()).size
+        return {
+            total,
+            active,
+            inactive: total - active,
+        }
     }
 
     getMember(address) {
@@ -56,6 +68,10 @@ class Monoplasma {
     // ///////////////////////////////////
     //      ADMIN API
     // ///////////////////////////////////
+
+    /**
+     * @param {number} amount of tokens that was added to the Community revenues
+     */
     addRevenue(amount) {
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = new BN(activeMembers.length)
@@ -69,17 +85,76 @@ class Monoplasma {
         this.tree.update(this.members)
     }
 
+    /**
+     * Add an active recipient into Community, or re-activate existing one (previously removed)
+     * @param {string} address of the new member
+     * @param {string} name of the new member
+     * @returns {boolean} if the added member was new (previously unseen)
+     */
     addMember(address, name) {
-        this.members.set(address, new MonoplasmaMember(name, address))
-        // tree.update(members)     // no need for update since no revenue allocated
-    }
-
-    removeMember(address) {
         const m = this.members.get(address)
         if (m) {
-            m.setInactive()
+            m.setActive(true)
+        } else {
+            this.members.set(address, new MonoplasmaMember(name, address))
         }
         // tree.update(members)     // no need for update since no revenue allocated
+        return !!m
+    }
+
+    /**
+     * De-activate a member, it will not receive revenues until re-activated
+     * @param {string} address
+     * @returns {boolean} if the de-activated member was previously active (and existing)
+     */
+    removeMember(address) {
+        const m = this.members.get(address)
+        const wasActive = m && m.isActive()
+        if (wasActive) {
+            m.setActive(false)
+        }
+        // tree.update(members)     // no need for update since no revenue allocated
+        return wasActive
+    }
+
+    /**
+     * Monoplasma member to be added
+     * @typedef {Object<string, string>} IncomingMember
+     * @property {string} address Ethereum address of the Community member
+     * @property {string} name Human-readable string representation
+     */
+    /**
+     * Add active recipients into Community, or re-activate existing ones (previously removed)
+     * @param {Array<IncomingMember>} members
+     */
+    addMembers(members) {
+        let added = 0
+        members.forEach(member => {
+            const wasNew = this.addMember(member.address, member.name)
+            added += wasNew ? 1 : 0
+        })
+        return added
+    }
+
+    /**
+     * De-activate members: they will not receive revenues until re-activated
+     * @param {Array<string>} addresses
+     */
+    removeMembers(addresses) {
+        let removed = 0
+        addresses.forEach(address => {
+            const wasActive = this.removeMember(address)
+            removed += wasActive ? 1 : 0
+        })
+        return removed
+    }
+
+    /**
+     * Stash the merkle tree state for later use
+     * @param {number} rootChainBlocknumber
+     */
+    storeBlock(rootChainBlocknumber) {
+        this.store.saveBlock(this.members.toArray(), rootChainBlocknumber)
     }
 
     /**

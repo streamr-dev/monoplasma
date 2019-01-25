@@ -1,4 +1,7 @@
-var abi = [{
+/*global window document ethereum web3 Eth */
+/* eslint-disable no-unused-vars */
+
+var monoplasmaAbi = [{
     "constant": false,
     "inputs": [
         {
@@ -39,7 +42,7 @@ window.addEventListener("load", function () {
     } else if (window.web3) {
         //window.web3 = new Web3(web3.currentProvider);
         window.eth = new Eth(web3.currentProvider)
-        eth.accounts().then(function (accounts) {
+        window.eth.accounts().then(function (accounts) {
             metamaskAddress = accounts[0]
             document.getElementById("account-found").hidden = !metamaskAddress
             document.getElementById("no-accounts").hidden = !!metamaskAddress
@@ -47,8 +50,8 @@ window.addEventListener("load", function () {
     }
 
     if (!window.eth) {
-        console.log("No Ethereum support detected. Consider installing https://metamask.io/");
-        document.getElementById("no-metamask").hidden = false;
+        console.log("No Ethereum support detected. Consider installing https://metamask.io/")
+        document.getElementById("no-metamask").hidden = false
     }
 })
 
@@ -65,24 +68,24 @@ function copyProof() {
 }
 
 window.claimingInProcess = false
-function claimTokens(contractAddress, blockNumber, address, balance, proof) {
+function sendWithdrawTxFor(contractAddress, blockNumber, address, balance, proof) {
     if (!metamaskAddress) { throw new Error("Shouldn't call this without address from Metamask!") }
-    claimingInProcess = true
-    document.getElementById("claim-tokens").innerText = "Sending transaction...";
-    var airdrop = new eth.contract(abi, "", {
+    window.claimingInProcess = true
+    document.getElementById("claim-tokens").innerText = "Sending transaction..."
+    var airdrop = new window.eth.contract(monoplasmaAbi, "", {
         from: metamaskAddress,
         gas: 4000000
     }).at(contractAddress)
     airdrop.proveSidechainBalance(blockNumber, address, balance, proof).then(function (txHash) {
         console.log("Transaction pending: https://etherscan.io/tx/" + txHash)
-        return eth.getTransactionSuccess(txHash)
+        return window.eth.getTransactionSuccess(txHash)
     }).then(function (receipt) {
         console.log("Transaction successful: " + JSON.stringify(receipt))
-        document.getElementById("claim-tokens").innerText = "Success!";
-        claimingInProcess = false
+        document.getElementById("claim-tokens").innerText = "Success!"
+        window.claimingInProcess = false
     }).catch(function (error) {
-        alert(error.message)
-        claimingInProcess = false
-        document.getElementById("claim-tokens").innerText = "Try again";
+        window.alert(error.message)
+        window.claimingInProcess = false
+        document.getElementById("claim-tokens").innerText = "Try again"
     })
 }

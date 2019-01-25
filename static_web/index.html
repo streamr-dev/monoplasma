@@ -20,8 +20,8 @@ Released   : 20120611
 	<link href="res/template-style.css" rel="stylesheet" type="text/css" media="screen" />
 	<link href="res/style.css" rel="stylesheet" type="text/css" media="screen" />
 	<!--<script src="js/web3.min.js"></script>-->
+	<script type="text/javascript" src="js/abi.js"></script>
 	<script type="text/javascript" src="res/ethjs.min.js"></script>
-	<script src="js/revenue-sharing-demo-ui.js"></script>
 </head>
 <body>
 <div id="wrapper">
@@ -30,11 +30,18 @@ Released   : 20120611
 			<h1><a href="#">Revenue sharing demo</a></h1>
 		</div>
 	</div>
+	<div class="one-column" id="no-accounts" hidden>
+		<p class="warning-text">You need to log in with your Metamask. Please click it open from your browser bar.</p>
+	</div>
+	<div class="one-column" id="no-metamask" hidden>
+		<p class="warning-text">No Metamask detected. Please install <a href="https://metamask.io/">Metamask browser plugin</a></p>
+	</div>
+
 	<div class="two-columns">
 		<div id="col1">
 			<h2>User account</h2>
 			<input id="address-selection-input" type="text" class="text-input" placeholder="0x0000000000000000000000000000000000000000">
-			<button class="btn btn-lg btn-success" type="button">Select</button>
+			<button id="address-selection-button" onclick="onClickSelect()" class="btn btn-lg btn-success" type="button">Select</button>
 			<div id="earnings">
 				<p id="selected-account-label">Please select an account</p>
 				<table>
@@ -46,14 +53,14 @@ Released   : 20120611
 				</table>
 			</div>
 			<div id="withdraw">
-				<button class="btn btn-lg btn-success">Withdraw</button>
+				<button onclick="onClickWithdraw()" class="btn btn-lg btn-success">Withdraw</button>
 				<p>Sends the latest unfrozen proof of earnings to the Monoplasma root chain contract, and asks it to send back the appropriate amount of tokens.</p>
 			</div>
 		</div>
 		<div id="col2">
 			<h2>Community</h2>
 			<table>
-				<tr><td>Member count:</td><td><span class="member-count-label">0</span></td></tr>
+				<tr><td>Member count:</td><td><span id="member-count-label">0</span></td></tr>
 				<tr><td>Total earnings:</td><td><span class="total-earnings-label">0</span><span class="token-symbol"></span></td></tr>
 				<tr><td>Total earnings recorded:</td><td><span class="total-recorded-label">0</span><span class="token-symbol"></span></td></tr>
 				<tr><td>Total withdrawn:</td><td><span id="withdrawn-label">0</span><span class="token-symbol"></span></td></tr>
@@ -62,26 +69,26 @@ Released   : 20120611
 				<tr><td>Earnings withdrawable:</td><td><span class="withdrawable-label">0</span><span class="token-symbol"></span></td></tr>
 			</table>
 			<br>
-			<button class="btn btn-lg btn-success">Add revenue</button>
+			<button onclick="onClickAddRevenue()" class="btn btn-lg btn-success">Add revenue</button>
 			<p>Send some tokens to the Monoplasma contract</p>
 		</div>
 	</div>
 	<div class="three-columns">
 		<div id="column1">
-			<h2>Management</h2>
-			<textarea id="address-list" rows=6 placeholder="Enter Ethereum addresses here, one per line" class="text-input"></textarea>
-			<button class="btn btn-lg btn-warning">Add users</button>
+			<h2>Administrator</h2>
+			<textarea id="address-list" rows=6 placeholder="Ethereum addresses here, one per line" class="text-input"></textarea>
+			<button onclick="onClickAddUsers()" class="btn btn-lg btn-warning">Add users</button>
 			<p>Adds the addresses above to the revenue sharing pool. These users will then receive revenue shares from tokens that are transferred to the root-chain contract.</p>
-			<button class="btn btn-lg btn-warning">Kick user out</button>
+			<button onclick="onClickKick()" class="btn btn-lg btn-warning">Kick user out</button>
 			<p>De-activates the currently selected user <span class="selected-user-name"></span>. This user will not receive revenue share from income while de-activated.</p>
 		</div>
 		<div id="column2">
 			<h2>Operator</h2>
-			<div id="publish" class="countdown-button">
+			<div id="force-publish" class="countdown-button">
 				<svg class="countdown">
-						<circle class="countdown-circle" r="60" cx="70" cy="70"></circle>
+					<circle class="countdown-circle" r="60" cx="70" cy="70"></circle>
 				</svg>
-				<button class="round-button">Force publish</button>
+				<button onclick="onClickForcePublish()" class="round-button">Force publish</button>
 			</div>
 			<p>
 				Normally the Operator publishes side-chain blocks when the first revenue transaction arrives after a cooldown period.
@@ -96,10 +103,13 @@ Released   : 20120611
 		</div>
 		<div id="column3">
 			<h2>Demo features</h2>
-			<p>Metamask wallet balance: <span id="token-balance">0</span><span class="token-symbol"></span></p>
-			<button class="btn btn-lg btn-success">Mint tokens</button>
-			<p>Mints new tokens and deposits them to the currently selected account in Metamask</p>
-			<button class="btn btn-lg btn-danger">Steal all tokens</button>
+			<div class="metamask-is-working" hidden>
+				<p>Metamask address: <span id="metamask-address"></span></p>
+				<p>Metamask wallet balance: <span id="metamask-token-balance">0</span><span class="token-symbol"></span></p>
+				<button onclick="onClickMint()" class="btn btn-lg btn-success">Mint tokens</button>
+				<p>Mints new tokens and deposits them to the currently selected account in Metamask</p>
+			</div>
+			<button onclick="onClickSteal()" class="btn btn-lg btn-danger">Steal all tokens</button>
 			<p>Operator can try to publish a block where all tokens have been allocated to it</p>
 		</div>
 	</div>
@@ -123,6 +133,6 @@ Released   : 20120611
 <div id="footer">
 	<p>Design by <a href="https://templated.co/simpledisplay" rel="nofollow">TEMPLATED</a>, licenced under <a href="http://creativecommons.org/licenses/by/3.0/">CC-BY 3.0</a>.</p>
 </div>
-<!-- end #footer -->
+<script src="js/revenue-sharing-demo-ui.js"></script>
 </body>
 </html>

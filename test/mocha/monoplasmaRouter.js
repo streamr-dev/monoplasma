@@ -1,4 +1,4 @@
-/* global before after */
+/*global before after describe it */
 
 const express = require("express")
 const bodyParser = require("body-parser")

@@ -1,8 +1,9 @@
 const BN = require("bn.js")
+const {utils: { isAddress }} = require("web3")
 
 class MonoplasmaMember {
     constructor(name, address, earnings) {
-        this.name = name
+        this.name = name || ""
         this.address = MonoplasmaMember.validateAddress(address)
         this.earnings = earnings ? new BN(earnings) : new BN(0)
         this.active = true
@@ -24,8 +25,11 @@ class MonoplasmaMember {
         return this.active
     }
 
-    setInactive() {
-        this.active = false
+    /**
+     * @param {boolean} activeState true if active, false if not going to be getting revenues
+     */
+    setActive(activeState) {
+        this.active = activeState
     }
 
     toObject() {
@@ -53,7 +57,7 @@ class MonoplasmaMember {
         if (address.length === 40) {
             extended = `0x${address}`
         }
-        if (Number.isNaN(Number(extended)) || extended.length !== 42) {
+        if (!isAddress(extended)) {
             throw new Error(`Bad Ethereum address: ${address}`)
         }
         return extended

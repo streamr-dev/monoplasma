@@ -2,8 +2,8 @@ const MonoplasmaWatcher = require("./monoplasmaWatcher")
 
 module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
-    constructor(web3, startState, saveStateFunc, logFunc, errorFunc) {
-        super(web3, startState, saveStateFunc, logFunc, errorFunc)
+    constructor(web3, startState, store, logFunc, errorFunc) {
+        super(web3, startState, store, logFunc, errorFunc)
 
         this.minIntervalBlocks = this.state.minIntervalBlocks || 2  // TODO: think about it more closely
         this.publishedBlocks = []

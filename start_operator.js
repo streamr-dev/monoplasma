@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const fs = require("mz/fs")
-const readline = require("readline")
 const path = require("path")
 const express = require("express")
 const bodyParser = require("body-parser")
@@ -11,10 +10,10 @@ const Web3 = require("web3")
 
 const Operator = require("./src/monoplasmaOperator")
 const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
-const { loadState, saveState } = require("./src/fileStore")
 const deployDemoToken = require("./src/deployDemoToken")
 
 const router = require("./src/monoplasmaRouter")
+const revenueDemoRouter = require("./src/revenueDemoRouter")
 
 const MonoplasmaJson = require("./build/contracts/Monoplasma.json")
 
@@ -33,7 +32,6 @@ const {
     // these will be used  1) for demo token  2) if TOKEN_ADDRESS doesn't support name() and symbol()
     TOKEN_SYMBOL,
     TOKEN_NAME,
-    TOKEN_DECIMALS,
 
     // if ETHEREUM_SERVER isn't specified, start a local Ethereum simulator (Ganache) in given port
     GANACHE_PORT,
@@ -48,6 +46,9 @@ const error = (e, ...args) => {
     process.exit(1)
 }
 
+const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
+const fileStore = require("./src/fileStore")(stateStorePath)
+
 let ganache = null
 function stopGanache() {
     if (ganache) {
@@ -57,8 +58,6 @@ function stopGanache() {
     }
 }
 onProcessExit(stopGanache)
-
-const storePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
 
 async function start() {
     let privateKey
@@ -79,7 +78,7 @@ async function start() {
 
     log(`Connecting to ${ethereumServer}`)
     const web3 = new Web3(ethereumServer)
-    const deployerAccount = web3.eth.accounts.wallet.add(privateKey)
+    const account = web3.eth.accounts.wallet.add(privateKey)
 
     await throwIfSetButNotContract(web3, TOKEN_ADDRESS, "Environment variable TOKEN_ADDRESS")
     await throwIfSetButNotContract(web3, CONTRACT_ADDRESS, "Environment variable CONTRACT_ADDRESS")
@@ -87,12 +86,12 @@ async function start() {
     const opts = {
         from: account.address,
         gas: 4000000,
-        gasPrice: 4000000000,
+        gasPrice: GAS_PRICE_GWEI || 4000000000,
     }
 
     // ignore the saved config / saved state if using ganache
     // augment the config / saved state with variables that may be useful for the validators
-    const config = RESET || !ethereumServer ? {} : await loadState(storePath)
+    const config = RESET || !ethereumServer ? {} : await fileStore.loadState()
     config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
     config.blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezePeriodSeconds || 3600
     config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezePeriodSeconds, opts, log)
@@ -100,7 +99,7 @@ async function start() {
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.operatorAddress = account.address
 
-    const operator = new Operator(web3, config, saveState.bind(null, storePath), log, error)
+    const operator = new Operator(web3, config, fileStore, log, error)
     await operator.start()
 
     log("Starting web server...")
@@ -108,13 +107,13 @@ async function start() {
     const serverURL = `http://localhost:${port}`
     const app = express()
     app.use(bodyParser.json())
-    app.use("/", router(operator.plasma))
+    app.use("/api", router(operator.plasma))
+    app.use("/admin", revenueDemoRouter(operator))
     app.use(express.static(path.join(__dirname, "static_web")))
     app.listen(port, () => log(`Revenue demo UI started at ${serverURL}`))
 }
 
-async function deployContract(web3, oldTokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
-    const tokenAddress = oldTokenAddress || await deployToken(web3, TOKEN_NAME, TOKEN_SYMBOL, sendOptions, log)
+async function deployContract(web3, tokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
     log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
     const Monoplasma = new web3.eth.Contract(MonoplasmaJson.abi)
     const monoplasma = await Monoplasma.deploy({

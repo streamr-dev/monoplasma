@@ -10,10 +10,10 @@ const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
  */
 module.exports = class MonoplasmaWatcher {
 
-    constructor(web3, startState, saveStateFunc, logFunc, errorFunc) {
+    constructor(web3, startState, store, logFunc, errorFunc) {
         this.web3 = web3
         this.state = startState
-        this.saveStateFunc = saveStateFunc
+        this.store = store
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
         this.lastBlockNumber = 0
@@ -28,7 +28,7 @@ module.exports = class MonoplasmaWatcher {
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         this.state.tokenAddress = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
-        this.plasma = new Monoplasma(this.state.balances)
+        this.plasma = new Monoplasma(this.state.balances, this.store)
 
         this.log("Playing back root chain events...")
         const latestBlock = await this.web3.eth.getBlockNumber()
@@ -64,7 +64,7 @@ module.exports = class MonoplasmaWatcher {
 
     async saveState(){
         this.state.balances = this.plasma.getMembers()
-        this.saveStateFunc(this.state)
+        this.store.saveState(this.state)
     }
 
     async playback(fromBlock, toBlock) {

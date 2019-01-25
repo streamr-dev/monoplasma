@@ -36,7 +36,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
         // check that the hash at that point in history matches
         const hash = this.validatedPlasma.getRootHash()
-        if (hash == block.rootHash) {
+        if (hash === block.rootHash) {
             this.log(`Root hash @ ${blockNum} validated.`)
             this.lastValidatedBlock = blockNum
             this.lastValidatedProofs = this.watchedAccounts.map(this.validatedPlasma.getMember)
