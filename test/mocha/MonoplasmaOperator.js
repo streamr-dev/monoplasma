@@ -97,16 +97,18 @@ function getMockStore(storeObject) {
         storeObject.lastSavedState = state
     }
     store.loadState = async () => {
-        log(`Loading state: ${startState}`)
-        return startState
+        const state = getState()
+        log(`Loading state: ${state}`)
+        return state
     }
     store.saveBlock = async (members, blockNumber) => {
         log(`Saving block ${blockNumber}: ${JSON.stringify(members)}`)
         storeObject.lastSavedBlock = members
     }
     store.loadBlock = async blockNumber => {
-        log(`Loading block ${blockNumber}: ${startState.balances}`)
-        return startState.balances
+        const state = getState()
+        log(`Loading block ${blockNumber}: ${state.balances}`)
+        return state.balances
     }
     store.blockExists = async blockNumber => {
         log(`Checking block ${blockNumber} exists, answering yes`)
