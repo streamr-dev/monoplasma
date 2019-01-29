@@ -2,28 +2,26 @@ const channel = require("../../src/joinPartChannel")
 
 const sleep = require("./sleep-promise")
 
-const clientId = process.env.TEST_ID
-if (!clientId) {
-    throw new Error("Please add TEST_ID to environment!")
-}
-
 async function start() {
-    await channel.listen(clientId)
+    await channel.listen()
+
     let joinOk = false
-    channel.on("join", (data, socket) => {
-        // TODO: check data
-        console.log(data)
-        joinOk = true
+    channel.on("join", addressList => {
+        joinOk = addressList[0].earnings === 40
+        console.log(`Got ${addressList.length} joining addresses, data was ${joinOk ? "OK" : "NOT OK"}`)
     })
+
     let partOk = false
-    channel.on("part", (data, socket) => {
-        // TODO: check data
-        console.log(data)
-        partOk = true
+    channel.on("part", addressList => {
+        partOk = addressList[0] === "0xdc353aa3d81fc3d67eb49f443df258029b01d8ab"
+        console.log(`Got ${addressList.length} parting addresses, data was ${partOk ? "OK" : "NOT OK"}`)
     })
-    await sleep(50)
+
+    await sleep(300)
+
     if (joinOk && partOk) {
-        console.log("OK")
+        console.log("[OK]")
     }
+    channel.close()
 }
 start()

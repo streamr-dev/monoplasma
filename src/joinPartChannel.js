@@ -1,6 +1,6 @@
-const ipc = require("node-ipc")
+const zmq = require("zeromq")
 
-const serverId = "join-part-channel"
+const joinPartChannelUrl = "tcp://127.0.0.1:4567"
 
 /**
  * @typedef {string} State
@@ -26,31 +26,36 @@ const State = {
 const channel = {
     mode: State.NOT_STARTED,
 
-    startServer: () => new Promise(done => {
+    startServer: () => {
         if (channel.mode) { throw new Error(`Already started as ${channel.mode}`)}
 
-        ipc.config.id = serverId
-        ipc.config.retry = 1000
+        channel.sock = zmq.socket("pub")
+        channel.sock.bindSync(joinPartChannelUrl)
+        channel.publish = (topic, addresses) => {
+            channel.sock.send([topic, JSON.stringify(addresses)])
+        }
+        channel.close = channel.sock.close.bind(channel.sock)
+        channel.mode = "server"
+    },
 
-        ipc.serve(() => {
-            channel.mode = "server"
-            channel.publish = ipc.server.emit.bind(ipc.server)
-            done(channel)
-        })
-    }),
-
-    listen: clientId => new Promise(done => {
+    listen: () => {
         if (channel.mode) { throw new Error(`Already started as ${channel.mode}`)}
 
-        ipc.config.id = clientId
-        ipc.config.retry = 1000
-
-        ipc.connectTo(serverId, () => {
-            channel.mode = "client"
-            channel.on = ipc.of[serverId].on.bind(ipc.of[serverId])
-            done(channel)
-        })
-    })
+        channel.sock = zmq.socket("sub")
+        channel.sock.connect(joinPartChannelUrl)
+        channel.sock.subscribe("join")
+        channel.sock.subscribe("part")
+        channel.on = (topic, cb) => {
+            channel.sock.on("message", (topicBuffer, messageBuffer) => {
+                if (topicBuffer.toString() === topic) {
+                    const message = JSON.parse(messageBuffer)
+                    cb(message)
+                }
+            })
+        }
+        channel.close = channel.sock.close.bind(channel.sock)
+        channel.mode = "client"
+    }
 }
 
 module.exports = channel

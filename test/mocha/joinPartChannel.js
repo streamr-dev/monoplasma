@@ -1,40 +1,54 @@
 /*global describe it */
 
+const assert = require("assert")
+const path = require("path")
 const { spawn } = require("child_process")
 
+const sleep = require("../utils/sleep-promise")
+
+const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
+
+const log = () => {} // console.log
+
 describe("joinPartChannel", () => {
-    it("gets messages through", done => {
-        const server = spawn("node", ["../utils/joinPartChannel-server.js"])
-        const client0 = spawn("node", ["../utils/joinPartChannel-client.js"], { env: { TEST_ID: "client0" } })
-        const client1 = spawn("node", ["../utils/joinPartChannel-client.js"], { env: { TEST_ID: "client1" } })
+    it("gets messages through", async function () {
+        const client0 = spawn("node", [`${helperFile}-client.js`])
+        const client1 = spawn("node", [`${helperFile}-client.js`])
+
+        const server = spawn("node", [`${helperFile}-server.js`])
 
         let serverDone = false
         server.stdout.on("data", data => {
-            if (data.indexOf("OK") > -1) {
+            log("Server: " + data.toString())
+            if (data.indexOf("[OK]") > -1) {
                 serverDone = true
             }
         })
 
         let client0Done = false
         client0.stdout.on("data", data => {
-            if (data.indexOf("OK") > -1) {
+            log("Client 0: " + data.toString())
+            if (data.indexOf("[OK]") > -1) {
                 client0Done = true
             }
         })
 
         let client1Done = false
         client1.stdout.on("data", data => {
-            if (data.indexOf("OK") > -1) {
+            log("Client 1: " + data.toString())
+            if (data.indexOf("[OK]") > -1) {
                 client1Done = true
             }
         })
 
+        await sleep(500)
 
-        setTimeout(() => {
-            if (!serverDone) { done(new Error("Server fails")) }
-            if (!client0Done) { done(new Error("Client 0 fails")) }
-            if (!client1Done) { done(new Error("Client 1 fails")) }
-            done()
-        }, 1000)
+        server.kill()
+        client1.kill()
+        client0.kill()
+
+        assert(serverDone, "Server fails")
+        assert(client0Done, "Client 0 fails")
+        assert(client1Done, "Client 1 fails")
     })
 })

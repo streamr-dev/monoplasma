@@ -36,13 +36,13 @@
     "ganache-cli": "^6.2.3",
     "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
-    "node-ipc": "^9.1.1",
     "openzeppelin-solidity": "2.0.0",
     "prettyjson": "^1.2.1",
     "promise-events": "^0.1.4",
     "source-map-support": "^0.5.9",
     "truffle-resolver": "^4.0.4",
     "web3": "1.0.0-beta.37",
-    "websocket": "^1.0.28"
+    "websocket": "^1.0.28",
+    "zeromq": "^5.1.0"
   }
 }
