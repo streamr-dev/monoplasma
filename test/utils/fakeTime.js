@@ -1,3 +1,5 @@
+/*global web3 */
+
 // some kind of "now" (epoch) in seconds, valid-ish block.timestamp
 function now() {
     return Number.parseInt(+new Date() / 1000, 10)

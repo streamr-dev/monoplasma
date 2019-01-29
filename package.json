@@ -36,6 +36,7 @@
     "ganache-cli": "^6.2.3",
     "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
+    "node-ipc": "^9.1.1",
     "openzeppelin-solidity": "2.0.0",
     "prettyjson": "^1.2.1",
     "promise-events": "^0.1.4",

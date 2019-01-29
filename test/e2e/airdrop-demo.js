@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/*global describe it */
 const util = require("util")
 const exec = util.promisify(require("child_process").exec)
 const { spawn } = require("child_process")
@@ -6,14 +7,10 @@ const { spawn } = require("child_process")
 const fs = require("fs")
 const assert = require("assert")
 
+const sleep = require("../utils/sleep-promise")
+
 // project root dir
 const cwd = __dirname.split("/test/e2e")[0]
-
-function sleep(ms){
-    return new Promise(resolve => {
-        setTimeout(resolve,ms)
-    })
-}
 
 describe("Airdrop demo", () => {
     it("should run correctly and produce HTML pages", async () => {
