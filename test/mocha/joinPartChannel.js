@@ -4,6 +4,8 @@ const assert = require("assert")
 const path = require("path")
 const { spawn } = require("child_process")
 
+const channel = require("../../src/joinPartChannel")
+
 const sleep = require("../utils/sleep-promise")
 
 const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
@@ -50,5 +52,19 @@ describe("joinPartChannel", () => {
         assert(serverDone, "Server fails")
         assert(client0Done, "Client 0 fails")
         assert(client1Done, "Client 1 fails")
+    })
+
+    it("can't double-start server", () => {
+        channel.startServer()
+        assert.throws(channel.startServer, new Error("Already started as server"))
+        assert.throws(channel.listen, new Error("Already started as server"))
+        channel.close()
+    })
+
+    it("can't double-start client", () => {
+        channel.listen()
+        assert.throws(channel.startServer, new Error("Already started as client"))
+        assert.throws(channel.listen, new Error("Already started as client"))
+        channel.close()
     })
 })

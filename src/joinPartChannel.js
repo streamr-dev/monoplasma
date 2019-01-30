@@ -34,8 +34,7 @@ const channel = {
         channel.publish = (topic, addresses) => {
             channel.sock.send([topic, JSON.stringify(addresses)])
         }
-        channel.close = channel.sock.close.bind(channel.sock)
-        channel.mode = "server"
+        channel.mode = State.SERVER
     },
 
     listen: () => {
@@ -53,8 +52,14 @@ const channel = {
                 }
             })
         }
-        channel.close = channel.sock.close.bind(channel.sock)
-        channel.mode = "client"
+        channel.mode = State.CLIENT
+    },
+
+    close: () => {
+        if (!channel.mode) { throw new Error("Can't close, not started")}
+
+        channel.sock.close()
+        channel.mode = State.NOT_STARTED
     }
 }
 
