@@ -1,8 +1,9 @@
-const channel = require("../../src/joinPartChannel")
+const Channel = require("../../src/joinPartChannel")
 
 const sleep = require("./sleep-promise")
 
 async function start() {
+    const channel = new Channel()
     console.log("Starting server")
     await channel.startServer()
 

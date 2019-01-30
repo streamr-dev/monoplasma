@@ -7,9 +7,15 @@ const joinPartChannelUrl = "tcp://127.0.0.1:4567"
  * @enum {string}
  */
 const State = {
-    NOT_STARTED: "",
+    CLOSED: "",
     SERVER: "server",
     CLIENT: "client",
+}
+
+function reset(channel) {
+    channel.mode = State.CLOSED
+    channel.publish = () => { throw new Error("Channel is closed" )}
+    channel.on = () => { throw new Error("Channel is closed" )}
 }
 
 /**
@@ -17,50 +23,49 @@ const State = {
  * @property {State} mode
  * @property {function} publish
  * @property {function} on
- * @property {function} startServer
- * @property {function} listen
  */
-/**
- * @type {Channel} channel
- */
-const channel = {
-    mode: State.NOT_STARTED,
+class Channel {
+    constructor() {
+        reset(this)
+    }
 
-    startServer: () => {
-        if (channel.mode) { throw new Error(`Already started as ${channel.mode}`)}
+    /** After this, call .publish(topic, data) to send */
+    startServer() {
+        if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
-        channel.sock = zmq.socket("pub")
-        channel.sock.bindSync(joinPartChannelUrl)
-        channel.publish = (topic, addresses) => {
-            channel.sock.send([topic, JSON.stringify(addresses)])
+        this.sock = zmq.socket("pub")
+        this.sock.bindSync(joinPartChannelUrl)
+        this.publish = (topic, addresses) => {
+            this.sock.send([topic, JSON.stringify(addresses)])
         }
-        channel.mode = State.SERVER
-    },
+        this.mode = State.SERVER
+    }
 
-    listen: () => {
-        if (channel.mode) { throw new Error(`Already started as ${channel.mode}`)}
+    /** After this, add a listener for specific topic: .on(topic, msg => { handler } ) */
+    listen() {
+        if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
-        channel.sock = zmq.socket("sub")
-        channel.sock.connect(joinPartChannelUrl)
-        channel.sock.subscribe("join")
-        channel.sock.subscribe("part")
-        channel.on = (topic, cb) => {
-            channel.sock.on("message", (topicBuffer, messageBuffer) => {
+        this.sock = zmq.socket("sub")
+        this.sock.connect(joinPartChannelUrl)
+        this.sock.subscribe("join")
+        this.sock.subscribe("part")
+        this.on = (topic, cb) => {
+            this.sock.on("message", (topicBuffer, messageBuffer) => {
                 if (topicBuffer.toString() === topic) {
                     const message = JSON.parse(messageBuffer)
                     cb(message)
                 }
             })
         }
-        channel.mode = State.CLIENT
-    },
+        this.mode = State.CLIENT
+    }
 
-    close: () => {
-        if (!channel.mode) { throw new Error("Can't close, not started")}
-
-        channel.sock.close()
-        channel.mode = State.NOT_STARTED
+    /** Close the channel */
+    close() {
+        if (!this.mode) { throw new Error("Can't close, already closed")}
+        this.sock.close()
+        reset(this)
     }
 }
 
-module.exports = channel
+module.exports = Channel
