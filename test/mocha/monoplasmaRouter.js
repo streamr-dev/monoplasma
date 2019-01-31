@@ -25,6 +25,7 @@ describe("Express app / monoplasma server", () => {
         server.listen(port)
     })
 
+    /* "Admin features" were moved to adminRouter and are handled through joinPartChannel
     describe("Admin API", () => {
         it("initially has no members", async () => {
             assert.deepStrictEqual(await fetchMembers(), [])
@@ -49,6 +50,7 @@ describe("Express app / monoplasma server", () => {
             assert.deepStrictEqual(await fetchMembers(), [])
         })
     })
+    */
 
     describe("Member API", () => {
         it("can request for balance proof", async () => {

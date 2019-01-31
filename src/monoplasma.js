@@ -42,18 +42,38 @@ class Monoplasma {
         }
     }
 
+    /**
+     * Get member's current status (without withdrawal proof)
+     * @param {string} address
+     * @param {number} blockNumber at which (published) block
+     */
     getMember(address) {
         const m = this.members.get(address)
         if (!m) { return {} }
         const obj = m.toObject()
         obj.active = m.isActive()
-        obj.proof = m.getProof(this.tree)
+        obj.proof = this.getProof(address)
         return obj
     }
 
     /**
-     * Get proof of earnings for withdrawal ("payslip")
-     * @param address with earnings to be verified
+     * Get member's info with withdrawal proof at given block
+     * @param {string} address
+     * @param {number} blockNumber at which (published) block
+     */
+    async getMemberAt(address, blockNumber) {
+        if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
+        const m = this.members.get(address)
+        if (!m) { return {} }
+        const obj = m.toObject()
+        obj.active = m.isActive()
+        obj.proof = await this.getProof(address, blockNumber)
+        return obj
+    }
+
+    /**
+     * Get hypothetical proof of earnings from current status
+     * @param {string} address with earnings to be verified
      * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
      */
     getProof(address) {
@@ -61,8 +81,30 @@ class Monoplasma {
         return path
     }
 
+    /**
+     * Get proof of earnings for withdrawal ("payslip") from specific (published) block
+     * @param {string} address with earnings to be verified
+     * @param {number} blockNumber at which (published) block
+     * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
+     */
+    async getProofAt(address, blockNumber) {
+        if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
+        const block = await this.store.loadBlock(blockNumber)
+        const tree = new MerkleTree(block)
+        const path = tree.getPath(address)
+        return path
+    }
+
     getRootHash() {
         return this.tree.getRootHash()
+    }
+
+    async getRootHashAt(blockNumber) {
+        if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
+        const block = await this.store.loadBlock(blockNumber)
+        const tree = new MerkleTree(block)
+        const rootHash = tree.getRootHash()
+        return rootHash
     }
 
     // ///////////////////////////////////
@@ -125,11 +167,14 @@ class Monoplasma {
      */
     /**
      * Add active recipients into Community, or re-activate existing ones (previously removed)
-     * @param {Array<IncomingMember>} members
+     * @param {Array<IncomingMember|string>} members
      */
     addMembers(members) {
         let added = 0
         members.forEach(member => {
+            if (typeof member === "string") {
+                member = { address: member }
+            }
             const wasNew = this.addMember(member.address, member.name)
             added += wasNew ? 1 : 0
         })
@@ -153,8 +198,8 @@ class Monoplasma {
      * Stash the merkle tree state for later use
      * @param {number} rootChainBlocknumber
      */
-    storeBlock(rootChainBlocknumber) {
-        this.store.saveBlock(this.members.toArray(), rootChainBlocknumber)
+    async storeBlock(rootChainBlocknumber) {
+        return this.store.saveBlock(this.members.toArray(), rootChainBlocknumber)
     }
 
     /**

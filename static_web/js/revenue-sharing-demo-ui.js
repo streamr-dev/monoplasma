@@ -175,7 +175,7 @@ function onClickAddUsers() {
         window.alert("Please enter addresses to the textfield, one per line")
         return
     }
-    fetch("/api/members", {
+    fetch("/admin/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userList),
@@ -189,7 +189,7 @@ function onClickKick() {
         window.alert("Please select account first")
         return
     }
-    fetch(`/api/members/${selectedAddress}`, { method: "DELETE" })
+    fetch(`/admin/members/${selectedAddress}`, { method: "DELETE" })
         .then(resp => resp.json())
         .then(res => {
             window.alert(res)
@@ -209,7 +209,7 @@ function onClickMint() {
 }
 
 function onClickForcePublish() {
-    fetch("/admin/publishBlock")
+    fetch("/demo/publishBlock")
         .then(resp => resp.json())
         .then(res => {
             window.alert(res)
@@ -218,7 +218,7 @@ function onClickForcePublish() {
 }
 
 function onClickSteal() {
-    fetch(`/admin/stealAllTokens?targetAddress=${metamaskAddress}`)
+    fetch(`/demo/stealAllTokens?targetAddress=${metamaskAddress}`)
         .then(resp => resp.json())
         .then(res => {
             window.alert(res)

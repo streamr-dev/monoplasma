@@ -1,3 +1,5 @@
+/*global contract artifacts before describe it web3 */
+
 const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
@@ -11,18 +13,15 @@ contract("Monoplasma", accounts => {
     let rootchain
     const producer = accounts[1]
     const anotherProducer = accounts[2]
-    const nonMember = accounts[5]
     const admin = accounts[9]
     const blockFreezePeriodSeconds = 1000
     const plasma = new Monoplasma()
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
         rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})
-        await rootchain.addRecipient(producer, {from: admin, gas: 4000000})
-        await rootchain.addRecipient(anotherProducer, {from: admin, gas: 4000000})
         await token.mint(rootchain.address, 1000000, {from: admin})
 
-        // these should be performed by the watcher
+        // these would be performed by the MonoplasmaWatcher
         plasma.addMember(producer)
         plasma.addMember(anotherProducer)
         plasma.addRevenue(1000)

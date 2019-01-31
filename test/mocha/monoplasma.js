@@ -1,3 +1,5 @@
+/*global describe it beforeEach */
+
 const Monoplasma = require("../../src/monoplasma")
 const assert = require("assert")
 
@@ -23,7 +25,7 @@ describe("Monoplasma", () => {
             plasmaAdmin.addRevenue(100)
             plasma = plasmaAdmin.getMemberApi()
         })
-        it("has all read-only functions", () => {
+        it("has all read-only functions", async () => {
             assert.deepStrictEqual(plasma.getMembers(), [{
                 address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
                 earnings: "50",

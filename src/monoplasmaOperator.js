@@ -2,8 +2,8 @@ const MonoplasmaWatcher = require("./monoplasmaWatcher")
 
 module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
-    constructor(web3, startState, store, logFunc, errorFunc) {
-        super(web3, startState, store, logFunc, errorFunc)
+    constructor(...args) {
+        super(...args)
 
         this.minIntervalBlocks = this.state.minIntervalBlocks || 2  // TODO: think about it more closely
         this.publishedBlocks = []
@@ -13,7 +13,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
     async start() {
         await super.start()
-        this.filters.tokensReceived.on("data", event => { this.onTokensReceived(event) })
+        this.tokenFilter.on("data", event => { this.onTokensReceived(event) })
     }
 
     // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received

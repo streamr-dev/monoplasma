@@ -56,7 +56,11 @@ async function start() {
 
     log(`Connecting to ${ethereumServer}...`)
     const web3 = new Web3(ethereumServer)
-    const validator = new Validator(accountList, address, web3, config, saveState.bind(null, storePath), log, error)
+
+    log("Starting the joinPartChannel")
+    const channel = new Channel()
+
+    const validator = new Validator(accountList, address, web3, channel, config, saveState.bind(null, storePath), log, error)
     await validator.start()
 }
 

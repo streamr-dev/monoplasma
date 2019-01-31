@@ -1,5 +1,5 @@
 const Monoplasma = require("./monoplasma")
-const { mergeEventLists, replayEvents, replayEvent, throwIfSetButNotContract } = require("./ethSync")
+const { throwIfSetButNotContract } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
@@ -10,8 +10,9 @@ const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
  */
 module.exports = class MonoplasmaWatcher {
 
-    constructor(web3, startState, store, logFunc, errorFunc) {
+    constructor(web3, joinPartChannel, startState, store, logFunc, errorFunc) {
         this.web3 = web3
+        this.channel = joinPartChannel
         this.state = startState
         this.store = store
         this.log = logFunc || (() => {})
@@ -30,6 +31,10 @@ module.exports = class MonoplasmaWatcher {
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.plasma = new Monoplasma(this.state.balances, this.store)
 
+        // TODO: playback from joinPartChannel not implemented =>
+        //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
+        //   the failing will probably be quite quickly noticed though, so at least validators would simply restart
+        //   if the operator fails though...
         this.log("Playing back root chain events...")
         const latestBlock = await this.web3.eth.getBlockNumber()
         const playbackStartingBlock = this.state.rootChainBlock + 1 || 0
@@ -39,40 +44,47 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to root chain events...")
-        this.filters.tokensReceived = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
-        this.filters.recipientAdded = this.contract.events.RecipientAdded({})
-        this.filters.recipientRemoved = this.contract.events.RecipientRemoved({})
+        this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
+        this.tokenFilter.on("data", event => {
+            const income = event.returnValues.value
+            this.log(`${income} tokens received`)
+            this.plasma.addRevenue(income)
+        })
+        this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
+        this.tokenFilter.on("error", this.error)
 
-        Object.values(this.filters).forEach(filter => {
-            filter.on("data", event => { this.onEvent(event) })
-            filter.on("changed", event => { this.error("Event removed in re-org!", event) })
-            filter.on("error", this.error)
+        this.log("Listening to joins/parts from the channel...")
+        this.channel.listen()
+        this.channel.on("join", addressList => {
+            const count = this.plasma.addMembers(addressList)
+            this.log(`Added or activated ${count} new member(s)`)
+        })
+        this.channel.on("part", addressList => {
+            const count = this.plasma.removeMembers(addressList)
+            this.log(`De-activated ${count} member(s)`)
         })
 
         await this.saveState()
     }
 
-    async onEvent(event) {
-        replayEvent(this.plasma, event)
-    }
-
     async stop() {
-        Object.values(this.filters).forEach(filter => {
-            filter.unsubscribe()
-        })
+        this.tokenFilter.unsubscribe()
+        this.channel.close()
     }
 
     async saveState(){
         this.state.balances = this.plasma.getMembers()
-        this.store.saveState(this.state)
+        await this.store.saveState(this.state)
     }
 
     async playback(fromBlock, toBlock) {
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
-        const joinPartEvents = await this.contract.getPastEvents("allEvents", { fromBlock, toBlock })
-        const allEvents = mergeEventLists(transferEvents, joinPartEvents)
-        replayEvents(this.plasma, allEvents)
+        transferEvents.forEach(event => {
+            const income = event.returnValues.value
+            this.log(`Playback: ${income} tokens received @ block ${event.blockNumber}`)
+            this.plasma.addRevenue(income)
+        })
         this.state.rootChainBlock = toBlock
         this.state.balances = this.plasma.getMembers()
     }

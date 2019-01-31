@@ -12,8 +12,10 @@ const Operator = require("./src/monoplasmaOperator")
 const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
 const deployDemoToken = require("./src/deployDemoToken")
 
-const router = require("./src/monoplasmaRouter")
+const operatorRouter = require("./src/monoplasmaRouter")
+const adminRouter = require("./src/adminRouter")
 const revenueDemoRouter = require("./src/revenueDemoRouter")
+const Channel = require("./src/joinPartChannel")
 
 const MonoplasmaJson = require("./build/contracts/Monoplasma.json")
 
@@ -99,16 +101,22 @@ async function start() {
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.operatorAddress = account.address
 
-    const operator = new Operator(web3, config, fileStore, log, error)
+    log("Starting the joinPartChannel")
+    const operatorChannel = new Channel()
+
+    const operator = new Operator(web3, operatorChannel, config, fileStore, log, error)
     await operator.start()
 
     log("Starting web server...")
     const port = WEBSERVER_PORT || 8080
     const serverURL = `http://localhost:${port}`
     const app = express()
+    const adminChannel = new Channel()
+    adminChannel.startServer()
     app.use(bodyParser.json())
-    app.use("/api", router(operator.plasma))
-    app.use("/admin", revenueDemoRouter(operator))
+    app.use("/api", operatorRouter(operator.plasma))
+    app.use("/admin", adminRouter(adminChannel))
+    app.use("/demo", revenueDemoRouter(operator))
     app.use(express.static(path.join(__dirname, "static_web")))
     app.listen(port, () => log(`Revenue demo UI started at ${serverURL}`))
 }
