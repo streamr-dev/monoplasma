@@ -18,7 +18,7 @@ async function start() {
         console.log(`Got ${addressList.length} parting addresses, data was ${partOk ? "OK" : "NOT OK"}`)
     })
 
-    await sleep(300)
+    await sleep(500)
 
     if (joinOk && partOk) {
         console.log("[OK]")

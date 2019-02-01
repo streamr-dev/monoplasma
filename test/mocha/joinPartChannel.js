@@ -6,11 +6,11 @@ const { spawn } = require("child_process")
 
 const Channel = require("../../src/joinPartChannel")
 
-const sleep = require("../utils/sleep-promise")
+const until = require("../utils/await-until")
 
 const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
 
-const log = () => {} // console.log
+const log = console.log
 
 describe("joinPartChannel", () => {
     it("gets messages through", async function () {
@@ -43,7 +43,7 @@ describe("joinPartChannel", () => {
             }
         })
 
-        await sleep(500)
+        await until(() => serverDone && client0Done && client1Done, 5000)
 
         server.kill()
         client1.kill()

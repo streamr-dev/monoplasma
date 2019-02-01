@@ -1,4 +1,4 @@
-/*global describe it */
+/*global describe it assert */
 
 const {
     assertEqual,
@@ -12,12 +12,14 @@ const {
 //  increaseTime,  // tested separately in test/truffle/increaseTime.js, requires a running ganache
 } = require("../utils/fakeTime")
 
+const until = require("../utils/await-until")
+
 // simulate what Truffle provides
 const Web3 = require("web3")
 global.web3 = Web3.utils
 global.assert = require("assert")
 
-describe("Test helpers", () => {
+describe("Test help utilities", () => {
     describe("assertEqual", () => {
         it("matches numbers", () => {
             assertEqual(1, "1")
@@ -115,6 +117,32 @@ describe("Test helpers", () => {
     describe("now", () => {
         it("returns something that could be a block timestamp", () => {
             assert(!Number.isNaN(+now()))
+        })
+    })
+
+    describe("await-until", () => {
+        it("waits until condition is true", async () => {
+            const start = +new Date()
+            let done = false
+            setTimeout(() => { done = true }, 10)
+            assert(!done)
+            assert(+new Date() - start < 9)
+            const ret = await until(() => done)
+            assert(done)
+            assert(ret)
+            assert(+new Date() - start > 9)
+            assert(+new Date() - start < 900)
+        })
+        it("waits until timeout", async () => {
+            const start = +new Date()
+            let done = false
+            assert(!done)
+            assert(+new Date() - start < 9)
+            const ret = await until(() => done, 100, 10)
+            assert(!done)
+            assert(!ret)
+            assert(+new Date() - start > 90)
+            assert(+new Date() - start < 900)
         })
     })
 })
