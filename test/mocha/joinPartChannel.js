@@ -10,7 +10,22 @@ const until = require("../utils/await-until")
 
 const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
 
-const log = console.log
+const log = () => {} // console.log
+
+function assertThrows(fun, reason) {
+    let failed = false
+    try {
+        fun()
+    } catch (e) {
+        failed = true
+        if (reason) {
+            assert.strictEqual(e.message, reason)
+        }
+    }
+    if (!failed) {
+        throw new Error("Expected call to fail")
+    }
+}
 
 describe("joinPartChannel", () => {
     it("gets messages through", async function () {
@@ -57,16 +72,16 @@ describe("joinPartChannel", () => {
     it("can't double-start server", () => {
         const channel = new Channel()
         channel.startServer()
-        assert.throws(() => channel.startServer(), new Error("Already started as server"))
-        assert.throws(() => channel.listen(), new Error("Already started as server"))
+        assertThrows(() => channel.startServer(), "Already started as server")
+        assertThrows(() => channel.listen(), "Already started as server")
         channel.close()
     })
 
     it("can't double-start client", () => {
         const channel = new Channel()
         channel.listen()
-        assert.throws(() => channel.startServer(), new Error("Already started as client"))
-        assert.throws(() => channel.listen(), new Error("Already started as client"))
+        assertThrows(() => channel.startServer(), new Error("Already started as client"))
+        assertThrows(() => channel.listen(), new Error("Already started as client"))
         channel.close()
     })
 })
