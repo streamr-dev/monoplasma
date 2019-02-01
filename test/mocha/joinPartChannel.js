@@ -80,8 +80,8 @@ describe("joinPartChannel", () => {
     it("can't double-start client", () => {
         const channel = new Channel()
         channel.listen()
-        assertThrows(() => channel.startServer(), new Error("Already started as client"))
-        assertThrows(() => channel.listen(), new Error("Already started as client"))
+        assertThrows(() => channel.startServer(), "Already started as client")
+        assertThrows(() => channel.listen(), "Already started as client")
         channel.close()
     })
 })
