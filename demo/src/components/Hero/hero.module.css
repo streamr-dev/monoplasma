@@ -1,0 +1,23 @@
+.root {
+  background-color: #f8f8f8;
+  padding: 10em 0;
+  text-align: center;
+}
+
+.root h1 {
+  font-size: 2.5em;
+  font-weight: var(--regular);
+  line-height: 1em;
+  margin: 0 0 0.75em;
+}
+
+.root p {
+  color: #a3a3a3;
+  font-size: 0.75em;
+  font-weight: var(--medium);
+  line-height: 2em;
+  letter-spacing: 2px;
+  margin: 0 auto;
+  text-transform: uppercase;
+  width: 75%;
+}
