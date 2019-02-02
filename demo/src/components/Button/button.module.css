@@ -1,0 +1,29 @@
+.root {
+  background-color: #0324ff;
+  border: 1px solid #0324ff;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 1em;
+  font-weight: var(--semiBold);
+  height: 4em;
+  letter-spacing: 1.33px;
+  line-height: 1em;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.edge,
+.redEdge {
+  background-color: transparent;
+}
+
+.edge {
+  color: #0324ff;
+}
+
+.redEdge {
+  border-color: #ff0f2d;
+  color: #ff0f2d;
+}

@@ -1,11 +1,6 @@
 // @flow
 
 import React from 'react'
-import Layout from '../components/Layout'
-import Hero from '../components/Hero'
+import Home from '../components/Home'
 
-export default () => (
-    <Layout>
-        <Hero />
-    </Layout>
-)
+export default () => <Home />
