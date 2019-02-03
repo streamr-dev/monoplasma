@@ -3,7 +3,7 @@
 import React, { Component } from 'react'
 import BN from 'bn.js'
 import HomeComponent from '../../components/Home'
-import Context, { Props as ContextProps } from '../../contexts/Home'
+import Context, { type Props as ContextProps } from '../../contexts/Home'
 
 type State = ContextProps & {
 }

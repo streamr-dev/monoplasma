@@ -14,7 +14,7 @@ export type Props = {
     onStealClick: () => void,
 }
 
-export default createContext({
+export default createContext<Props>({
     account: [],
     revenuePool: [],
     onViewClick: () => {},

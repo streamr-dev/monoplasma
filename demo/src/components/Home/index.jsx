@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import Context, { Props as ContextProps } from '../../contexts/Home'
+import Context, { type Props as ContextProps } from '../../contexts/Home'
 import Container from '../Container'
 import Layout from '../Layout'
 import Hero from './Hero'
@@ -68,7 +68,7 @@ const Home = ({
     </Layout>
 )
 
-export default (props) => (
+export default (props: {}) => (
     <Context.Consumer>
         {(context: ContextProps) => (
             <Home {...context} {...props} />
