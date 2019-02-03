@@ -1,6 +1,7 @@
 // @flow
 
-import React, { type Node } from 'react'
+import React, { type Node, Fragment } from 'react'
+import Helmet from 'react-helmet'
 
 import 'normalize.css'
 import '../../stylesheets/variables.css'
@@ -11,9 +12,15 @@ type Props = {
 }
 
 const Layout = ({ children }: Props) => (
-    <div>
+    <Fragment>
+        <Helmet>
+            <meta httpEquiv="content-type" content="text/html; charset=utf-8" />
+            <meta name="description" content="See https://github.com/streamr-dev/monoplasma" />
+            <meta name="keywords" content="monoplasma revenue sharing ethereum token sidechain demo" />
+            <title>Revenue sharing demo</title>
+        </Helmet>
         {children}
-    </div>
+    </Fragment>
 )
 
 export default Layout

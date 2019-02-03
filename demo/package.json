@@ -24,9 +24,11 @@
     "gatsby-plugin-eslint": "^2.0.4",
     "gatsby-plugin-flow": "^1.0.2",
     "gatsby-plugin-postcss": "^2.0.5",
+    "gatsby-plugin-react-helmet": "^3.0.6",
     "normalize.css": "^8.0.1",
     "precss": "^4.0.0",
     "react": "^16.7.0",
-    "react-dom": "^16.7.0"
+    "react-dom": "^16.7.0",
+    "react-helmet": "^5.2.0"
   }
 }
