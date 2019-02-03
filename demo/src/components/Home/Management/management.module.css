@@ -1,0 +1,41 @@
+.root {
+  display: grid;
+  grid-column-gap: 6em;
+  grid-template-columns: 7fr 3fr;
+  margin-bottom: 6em;
+}
+
+.users {
+  display: grid;
+  grid-row-gap: 2em;
+}
+
+.buttons {
+  text-align: right;
+}
+
+.addUsers {
+  padding: 0 2em;
+}
+
+.tokens {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tokens button {
+  width: 100%;
+}
+
+.hint {
+  background-color: white;
+  border-radius: 4px;
+  color: #525252;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-family: var(--mono);
+  font-size: 0.75em;
+  line-height: 1.25rem;
+  margin: 0.5em 0 0;
+  padding: 1rem 1em;
+}

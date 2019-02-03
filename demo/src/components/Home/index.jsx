@@ -5,14 +5,13 @@ import React from 'react'
 import Context, { Props as ContextProps } from '../../contexts/Home'
 import Container from '../Container'
 import Layout from '../Layout'
-import Button from '../Button'
-import Input from '../Input'
 import Hero from './Hero'
 import Section from './Section'
 import Stats from './Stats'
 import About from './About'
 import UserActions from './UserActions'
 import RevenuePoolActions from './RevenuePoolActions'
+import Management from './Management'
 
 import styles from './home.module.css'
 
@@ -26,6 +25,9 @@ const Home = ({
     onKickClick,
     onWithdrawClick,
     onAddRevenueClick,
+    onAddUsersClick,
+    onMintClick,
+    onStealClick,
 }: Props) => (
     <Layout>
         <Hero />
@@ -56,28 +58,11 @@ const Home = ({
                     onAddRevenueClick={onAddRevenueClick}
                 />
             </Section>
-            <Section title="Management">
-                <div className={styles.management}>
-                    <div className={styles.users}>
-                        <textarea
-                            placeholder="Enter Ethereum addresses, one per line…"
-                            className={Input.styles.textArea}
-                        />
-                        <div className={styles.buttons}>
-                            <Button className={styles.addUsers}>Add users</Button>
-                        </div>
-                    </div>
-                    <div className={styles.tokens}>
-                        <div>
-                            <Button theme="edge">Mint tokens</Button>
-                            <div className={styles.hint}>
-                                Mints new tokens and deposits them to the currently selected account in Metamask.
-                            </div>
-                        </div>
-                        <Button theme="red-edge">Steal all tokens</Button>
-                    </div>
-                </div>
-            </Section>
+            <Management
+                onAddUsersClick={onAddUsersClick}
+                onMintClick={onMintClick}
+                onStealClick={onStealClick}
+            />
             <About />
         </Container>
     </Layout>

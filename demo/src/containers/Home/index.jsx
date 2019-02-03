@@ -32,6 +32,9 @@ class Home extends Component<{}, State> {
         onKickClick: this.onKickClick.bind(this),
         onWithdrawClick: this.onWithdrawClick.bind(this),
         onAddRevenueClick: this.onAddRevenueClick.bind(this),
+        onAddUsersClick: this.onAddUsersClick.bind(this),
+        onMintClick: this.onMintClick.bind(this),
+        onStealClick: this.onStealClick.bind(this),
         /* eslint-enable react/no-unused-state */
     }
 
@@ -49,6 +52,18 @@ class Home extends Component<{}, State> {
 
     onAddRevenueClick() {
         console.log('Add revenue', this)
+    }
+
+    onAddUsersClick(addresses: Array<string>) {
+        console.log('Add users', addresses, this)
+    }
+
+    onMintClick() {
+        console.log('Mint tokens', this)
+    }
+
+    onStealClick() {
+        console.log('Steal tokens', this)
     }
 
     render() {

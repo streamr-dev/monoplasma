@@ -9,6 +9,9 @@ export type Props = {
     onKickClick: (string) => void,
     onWithdrawClick: (string) => void,
     onAddRevenueClick: () => void,
+    onAddUsersClick: (Array<string>) => void,
+    onMintClick: () => void,
+    onStealClick: () => void,
 }
 
 export default createContext({
@@ -18,4 +21,7 @@ export default createContext({
     onKickClick: () => {},
     onWithdrawClick: () => {},
     onAddRevenueClick: () => {},
+    onAddUsersClick: () => {},
+    onMintClick: () => {},
+    onStealClick: () => {},
 })
