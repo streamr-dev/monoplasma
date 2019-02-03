@@ -2,27 +2,6 @@
   padding: 8em 0;
 }
 
-.root input,
-.root textarea {
-  border: 0;
-  border-radius: 4px;
-  font-family: var(--mono);
-  font-weight: var(--medium);
-  padding: 0 1.5em;
-
-  &::placeholder {
-    color: #a3a3a3;
-  }
-}
-
-.root textarea {
-  line-height: 2em;
-  min-height: 7em;
-  padding-bottom: 1em;
-  padding-top: 1em;
-  resize: vertical;
-}
-
 .management {
   display: grid;
   grid-column-gap: 6em;

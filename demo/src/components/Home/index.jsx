@@ -6,6 +6,7 @@ import Context, { Props as ContextProps } from '../../contexts/Home'
 import Container from '../Container'
 import Layout from '../Layout'
 import Button from '../Button'
+import Input from '../Input'
 import Hero from './Hero'
 import Section from './Section'
 import Stats from './Stats'
@@ -58,7 +59,10 @@ const Home = ({
             <Section title="Management">
                 <div className={styles.management}>
                     <div className={styles.users}>
-                        <textarea placeholder="Enter Ethereum addresses, one per line…" />
+                        <textarea
+                            placeholder="Enter Ethereum addresses, one per line…"
+                            className={Input.styles.textArea}
+                        />
                         <div className={styles.buttons}>
                             <Button className={styles.addUsers}>Add users</Button>
                         </div>

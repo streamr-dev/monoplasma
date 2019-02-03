@@ -1,3 +1,20 @@
-.textField {}
+.textField,
+.textArea {
+  border: 0;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-weight: var(--medium);
+  padding: 0 1.5em;
 
-.textArea {}
+  &::placeholder {
+    color: #a3a3a3;
+  }
+}
+
+.textArea {
+  line-height: 2em;
+  min-height: 7em;
+  padding-bottom: 1em;
+  padding-top: 1em;
+  resize: vertical;
+}

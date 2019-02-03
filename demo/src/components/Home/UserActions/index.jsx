@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react'
 import Button from '../../Button'
+import Input from '../../Input'
 
 import styles from './userActions.module.css'
 
@@ -58,7 +59,13 @@ class UserActions extends Component<Props, State> {
 
         return (
             <div className={styles.root}>
-                <input type="text" placeholder="Enter Ethereum address…" value={address} onChange={this.onAddressChange} />
+                <input
+                    type="text"
+                    placeholder="Enter Ethereum address…"
+                    value={address}
+                    onChange={this.onAddressChange}
+                    className={Input.styles.textField}
+                />
                 <Button onClick={this.onViewClick}>View</Button>
                 <Button onClick={this.onWithdrawClick} theme="edge">Withdraw</Button>
                 <Button onClick={this.onKickClick} theme="red-edge">Kick</Button>
