@@ -1,8 +1,8 @@
 // @flow
 
 import React from 'react'
-import BN from 'bn.js'
 
+import Context, { Props as ContextProps } from '../../contexts/Home'
 import Container from '../Container'
 import Layout from '../Layout'
 import Button from '../Button'
@@ -10,47 +10,50 @@ import Hero from './Hero'
 import Section from './Section'
 import Stats from './Stats'
 import About from './About'
+import UserActions from './UserActions'
+import RevenuePoolActions from './RevenuePoolActions'
 
 import styles from './home.module.css'
 
-const Home = () => (
+type Props = ContextProps & {
+}
+
+const Home = ({
+    account,
+    revenuePool,
+    onViewClick,
+    onKickClick,
+    onWithdrawClick,
+    onAddRevenueClick,
+}: Props) => (
     <Layout>
         <Hero />
-        <Container className={styles.root}>
-            <Section title="User account" className={styles.userAccount}>
+        <Container
+            className={styles.root}
+        >
+            <Section
+                title="User account"
+            >
                 <Stats
-                    items={[
-                        ['Total earnings', new BN(0, 2)],
-                        ['Earnings frozen', new BN(0, 2)],
-                        ['Total withdrawn', new BN(0, 2)],
-                        ['Total earnings recorded', new BN(0, 2)],
-                        ['Earnings accessible', new BN(0, 2)],
-                    ]}
+                    items={account}
                 />
-                <div className={styles.actions}>
-                    <input type="text" defaultValue="" placeholder="Enter Ethereum address…" />
-                    <Button>View</Button>
-                    <Button theme="red-edge">Kick</Button>
-                </div>
+                <UserActions
+                    onViewClick={onViewClick}
+                    onKickClick={onKickClick}
+                    onWithdrawClick={onWithdrawClick}
+                    defaultAddress=""
+                />
             </Section>
-            <Section title="Revenue pool" className={styles.revenuePool}>
+            <Section
+                title="Revenue pool"
+                className={styles.revenuePool}
+            >
                 <Stats
-                    items={[
-                        ['Members', new BN(0, 2)],
-                        ['Total earnings', new BN(0, 2)],
-                        ['Earnings frozen', new BN(0, 2)],
-                        ['Contract balance', new BN(0, 2)],
-                        ['Total earnings recorded', new BN(0, 2)],
-                        ['Earnings available', new BN(0, 2)],
-                        null,
-                        ['Total withdrawn', new BN(0, 2)],
-                    ]}
+                    items={revenuePool}
                 />
-                <div className={styles.actions}>
-                    <div />
-                    <Button>Withdraw tokens</Button>
-                    <Button theme="edge">Add revenue</Button>
-                </div>
+                <RevenuePoolActions
+                    onAddRevenueClick={onAddRevenueClick}
+                />
             </Section>
             <Section title="Management">
                 <div className={styles.management}>
@@ -76,4 +79,10 @@ const Home = () => (
     </Layout>
 )
 
-export default Home
+export default (props) => (
+    <Context.Consumer>
+        {(context: ContextProps) => (
+            <Home {...context} {...props} />
+        )}
+    </Context.Consumer>
+)

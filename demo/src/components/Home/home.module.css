@@ -23,29 +23,6 @@
   resize: vertical;
 }
 
-.stats {
-  display: grid;
-  grid-column-gap: 1em;
-  grid-row-gap: 3em;
-  grid-template-columns: 1fr 1fr 1fr;
-}
-
-.actions {
-  padding: 6em 0;
-}
-
-.userAccount .actions {
-  display: grid;
-  grid-column-gap: 2em;
-  grid-template-columns: 3fr 1fr 1fr;
-}
-
-.revenuePool .actions {
-  display: grid;
-  grid-column-gap: 2em;
-  grid-template-columns: 4fr 3fr 3fr;
-}
-
 .management {
   display: grid;
   grid-column-gap: 6em;
