@@ -23,20 +23,6 @@
   resize: vertical;
 }
 
-.about {
-  line-height: 1.75em;
-}
-
-.about p,
-.about ul {
-  margin: 0;
-
-  + p,
-  + ul {
-    margin-top: 1.75em;
-  }
-}
-
 .stats {
   display: grid;
   grid-column-gap: 1em;
@@ -64,6 +50,7 @@
   display: grid;
   grid-column-gap: 6em;
   grid-template-columns: 7fr 3fr;
+  margin-bottom: 6em;
 }
 
 .users {
