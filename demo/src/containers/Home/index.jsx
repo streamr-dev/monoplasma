@@ -39,6 +39,7 @@ class Home extends Component<{}, State> {
         onAddUsersClick: this.onAddUsersClick.bind(this),
         onMintClick: this.onMintClick.bind(this),
         onStealClick: this.onStealClick.bind(this),
+        onForcePublishClick: this.onForcePublishClick.bind(this),
     }
 
     componentDidMount() {
@@ -97,6 +98,10 @@ class Home extends Component<{}, State> {
 
     onAddRevenueClick() {
         console.log('Add revenue', this)
+    }
+
+    onForcePublishClick() {
+        console.log('Force publish', this)
     }
 
     onAddUsersClick(addresses: Array<string>) {

@@ -25,6 +25,7 @@ const Home = ({
     onKickClick,
     onWithdrawClick,
     onAddRevenueClick,
+    onForcePublishClick,
     onAddUsersClick,
     onMintClick,
     onStealClick,
@@ -56,6 +57,7 @@ const Home = ({
                 />
                 <RevenuePoolActions
                     onAddRevenueClick={onAddRevenueClick}
+                    onForcePublishClick={onForcePublishClick}
                 />
             </Section>
             <Management
