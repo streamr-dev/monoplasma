@@ -4,10 +4,11 @@
 
 import React, { Component } from 'react'
 import BN from 'bn.js'
+import Eth from 'ethjs'
 import HomeComponent from '../../components/Home'
 import Context, { type Props as ContextProps } from '../../contexts/Home'
 
-const { Eth, Web3, ethereum } = window
+const { Web3, ethereum } = window
 
 type State = ContextProps & {
 }
