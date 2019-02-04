@@ -17,6 +17,8 @@ const Layout = ({ children }: Props) => (
             <meta httpEquiv="content-type" content="text/html; charset=utf-8" />
             <meta name="description" content="See https://github.com/streamr-dev/monoplasma" />
             <meta name="keywords" content="monoplasma revenue sharing ethereum token sidechain demo" />
+            <script type="text/javascript" src="/abi.js" />
+            <script type="text/javascript" src="/ethjs.min.js" />
             <title>Revenue sharing demo</title>
         </Helmet>
         {children}
