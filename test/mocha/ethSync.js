@@ -1,3 +1,5 @@
+/*global describe it */
+
 const assert = require("assert")
 const { mergeEventLists } = require("../../src/ethSync")
 

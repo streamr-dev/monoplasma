@@ -1,3 +1,5 @@
+/*global describe it */
+
 const MonoplasmaMember = require("../../src/monoplasmaMember")
 const assert = require("assert")
 const sinon = require("sinon")

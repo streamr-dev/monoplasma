@@ -1,3 +1,5 @@
+/*global describe it */
+/*eslint-disable quotes */
 const assert = require("assert")
 const formatDecimals = require("../../src/formatDecimals")
 

@@ -1,3 +1,5 @@
+/*global describe it */
+
 const assert = require("assert")
 const SortedMap = require("collections/sorted-map")
 const MonoplasmaMember = require("../../src/monoplasmaMember")
