@@ -11,8 +11,12 @@
   }
 
   &:focus {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 1px #0324ff;
     outline: 0;
+  }
+
+  &::selection {
+    background-color: #cce9fd;
   }
 }
 
