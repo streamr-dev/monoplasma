@@ -13,3 +13,5 @@
 @custom-selector :--interact :hover, :focus;
 @custom-selector :--idle :active, :visited;
 @custom-selector :--disabled :disabled, [disabled];
+@custom-selector :--even :nth-child(even);
+@custom-selector :--odd :nth-child(odd);

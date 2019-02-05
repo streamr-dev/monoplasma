@@ -12,6 +12,7 @@ import About from './About'
 import UserActions from './UserActions'
 import RevenuePoolActions from './RevenuePoolActions'
 import Management from './Management'
+import Blocks from './Blocks'
 
 import styles from './home.module.css'
 
@@ -21,6 +22,7 @@ type Props = ContextProps & {
 const Home = ({
     account,
     revenuePool,
+    blocks,
     onViewClick,
     onKickClick,
     onWithdrawClick,
@@ -54,6 +56,10 @@ const Home = ({
             >
                 <Stats
                     items={revenuePool}
+                />
+                <Blocks
+                    className={styles.blocks}
+                    items={blocks}
                 />
                 <RevenuePoolActions
                     onAddRevenueClick={onAddRevenueClick}

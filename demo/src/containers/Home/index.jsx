@@ -13,7 +13,15 @@ const { Web3, ethereum } = window
 type State = ContextProps & {
 }
 
+const tick = (): Promise<void> => (
+    new Promise((resolve) => {
+        setTimeout(resolve, Math.floor(Math.random() * 5000))
+    })
+)
+
 class Home extends Component<{}, State> {
+    static BLOCK_ID: number = 770129
+
     state = {
         account: [
             ['Total earnings', new BN(0)],
@@ -32,6 +40,7 @@ class Home extends Component<{}, State> {
             null,
             ['Total withdrawn', new BN(0)],
         ],
+        blocks: [1, 2, 3, 4, 5],
         onViewClick: this.onViewClick.bind(this),
         onKickClick: this.onKickClick.bind(this),
         onWithdrawClick: this.onWithdrawClick.bind(this),
@@ -41,6 +50,8 @@ class Home extends Component<{}, State> {
         onStealClick: this.onStealClick.bind(this),
         onForcePublishClick: this.onForcePublishClick.bind(this),
     }
+
+    unmounted: boolean = false
 
     componentDidMount() {
         fetch('/data/operator.json').then((/* resp */) => { /* … */ }, console.log.bind(console))
@@ -70,6 +81,12 @@ class Home extends Component<{}, State> {
             console.log('No Ethereum support detected. Consider installing https://metamask.io/')
             // document.getElementById("no-metamask").hidden = false
         }
+
+        this.poolBlocks()
+    }
+
+    componentWillUnmount() {
+        this.unmounted = true
     }
 
     onViewClick(address: string) {
@@ -114,6 +131,34 @@ class Home extends Component<{}, State> {
 
     onStealClick() {
         console.log('Steal tokens', this)
+    }
+
+    addRandomBlock = () => {
+        if (this.unmounted) {
+            return
+        }
+
+        this.constructor.BLOCK_ID += 1
+
+        this.setState(({ blocks }) => ({
+            blocks: [
+                {
+                    id: this.constructor.BLOCK_ID,
+                    timestamp: new Date().getTime(),
+                    members: 1000 + Math.floor(Math.random() * 15000),
+                    earnings: 1048576 + Math.floor(Math.random() * 1048576000000),
+                },
+                ...blocks,
+            ].slice(0, 5),
+        }))
+    }
+
+    poolBlocks = () => {
+        if (this.unmounted) {
+            return
+        }
+
+        tick().then(this.addRandomBlock).then(this.poolBlocks)
     }
 
     render() {

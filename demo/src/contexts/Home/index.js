@@ -1,10 +1,12 @@
 // @flow
 
 import { createContext } from 'react'
+import { type Block } from '../../components/Home/Blocks'
 
 export type Props = {
     account: Array<any>,
     revenuePool: Array<any>,
+    blocks: Array<Block | number>,
     onViewClick: (string) => void,
     onKickClick: (string) => void,
     onWithdrawClick: (string) => void,
@@ -18,6 +20,7 @@ export type Props = {
 export default createContext<Props>({
     account: [],
     revenuePool: [],
+    blocks: [],
     onViewClick: () => {},
     onKickClick: () => {},
     onWithdrawClick: () => {},
