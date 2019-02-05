@@ -10,7 +10,7 @@ class MonoplasmaMember {
     }
 
     getEarningsAsString() {
-        return this.earnings.toString()
+        return this.earnings.toString(10)
     }
 
     getEarningsAsInt() {
@@ -35,12 +35,16 @@ class MonoplasmaMember {
     toObject() {
         const obj = {
             address: this.address,
-            earnings: this.earnings.toString(),
+            earnings: this.earnings.toString(10),
         }
         if (this.name) {
             obj.name = this.name
         }
         return obj
+    }
+
+    static fromObject(obj) {
+        return new MonoplasmaMember(obj.name, obj.address, obj.earnings)
     }
 
     /** Produces a hashable string representation in hex form (starts with "0x") */

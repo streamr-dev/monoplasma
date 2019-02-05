@@ -1,7 +1,15 @@
 /*global describe it beforeEach */
+const os = require("os")
+const path = require("path")
+const assert = require("assert")
 
 const Monoplasma = require("../../src/monoplasma")
-const assert = require("assert")
+
+// this is a unit test, but still it's better to use the "real" file store and not mock it,
+//   since we DO check that the correct values actually come out of it. Mock would be almost as complex as the real thing.
+const tmpStoreDir = path.join(os.tmpdir(), `monoplasma-test-${+new Date()}`)
+const tmpStorePath = path.join(tmpStoreDir, "state.json")
+const fileStore = require("../../src/fileStore")(tmpStorePath, tmpStoreDir)
 
 describe("Monoplasma", () => {
     it("should return member passed to constructor and then remove it successfully", () => {
@@ -16,6 +24,62 @@ describe("Monoplasma", () => {
         plasmaAdmin.removeMember("0xff019d79c31114c811e68e68c9863966f22370ef")
         assert.deepStrictEqual(plasmaAdmin.getMembers(), [])
     })
+
+    it("should return correct members and member count", () => {
+        const plasma = new Monoplasma([], fileStore)
+        plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
+        plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
+        plasma.addRevenue(100)
+        assert.deepStrictEqual(plasma.getMemberCount(), { total: 2, active: 2, inactive: 0 })
+        assert.deepStrictEqual(plasma.getMembers(), [
+            {"address": "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "earnings": "50", "name": "tester1"},
+            {"address": "0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "earnings": "50", "name": "tester2"},
+        ])
+        plasma.removeMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef")
+        plasma.addRevenue(100)
+        assert.deepStrictEqual(plasma.getMemberCount(), { total: 2, active: 1, inactive: 1 })
+        assert.deepStrictEqual(plasma.getMembers(), [
+            {"address": "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "earnings": "150", "name": "tester1"},
+        ])
+    })
+
+    it("should remember past blocks' earnings", async () => {
+        const plasma = new Monoplasma([], fileStore)
+        plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
+        plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
+        plasma.addRevenue(100)
+        await plasma.storeBlock(3)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(5)
+        plasma.addRevenue(100)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(7)
+        plasma.addRevenue(100)
+        const m = await plasma.getMemberAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 3)
+        assert.strictEqual("50", m.earnings)
+        assert.strictEqual("100", (await plasma.getMemberAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 5)).earnings)
+        assert.strictEqual("200", (await plasma.getMemberAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 7)).earnings)
+        assert.strictEqual("250", (plasma.getMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2")).earnings)
+    })
+
+    it("should remember past blocks' proofs", async () => {
+        const plasma = new Monoplasma([], fileStore)
+        plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
+        plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
+        plasma.addRevenue(100)
+        await plasma.storeBlock(3)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(5)
+        plasma.addRevenue(100)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(7)
+        plasma.addRevenue(100)
+        assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 3), ["0x30b397c3eb0e07b7f1b8b39420c49f60c455a1a602f1a91486656870e3f8f74c"])
+        assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 5), ["0x1c3d277e4a94f6fc647ae9ffc2176165d8b90bf954f64fa536b6beedb34301a3"])
+        assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 7), ["0xce54ad18b934665680ccc22f7db77ede2144519d5178736111611e745085dec6"])
+        assert.deepStrictEqual(plasma.getProof("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"), ["0x91360deed2f511a8503790083c6de21efbb1006b460d5024863ead9de5448927"])
+    })
+
     describe("getMemberApi", () => {
         let plasma
         beforeEach(() => {
@@ -55,4 +119,5 @@ describe("Monoplasma", () => {
             assert.strictEqual(plasma.getMemberApi, undefined)
         })
     })
+
 })

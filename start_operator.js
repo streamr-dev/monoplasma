@@ -49,7 +49,8 @@ const error = (e, ...args) => {
 }
 
 const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
-const fileStore = require("./src/fileStore")(stateStorePath)
+const blockStoreDir = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/blocks"
+const fileStore = require("./src/fileStore")(stateStorePath, blockStoreDir)
 
 let ganache = null
 function stopGanache() {

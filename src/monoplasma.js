@@ -13,6 +13,7 @@ class Monoplasma {
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
     constructor(initialMembers, store) {
+        /** @property {fileStore} store persistence for published blocks */
         this.store = store
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
         /** @property {Map<MonoplasmaMember>} members */
@@ -62,13 +63,13 @@ class Monoplasma {
      * @param {number} blockNumber at which (published) block
      */
     async getMemberAt(address, blockNumber) {
-        if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
-        const m = this.members.get(address)
-        if (!m) { return {} }
-        const obj = m.toObject()
-        obj.active = m.isActive()
-        obj.proof = await this.getProof(address, blockNumber)
-        return obj
+        if (!await this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
+        const block = await this.store.loadBlock(blockNumber)
+        const member = block.find(m => m.address === address)
+        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const tree = new MerkleTree(members)
+        member.proof = tree.getPath(address)
+        return member
     }
 
     /**
@@ -90,7 +91,8 @@ class Monoplasma {
     async getProofAt(address, blockNumber) {
         if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
         const block = await this.store.loadBlock(blockNumber)
-        const tree = new MerkleTree(block)
+        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const tree = new MerkleTree(members)
         const path = tree.getPath(address)
         return path
     }
@@ -102,7 +104,8 @@ class Monoplasma {
     async getRootHashAt(blockNumber) {
         if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
         const block = await this.store.loadBlock(blockNumber)
-        const tree = new MerkleTree(block)
+        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const tree = new MerkleTree(members)
         const rootHash = tree.getRootHash()
         return rootHash
     }
@@ -199,7 +202,8 @@ class Monoplasma {
      * @param {number} rootChainBlocknumber
      */
     async storeBlock(rootChainBlocknumber) {
-        return this.store.saveBlock(this.members.toArray(), rootChainBlocknumber)
+        const memberArray = this.members.toArray().map(m => m.toObject())
+        return this.store.saveBlock(memberArray, rootChainBlocknumber)
     }
 
     /**

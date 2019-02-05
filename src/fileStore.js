@@ -13,7 +13,7 @@ const log = QUIET ? () => {} : console.log
 /**
  * @param {String} stateStorePath
  */
-module.exports = (stateStorePath, treeDir) => ({
+module.exports = (stateStorePath, blockStoreDir) => ({
     /** @returns {OperatorState} Operator state from the file */
     loadState: async () => {
         log(`Loading state from ${stateStorePath}...`)
@@ -36,29 +36,31 @@ module.exports = (stateStorePath, treeDir) => ({
      * @param {number} blockNumber Root-chain block number corresponding to a published side-chain block
      */
     loadBlock: async blockNumber => {
-        const treePath = path.join(treeDir, blockNumber + ".json")
+        const treePath = path.join(blockStoreDir, blockNumber + ".json")
         log(`Loading block ${blockNumber} from ${treePath}...`)
-        const raw = await fs.readFile(stateStorePath).catch(() => "{}")
-        return JSON.parse(raw)
+        const rawString = (await fs.readFile(treePath).catch(() => "[]")).toString()
+        const memberArray = JSON.parse(rawString)
+        return memberArray
     },
 
     /**
      * @param {number} blockNumber Root-chain block number corresponding to a published side-chain block
      */
     blockExists: async blockNumber => {
-        await fs.mkdir(treeDir, { recursive: true })
-        const treePath = path.join(treeDir, blockNumber + ".json")
+        await fs.mkdir(blockStoreDir, { recursive: true })
+        const treePath = path.join(blockStoreDir, blockNumber + ".json")
         return fs.exists(treePath)
     },
 
     /**
-     * @param {Array<MonoplasmaMember>} members MonoplasmaMembers with their earnings etc.
+     * @param {Array<Object>} members MonoplasmaMember.toObject()s with their earnings etc.
      * @param {number} blockNumber Root-chain block number corresponding to a published side-chain block
      */
     saveBlock: async (members, blockNumber) => {
         const raw = JSON.stringify(members)
-        const treePath = path.join(treeDir, blockNumber + ".json")
+        const treePath = path.join(blockStoreDir, blockNumber + ".json")
         log(`Saving block ${blockNumber} to ${treePath}: ${raw.slice(0, 1000)}${raw.length > 1000 ? "... TOTAL LENGTH: " + raw.length : ""}`)
-        return fs.writeFile(stateStorePath, raw)
+        await fs.mkdir(blockStoreDir, { recursive: true })
+        return fs.writeFile(treePath, raw)
     },
 })

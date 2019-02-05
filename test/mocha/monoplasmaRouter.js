@@ -3,7 +3,6 @@
 const express = require("express")
 const bodyParser = require("body-parser")
 
-const fetch = require("node-fetch")
 const assert = require("assert")
 const http = require("http")
 
@@ -14,7 +13,7 @@ const router = require("../../src/monoplasmaRouter")(plasma)
 describe("Express app / monoplasma server", () => {
     const port = 3030
     const serverURL = `http://localhost:${port}`
-    const { fetchMember, fetchMembers, postMember } = require("../utils/operatorApi")(serverURL)
+    const { fetchMember } = require("../utils/operatorApi")(serverURL)
 
     let server
     before(() => {
@@ -24,33 +23,6 @@ describe("Express app / monoplasma server", () => {
         server = http.createServer(app)
         server.listen(port)
     })
-
-    /* "Admin features" were moved to adminRouter and are handled through joinPartChannel
-    describe("Admin API", () => {
-        it("initially has no members", async () => {
-            assert.deepStrictEqual(await fetchMembers(), [])
-        })
-
-        it("can add members", async () => {
-            await postMember({
-                name: "Tester",
-                address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
-            })
-
-            assert.deepStrictEqual(await fetchMembers(), [{
-                earnings: "0",
-                address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
-                name: "Tester",
-            }])
-        })
-
-        it("can remove members", async () => {
-            await fetch(`${serverURL}/members/0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2`, { method: "DELETE" })
-
-            assert.deepStrictEqual(await fetchMembers(), [])
-        })
-    })
-    */
 
     describe("Member API", () => {
         it("can request for balance proof", async () => {

@@ -16,6 +16,7 @@ function assertEqual(actual, expected) {
     }
     // use BigNumber's own comparator
     if (BN.isBN(expected)) {
+        //assert.strictEqual(actual.cmp(expected), 0)
         assert.strictEqual(actual.toString(), expected.toString())
         return
     }
