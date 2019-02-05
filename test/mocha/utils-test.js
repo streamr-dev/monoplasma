@@ -12,7 +12,13 @@ const {
 //  increaseTime,  // tested separately in test/truffle/increaseTime.js, requires a running ganache
 } = require("../utils/fakeTime")
 
-const until = require("../utils/await-until")
+const {
+    until,
+    untilStreamContains,
+} = require("../utils/await-until")
+
+const EventEmitter = require("events")
+const sleep = require("../utils/sleep-promise")
 
 // simulate what Truffle provides
 const Web3 = require("web3")
@@ -143,6 +149,24 @@ describe("Test help utilities", () => {
             assert(!ret)
             assert(+new Date() - start > 90)
             assert(+new Date() - start < 900)
+        })
+        it("untilStreamContains", async () => {
+            const stream = new EventEmitter()
+            let done = false
+            untilStreamContains(stream, "DONE").then(() => {
+                done = true
+            })
+            await sleep(1)
+            assert(!done)
+            stream.emit("data", "test")
+            await sleep(1)
+            assert(!done)
+            stream.emit("data", "lol DONE")
+            await sleep(1)
+            assert(done)
+            stream.emit("data", "test again")
+            await sleep(1)
+            assert(done)
         })
     })
 })

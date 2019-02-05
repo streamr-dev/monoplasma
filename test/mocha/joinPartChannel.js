@@ -6,7 +6,7 @@ const { spawn } = require("child_process")
 
 const Channel = require("../../src/joinPartChannel")
 
-const until = require("../utils/await-until")
+const { until, untilStreamContains } = require("../utils/await-until")
 
 const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
 
@@ -31,43 +31,18 @@ describe("joinPartChannel", () => {
     it("gets messages through", async function () {
         const client0 = spawn("node", [`${helperFile}-client.js`])
         const client1 = spawn("node", [`${helperFile}-client.js`])
-
         const server = spawn("node", [`${helperFile}-server.js`])
 
-        let serverDone = false
-        server.stdout.on("data", data => {
-            log("Server: " + data.toString())
-            if (data.indexOf("[OK]") > -1) {
-                serverDone = true
-            }
-        })
-
-        let client0Done = false
-        client0.stdout.on("data", data => {
-            log("Client 0: " + data.toString())
-            if (data.indexOf("[OK]") > -1) {
-                client0Done = true
-            }
-        })
-
-        let client1Done = false
-        client1.stdout.on("data", data => {
-            log("Client 1: " + data.toString())
-            if (data.indexOf("[OK]") > -1) {
-                client1Done = true
-            }
-        })
-
-        await until(() => serverDone && client0Done && client1Done, 5000)
+        await Promise.all([
+            untilStreamContains(client0.stdout, "[OK]"),
+            untilStreamContains(client1.stdout, "[OK]"),
+            untilStreamContains(server.stdout, "[OK]"),
+        ])
 
         server.kill()
         client1.kill()
         client0.kill()
-
-        assert(serverDone, "Server fails")
-        assert(client0Done, "Client 0 fails")
-        assert(client1Done, "Client 1 fails")
-    })
+    }).timeout(2000)
 
     it("can't double-start server", () => {
         const channel = new Channel()
