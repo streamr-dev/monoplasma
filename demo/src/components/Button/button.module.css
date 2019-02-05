@@ -22,6 +22,7 @@
     transition-time-function: ease-out;
   }
 
+  &:--disabled,
   &:--idle {
     transform: scale(1);
   }
@@ -53,6 +54,7 @@
   }
 
   &,
+  &:--disabled,
   &:active {
     color: #2037ce;
   }
@@ -65,6 +67,7 @@
   }
 
   &,
+  &:--disabled,
   &:active {
     border-color: #d71c34;
     color: #d71c34;

@@ -59,23 +59,21 @@ class Management extends Component<Props, State> {
                         </div>
                     </div>
                     <div className={styles.tokens}>
-                        <div>
-                            <Button
-                                theme="edge"
-                                onClick={onMintClick}
-                            >
-                                Mint tokens
-                            </Button>
-                            <div className={styles.hint}>
-                                Mints new tokens and deposits them to the currently selected account in Metamask.
-                            </div>
-                        </div>
+                        <Button
+                            theme="edge"
+                            onClick={onMintClick}
+                        >
+                            Mint tokens
+                        </Button>
                         <Button
                             theme="red-edge"
                             onClick={onStealClick}
                         >
                             Steal all tokens
                         </Button>
+                        {/* <div className={styles.hint}>
+                            Operator can try to publish a block where all tokens have been allocated to them.
+                        </div> */}
                     </div>
                 </div>
             </Section>

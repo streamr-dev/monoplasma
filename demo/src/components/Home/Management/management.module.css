@@ -21,11 +21,15 @@
 .tokens {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-}
 
-.tokens button {
-  width: 100%;
+  button {
+    width: 100%;
+  }
+
+  .hint,
+  button + button {
+    margin-top: 2em;
+  }
 }
 
 .hint {
