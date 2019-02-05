@@ -32,7 +32,6 @@ const Blocks = ({ items, className }: Props) => (
             {items.map((block) => {
                 if (typeof block === 'number') {
                     return (
-                        /* eslint-disable-next-line react/no-array-index-key */
                         <div key={block} className={styles.row}>
                             <div>&zwnj;</div>
                             <div>&zwnj;</div>
