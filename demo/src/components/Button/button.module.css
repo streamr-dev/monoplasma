@@ -1,6 +1,4 @@
 .root {
-  background-color: #0324ff;
-  border: 1px solid #0324ff;
   border-radius: 4px;
   color: white;
   cursor: pointer;
@@ -12,23 +10,63 @@
   line-height: 1em;
   padding: 0;
   text-transform: uppercase;
+  transition: 150ms ease-in;
+  transition-property: transform, background-color, border-color, opacity;
 
-  &:focus {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  &:--interact {
+    background-color: #0324ff;
+    border-color: #0324ff;
     outline: 0;
+    transform: scale(1.05);
+    transition-duration: 75ms;
+    transition-time-function: ease-out;
+  }
+
+  &:--idle {
+    transform: scale(1);
+  }
+
+  &,
+  &:active {
+    background-color: #2037ce;
+    border: 1px solid #2037ce;
+  }
+
+  &:--disabled {
+    opacity: 0.5;
   }
 }
 
 .edge,
 .redEdge {
-  background-color: transparent;
+  &,
+  &:--idle,
+  &:--disabled,
+  &:--interact {
+    background-color: transparent;
+  }
 }
 
 .edge {
-  color: #0324ff;
+  &:--interact {
+    color: #0324ff;
+  }
+
+  &,
+  &:active {
+    color: #2037ce;
+  }
 }
 
 .redEdge {
-  border-color: #ff0f2d;
-  color: #ff0f2d;
+  &:--interact {
+    border-color: #ff0f2d;
+    color: #ff0f2d;
+  }
+
+  &,
+  &:active {
+    border-color: #d71c34;
+    color: #d71c34;
+  }
 }
