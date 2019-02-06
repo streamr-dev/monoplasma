@@ -1,7 +1,5 @@
 const zmq = require("zeromq")
 
-const joinPartChannelUrl = "tcp://127.0.0.1:4567"
-
 /**
  * @typedef {string} State
  * @enum {string}
@@ -25,7 +23,8 @@ function reset(channel) {
  * @property {function} on
  */
 class Channel {
-    constructor() {
+    constructor(joinPartChannelPort) {
+        this.channelUrl = "tcp://127.0.0.1:" + (joinPartChannelPort || 4568)
         reset(this)
     }
 
@@ -34,7 +33,7 @@ class Channel {
         if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
         this.sock = zmq.socket("pub")
-        this.sock.bindSync(joinPartChannelUrl)
+        this.sock.bindSync(this.channelUrl)
         this.publish = (topic, addresses) => {
             this.sock.send([topic, JSON.stringify(addresses)])
         }
@@ -46,7 +45,7 @@ class Channel {
         if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
         this.sock = zmq.socket("sub")
-        this.sock.connect(joinPartChannelUrl)
+        this.sock.connect(this.channelUrl)
         this.sock.subscribe("join")
         this.sock.subscribe("part")
         this.on = (topic, cb) => {

@@ -1,11 +1,6 @@
 const express = require("express")
 const Monoplasma = require("./monoplasma")
 
-const Channel = require("./joinPartChannel")
-
-const channel = new Channel()
-channel.startServer()
-
 module.exports = operator => {
     const router = express.Router()
 

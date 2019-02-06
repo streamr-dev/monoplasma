@@ -29,6 +29,7 @@ const {
     GAS_PRICE_GWEI,
     RESET,
     STORE,
+    BLOCK_STORE_DIR,
     QUIET,
 
     // these will be used  1) for demo token  2) if TOKEN_ADDRESS doesn't support name() and symbol()
@@ -49,7 +50,7 @@ const error = (e, ...args) => {
 }
 
 const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
-const blockStoreDir = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/blocks"
+const blockStoreDir = fs.existsSync(BLOCK_STORE_DIR) ? BLOCK_STORE_DIR : __dirname + "/static_web/data/blocks"
 const fileStore = require("./src/fileStore")(stateStorePath, blockStoreDir)
 
 let ganache = null
@@ -74,7 +75,7 @@ async function start() {
         privateKey = "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
         log("Starting Ethereum simulator...")
         const ganachePort = GANACHE_PORT || 8545
-        const ganacheLog = msg => { log("        Ganache > " + msg) }
+        const ganacheLog = msg => { log(" Ganache> " + msg) }
         ganache = await require("./src/startGanache")(ganachePort, ganacheLog, error)
         ethereumServer = ganache.url
     }
@@ -120,6 +121,8 @@ async function start() {
     app.use("/demo", revenueDemoRouter(operator))
     app.use(express.static(path.join(__dirname, "static_web")))
     app.listen(port, () => log(`Revenue demo UI started at ${serverURL}`))
+
+    log("[DONE]")
 }
 
 async function deployContract(web3, tokenAddress, blockFreezePeriodSeconds, sendOptions, log) {

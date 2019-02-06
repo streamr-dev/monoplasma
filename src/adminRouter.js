@@ -31,4 +31,6 @@ module.exports = channel => {
         channel.publish("part", [address])
         res.status(204).send()
     })
+
+    return router
 }

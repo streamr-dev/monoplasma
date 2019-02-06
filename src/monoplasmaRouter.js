@@ -19,6 +19,11 @@ module.exports = plasma => {
         res.send(plasma.getMemberCount())
     })
 
+    // TODO: test
+    router.get("/totalRevenue", (req, res) => {
+        res.send(plasma.getTotalRevenue())
+    })
+
     router.get("/members/:address", (req, res) => {
         res.send(plasma.getMember(req.params.address))
     })

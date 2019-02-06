@@ -67,7 +67,8 @@
             "name": "operator (Ganache)",
             "program": "${workspaceFolder}/start_operator.js",
             "env": {
-                "GANACHE_PORT": "3010"
+                "GANACHE_PORT": "3010",
+                "RESET": "1"
             }
         }, {
             "type": "node",

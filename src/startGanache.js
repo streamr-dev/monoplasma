@@ -8,22 +8,22 @@ module.exports = async function startGanache(port, log, error, timeoutMs) {
     log = log || console.log
     error = error || log || console.error
     port = port || 8545
-    const process = spawn("./node_modules/.bin/ganache-cli", ["-m", "testrpc", "-p", port])
+    const ganache = spawn(process.execPath, ["./node_modules/.bin/ganache-cli", "-m", "testrpc", "-p", port])
     function onClose(code) { error(new Error("Ganache ethereum simulator exited with code " + code)) }
-    process.on("close", onClose)
-    process.stderr.on("data", line => {
+    ganache.on("close", onClose)
+    function shutdown() {
+        ganache.off("close", onClose)
+        ganache.kill()
+    }
+    ganache.stderr.on("data", line => {
         log(" ERROR > " + line)
     })
-    function shutdown() {
-        process.off("close", onClose)
-        process.kill()
-    }
 
     // Ganache is ready to use when it says "Listening on 127.0.0.1:8545"
     return new Promise((done, fail) => {
         const timeoutHandle = setTimeout(fail, timeoutMs || 10000)
         let launching = true
-        process.stdout.on("data", data => {
+        ganache.stdout.on("data", data => {
             const str = data.toString()
             str.split("\n").forEach(log)
             if (launching) {
@@ -32,7 +32,7 @@ module.exports = async function startGanache(port, log, error, timeoutMs) {
                     launching = false
                     clearTimeout(timeoutHandle)
                     const url = "ws://" + match[1]        // "127.0.0.1:8545"
-                    done({ url, process, shutdown })
+                    done({ url, process: ganache, shutdown })
                 }
             }
         })

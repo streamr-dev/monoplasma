@@ -13,14 +13,17 @@ class Monoplasma {
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
     constructor(initialMembers, store) {
+        if (!Array.isArray(initialMembers)) {
+            initialMembers = []
+        }
         /** @property {fileStore} store persistence for published blocks */
         this.store = store
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
         /** @property {Map<MonoplasmaMember>} members */
-        this.members = new SortedMap(Array.isArray(initialMembers) ?
-            initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]) : [])
+        this.members = new SortedMap(initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
+        this.totalRevenue = initialMembers.reduce((sum, m) => sum.iadd(new BN(m.earnings)), new BN(0))
     }
 
     // ///////////////////////////////////
@@ -41,6 +44,10 @@ class Monoplasma {
             active,
             inactive: total - active,
         }
+    }
+
+    getTotalRevenue() {
+        return this.totalRevenue.toString(10)
     }
 
     /**
@@ -128,6 +135,7 @@ class Monoplasma {
         const share = new BN(amount).divRound(activeCount)
         activeMembers.forEach(m => m.addRevenue(share))
         this.tree.update(this.members)
+        this.totalRevenue.iaddn(amount)
     }
 
     /**
@@ -215,6 +223,7 @@ class Monoplasma {
             getMember: this.getMember.bind(this),
             getProof: this.getProof.bind(this),
             getRootHash: this.getRootHash.bind(this),
+            getTotalRevenue: this.getTotalRevenue.bind(this),
         }
     }
 }
