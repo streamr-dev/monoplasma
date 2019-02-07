@@ -8,7 +8,7 @@ import Eth from 'ethjs'
 import HomeComponent from '../../components/Home'
 import Context, { type Props as ContextProps } from '../../contexts/Home'
 
-const { Web3, ethereum } = window
+const { Web3, ethereum } = typeof window !== 'undefined' ? window : {}
 
 type State = ContextProps & {
 }
