@@ -28,8 +28,6 @@ const tick = (): Promise<void> => (
 )
 
 class Home extends Component<Props, State> {
-    static BLOCK_ID: number = 770129
-
     unmounted: boolean = false
 
     state = {
@@ -53,6 +51,7 @@ class Home extends Component<Props, State> {
         blocks: [1, 2, 3, 4, 5],
         member: null,
         config: null,
+        latestBlockNumber: 0,
         onViewClick: this.onViewClick.bind(this),
         onKickClick: this.onKickClick.bind(this),
         onWithdrawClick: this.onWithdrawClick.bind(this),
@@ -93,11 +92,12 @@ class Home extends Component<Props, State> {
     onWithdrawClick(address: string) {
         console.log('Withdraw', address, this)
         const { config } = this.state
-        const monoplasma = new Eth.contract(monoplasmaAbi).at(config.contractAddress)
+        const { eth } = this.props
+        const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
         monoplasma.withdrawAll().then((txHash) => {
             console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
-            return window.eth.getTransactionSuccess(txHash)
+            return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
             console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
             this.updateUser()
@@ -111,13 +111,13 @@ class Home extends Component<Props, State> {
         console.log('Add revenue', amount, this)
         const { config } = this.state
         const { eth } = this.props
-        const amountWei = eth.toWei(amount, 'ether')
+        const amountWei = Eth.toWei(amount, 'ether')
 
-        const token = new Eth.contract(tokenAbi).at(config.tokenAddress)
+        const token = new eth.contract(tokenAbi).at(config.tokenAddress)
 
         token.transfer(config.contractAddress, amountWei).then((txHash) => {
             console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
-            return window.eth.getTransactionSuccess(txHash)
+            return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
             console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
             this.updateUser()
@@ -172,35 +172,10 @@ class Home extends Component<Props, State> {
         }))
     }
 
-    addRandomBlock = () => {
-        if (this.unmounted) { return }
-
-        this.constructor.BLOCK_ID += 1
-
-        this.setState(({ blocks }) => ({
-            blocks: [
-                {
-                    id: this.constructor.BLOCK_ID,
-                    timestamp: new Date().getTime(),
-                    members: 1000 + Math.floor(Math.random() * 15000),
-                    earnings: 1048576 + Math.floor(Math.random() * 1048576000000),
-                },
-                ...blocks,
-            ].slice(0, 5),
-        }))
-    }
-
     pollBlocks = () => {
         if (this.unmounted) { return }
 
-        fetch('/api/status').then((resp) => resp.json()).then((community) => {
-            const { latestBlock } = community
-            if (latestBlock.blockNumber !== 1) {
-                this.addBlockToList(latestBlock)
-            }
-        })
-
-        tick().then(this.addRandomBlock).then(this.pollBlocks)
+        tick()./* then(this.updateCommunity). */then(this.pollBlocks)
     }
 
     updateUser(address: string) {
@@ -223,10 +198,12 @@ class Home extends Component<Props, State> {
     }
 
     updateCommunity() {
-        // TODO: move these into the state
-        const { config } = this.state
-        const monoplasma = new Eth.contract(monoplasmaAbi).at(config.contractAddress)
-        const token = new Eth.contract(tokenAbi).at(config.tokenAddress)
+        const { eth } = this.props
+        const { config, latestBlockNumber } = this.state
+
+        // TODO: move contract instances into the state
+        const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
+        const token = new eth.contract(tokenAbi).at(config.tokenAddress)
 
         let contractBalance
         let totalWithdrawn
@@ -252,6 +229,12 @@ class Home extends Component<Props, State> {
                     ['Total withdrawn', totalWithdrawn],
                 ],
             })
+            if (community.latestBlock.blockNumber !== latestBlockNumber) {
+                this.setState({
+                    latestBlocknumber: community.latestBlock.blockNumber,
+                })
+                this.addBlockToList(community.latestBlock)
+            }
         })
     }
 

@@ -42,6 +42,9 @@ const {
 
     // web UI for revenue sharing demo
     WEBSERVER_PORT,
+    // don't launch web server in start_operator script
+    //   by default start serving static files under demo/public. This is for dev where UI is launched with `npm start` under demo directory.
+    //EXTERNAL_WEBSERVER,
 } = process.env
 
 const log = QUIET ? () => {} : console.log
@@ -50,8 +53,8 @@ const error = (e, ...args) => {
     process.exit(1)
 }
 
-const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/static_web/data/operator.json"
-const blockStoreDir = fs.existsSync(BLOCK_STORE_DIR) ? BLOCK_STORE_DIR : __dirname + "/static_web/data/blocks"
+const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/demo/public/data/operator.json"
+const blockStoreDir = fs.existsSync(BLOCK_STORE_DIR) ? BLOCK_STORE_DIR : __dirname + "/demo/public/data/blocks"
 const fileStore = require("./src/fileStore")(stateStorePath, blockStoreDir)
 
 let ganache = null
