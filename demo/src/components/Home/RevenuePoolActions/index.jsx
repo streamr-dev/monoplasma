@@ -23,10 +23,10 @@ class RevenuePoolActions extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props)
-        const { defaultAmount: amount } = props
+        const { defaultAmount } = props
 
         this.state = {
-            amount,
+            amount: defaultAmount || '',
         }
     }
 
@@ -48,7 +48,7 @@ class RevenuePoolActions extends Component<Props, State> {
 
     amount(): number {
         const { amount } = this.state
-        return Math.max(0, Number.parseFloat(amount, 10) || 0)
+        return Math.max(0, Number.parseFloat(amount) || 0)
     }
 
     render() {
