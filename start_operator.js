@@ -3,6 +3,7 @@
 const fs = require("mz/fs")
 const path = require("path")
 const express = require("express")
+const cors = require("cors")
 const bodyParser = require("body-parser")
 const onProcessExit = require("exit-hook")
 
@@ -115,6 +116,7 @@ async function start() {
     const app = express()
     const adminChannel = new Channel()
     adminChannel.startServer()
+    app.use(cors())
     app.use(bodyParser.json())
     app.use("/api", operatorRouter(operator.plasma))
     app.use("/admin", adminRouter(adminChannel))

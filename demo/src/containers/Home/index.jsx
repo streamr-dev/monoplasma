@@ -1,12 +1,21 @@
 // @flow
 
 /* eslint-disable react/no-unused-state */
+/* eslint-disable new-cap */
 
 import React, { Component, type Node, Fragment } from 'react'
 import BN from 'bn.js'
+import Eth from 'ethjs'
+
 import HomeComponent from '../../components/Home'
 import Context, { type Props as ContextProps } from '../../contexts/Home'
 import WalletContext, { type Props as WalletContextProps } from '../../contexts/Wallet'
+
+import tokenAbi from '../../utils/tokenAbi'
+import monoplasmaAbi from '../../utils/monoplasmaAbi'
+
+// TODO: move to where network is checked
+const etherscanUrl = 'http://rinkeby.infura.io'
 
 type Props = WalletContextProps & {}
 
@@ -42,7 +51,8 @@ class Home extends Component<Props, State> {
             ['Total withdrawn', new BN(0)],
         ],
         blocks: [1, 2, 3, 4, 5],
-        config: {},
+        member: null,
+        config: null,
         onViewClick: this.onViewClick.bind(this),
         onKickClick: this.onKickClick.bind(this),
         onWithdrawClick: this.onWithdrawClick.bind(this),
@@ -64,7 +74,7 @@ class Home extends Component<Props, State> {
                 console.log(':boom:')
             })
 
-        this.poolBlocks()
+        this.pollBlocks()
     }
 
     componentWillUnmount() {
@@ -72,19 +82,8 @@ class Home extends Component<Props, State> {
     }
 
     onViewClick(address: string) {
-        fetch(`/api/members/${address}`).then(() => {
-            this.setState({
-                account: [
-                    ['Total earnings', new BN(1)],
-                    ['Earnings frozen', new BN(1)],
-                    ['Total withdrawn', new BN(1)],
-                    ['Total earnings recorded', new BN(2)],
-                    ['Earnings accessible', new BN(3)],
-                ],
-            })
-        }, (error) => {
-            console.log(error)
-        })
+        console.log('View ', address, this)
+        this.updateUser(address)
     }
 
     onKickClick(address: string) {
@@ -93,10 +92,39 @@ class Home extends Component<Props, State> {
 
     onWithdrawClick(address: string) {
         console.log('Withdraw', address, this)
+        const { config } = this.state
+        const monoplasma = new Eth.contract(monoplasmaAbi).at(config.contractAddress)
+
+        monoplasma.withdrawAll().then((txHash) => {
+            console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
+            return window.eth.getTransactionSuccess(txHash)
+        }).then((receipt) => {
+            console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
+            this.updateUser()
+            this.updateCommunity()
+        }).catch((error) => {
+            window.alert(error.message)
+        })
     }
 
     onAddRevenueClick(amount: number) {
         console.log('Add revenue', amount, this)
+        const { config } = this.state
+        const { eth } = this.props
+        const amountWei = eth.toWei(amount, 'ether')
+
+        const token = new Eth.contract(tokenAbi).at(config.tokenAddress)
+
+        token.transfer(config.contractAddress, amountWei).then((txHash) => {
+            console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
+            return window.eth.getTransactionSuccess(txHash)
+        }).then((receipt) => {
+            console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
+            this.updateUser()
+            this.updateCommunity()
+        }).catch((error) => {
+            window.alert(error.message)
+        })
     }
 
     onForcePublishClick() {
@@ -105,6 +133,16 @@ class Home extends Component<Props, State> {
 
     onAddUsersClick(addresses: Array<string>) {
         console.log('Add users', addresses, this)
+        const userList = addresses.filter(window.Eth.isAddress)
+        fetch('/admin/members', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userList),
+        }).then((resp) => resp.json()).then((res) => {
+            window.alert(res)
+        })
     }
 
     onMintClick() {
@@ -117,10 +155,25 @@ class Home extends Component<Props, State> {
         console.log(eth, accountAddress, web3)
     }
 
+    addBlockToList = (block) => {
+        if (this.unmounted) { return }
+        console.log(`Adding ${block} to list`)
+
+        this.setState(({ blocks }) => ({
+            blocks: [
+                {
+                    id: block.blockNumber,
+                    timestamp: new Date(block.timestamp).getTime(),
+                    members: block.memberCount,
+                    earnings: block.totalEarnings,
+                },
+                ...blocks,
+            ].slice(0, 5),
+        }))
+    }
+
     addRandomBlock = () => {
-        if (this.unmounted) {
-            return
-        }
+        if (this.unmounted) { return }
 
         this.constructor.BLOCK_ID += 1
 
@@ -137,12 +190,69 @@ class Home extends Component<Props, State> {
         }))
     }
 
-    poolBlocks = () => {
-        if (this.unmounted) {
+    pollBlocks = () => {
+        if (this.unmounted) { return }
+
+        fetch('/api/status').then((resp) => resp.json()).then((community) => {
+            const { latestBlock } = community
+            if (latestBlock.blockNumber !== 1) {
+                this.addBlockToList(latestBlock)
+            }
+        })
+
+        tick().then(this.addRandomBlock).then(this.pollBlocks)
+    }
+
+    updateUser(address: string) {
+        if (!Eth.isAddress(address)) {
+            console.error(`Bad address: ${address}`)
             return
         }
+        fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json()).then((member) => {
+            this.setState({
+                member,
+                account: [
+                    ['Total earnings', new BN(member.earnings || 0)],
+                    ['Earnings frozen', new BN(member.earningsFrozen || 0)],
+                    ['Total withdrawn', new BN(member.withdrawn || 0)],
+                    ['Total earnings recorded', new BN(member.recordedEarnings || 0)],
+                    ['Earnings accessible', new BN(member.withdrawable)],
+                ],
+            })
+        })
+    }
 
-        tick().then(this.addRandomBlock).then(this.poolBlocks)
+    updateCommunity() {
+        // TODO: move these into the state
+        const { config } = this.state
+        const monoplasma = new Eth.contract(monoplasmaAbi).at(config.contractAddress)
+        const token = new Eth.contract(tokenAbi).at(config.tokenAddress)
+
+        let contractBalance
+        let totalWithdrawn
+        token.balanceOf(config.contractAddress).then((res) => {
+            contractBalance = new BN(res)
+            return monoplasma.totalWithdrawn()
+        }).then((res) => {
+            totalWithdrawn = new BN(res)
+            return fetch('/api/status').then((resp) => resp.json())
+        }).then((community) => {
+            const recorded = new BN(community.latestBlock.totalEarnings)
+            const withdrawable = new BN(community.latestWithdrawableBlock.totalEarnings)
+            this.setState({
+                community,
+                revenuePool: [
+                    ['Members', community.memberCount.total],
+                    ['Total earnings', community.totalEarnings],
+                    ['Earnings frozen', recorded.sub(withdrawable)],
+                    ['Contract balance', contractBalance],
+                    ['Total earnings recorded', recorded],
+                    ['Earnings available', withdrawable],
+                    null,
+                    ['Total withdrawn', totalWithdrawn],
+                ],
+            })
+        })
     }
 
     notification(): Node {

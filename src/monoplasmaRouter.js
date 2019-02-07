@@ -4,24 +4,21 @@ const express = require("express")
 module.exports = plasma => {
     const router = express.Router()
 
-    router.get("/", (req, res) => {
+    router.get("/status", (req, res) => {
+        const memberCount = plasma.getMemberCount()
+        const totalEarnings = plasma.getTotalRevenue()
+        const latestBlock = plasma.getLatestBlock()
+        const latestWithdrawableBlock = plasma.getLatestWithdrawableBlock()
         res.send({
-            status: "ok",
+            memberCount,
+            totalEarnings,
+            latestBlock,
+            latestWithdrawableBlock,
         })
     })
 
     router.get("/members", (req, res) => {
         res.send(plasma.getMembers())
-    })
-
-    // TODO: test
-    router.get("/memberCount", (req, res) => {
-        res.send(plasma.getMemberCount())
-    })
-
-    // TODO: test
-    router.get("/totalRevenue", (req, res) => {
-        res.send(plasma.getTotalRevenue())
     })
 
     router.get("/members/:address", (req, res) => {
@@ -30,4 +27,3 @@ module.exports = plasma => {
 
     return router
 }
-

@@ -1,5 +1,5 @@
 const Monoplasma = require("./monoplasma")
-const { throwIfSetButNotContract } = require("./ethSync")
+const { throwIfSetButNotContract, mergeEventLists } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
@@ -29,7 +29,7 @@ module.exports = class MonoplasmaWatcher {
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         this.state.tokenAddress = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
-        this.plasma = new Monoplasma(this.state.balances, this.store)
+        this.plasma = new Monoplasma(this.state.balances, this.store, this.state.blockFreezeSeconds)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -79,12 +79,27 @@ module.exports = class MonoplasmaWatcher {
 
     async playback(fromBlock, toBlock) {
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
+        const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
-        transferEvents.forEach(event => {
-            const income = event.returnValues.value
-            this.log(`Playback: ${income} tokens received @ block ${event.blockNumber}`)
-            this.plasma.addRevenue(income)
-        })
+        const allEvents = mergeEventLists(blockCreateEvents, transferEvents)
+        for (const event of allEvents) {
+            switch (event.event) {
+                // event Transfer(address indexed from, address indexed to, uint256 value);
+                case "Transfer": {
+                    const income = event.returnValues.value
+                    this.log(`Playback: ${income} tokens received @ block ${event.blockNumber}`)
+                    this.plasma.addRevenue(income)
+                } break
+                // event BlockCreated(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash);
+                case "BlockCreated": {
+                    const num = event.returnValues.value
+                    await this.plasma.storeBlock(num)
+                } break
+                default: {
+                    this.error(`Unexpected event: ${JSON.stringify(event)}`)
+                }
+            }
+        }
         this.state.rootChainBlock = toBlock
         this.state.balances = this.plasma.getMembers()
     }

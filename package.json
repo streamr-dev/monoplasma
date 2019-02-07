@@ -5,7 +5,7 @@
   "main": "deploy.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint src static_web/js",
-    "build": "npm run clean && truffle compile && ./flatten",
+    "build": "npm run clean && truffle compile && ./flatten && ./copy-abi-to-ui",
     "build-demo": "cd demo && npm i && npm run build",
     "test-js": "./node_modules/.bin/mocha test/mocha test/utils-test --exit",
     "test-e2e": "./node_modules/.bin/mocha test/e2e  --exit",
@@ -17,6 +17,7 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "eslint": "^4.19.1",
+    "jq-cli-wrapper": "^1.0.2",
     "mocha": "^5.2.0",
     "node-fetch": "^2.2.0",
     "sinon": "^7.2.2",
@@ -31,6 +32,7 @@
     "bn.js": "4.11.8",
     "body-parser": "^1.18.3",
     "collections": "^5.1.5",
+    "cors": "^2.8.5",
     "eth-lib": "^0.2.8",
     "exit-hook": "^2.0.0",
     "express": "^4.16.3",

@@ -33,9 +33,9 @@ contract Monoplasma is AbstractRootChain, Ownable {
      */
     mapping (uint => uint) public blockTimestamp;
 
-    uint public recipientCount;
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
+    uint public totalWithdrawn;
 
     IERC20 public token;
 
@@ -86,6 +86,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
         uint w = withdrawn[msg.sender].add(amount);
         require(w <= earnings[msg.sender], "error_overdraft");
         withdrawn[msg.sender] = w;
+        totalWithdrawn = totalWithdrawn.add(amount);
         require(token.transfer(msg.sender, amount), "error_transfer");
     }
 }

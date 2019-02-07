@@ -246,9 +246,6 @@ contract Ownable {
 contract Monoplasma is AbstractRootChain, Ownable {
     using SafeMath for uint256;
 
-    event RecipientAdded(address recipient);
-    event RecipientRemoved(address recipient);
-
     /**
      * Freeze period during which all side-chain participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
@@ -269,30 +266,15 @@ contract Monoplasma is AbstractRootChain, Ownable {
      */
     mapping (uint => uint) public blockTimestamp;
 
-    uint public recipientCount;
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
-    mapping (address => bool) public isActive;
+    uint public totalWithdrawn;
 
     IERC20 public token;
 
     constructor(address tokenAddress, uint blockFreezePeriodSeconds) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
         token = IERC20(tokenAddress);
-    }
-
-    function addRecipient(address addr) public onlyOwner {
-        require(!isActive[addr], "error_alreadyExists");
-        isActive[addr] = true;
-        recipientCount += 1;
-        emit RecipientAdded(addr);
-    }
-
-    function removeRecipient(address addr) public onlyOwner {
-        require(isActive[addr], "error_notFound");
-        isActive[addr] = false;
-        recipientCount -= 1;
-        emit RecipientRemoved(addr);
     }
 
     /**
@@ -337,6 +319,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
         uint w = withdrawn[msg.sender].add(amount);
         require(w <= earnings[msg.sender], "error_overdraft");
         withdrawn[msg.sender] = w;
+        totalWithdrawn = totalWithdrawn.add(amount);
         require(token.transfer(msg.sender, amount), "error_transfer");
     }
 }

@@ -12,18 +12,25 @@ class Monoplasma {
     /**
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
-    constructor(initialMembers, store) {
+    constructor(initialMembers, store, blockFreezeSeconds) {
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
         /** @property {fileStore} store persistence for published blocks */
         this.store = store
+        /** @property {number} blockFreezeSeconds after which blocks become withdrawable */
+        this.blockFreezeSeconds = blockFreezeSeconds
+        /** @property {number} totalEarnings by all members together; should equal balanceOf(contract) + contract.totalWithdrawn */
+        this.totalEarnings = initialMembers.reduce((sum, m) => sum.iadd(new BN(m.earnings)), new BN(0))
+
+        /** @property {Array<Block>} latestBlocks that have been stored. Kept to figure out  */
+        this.latestBlocks = []
+
         // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
         /** @property {Map<MonoplasmaMember>} members */
         this.members = new SortedMap(initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
-        this.totalRevenue = initialMembers.reduce((sum, m) => sum.iadd(new BN(m.earnings)), new BN(0))
     }
 
     // ///////////////////////////////////
@@ -47,7 +54,20 @@ class Monoplasma {
     }
 
     getTotalRevenue() {
-        return this.totalRevenue.toString(10)
+        return this.totalEarnings.toString(10)
+    }
+
+    getLatestBlock() {
+        if (this.latestBlocks.length < 1) { return {} }
+        return this.latestBlocks[0]
+    }
+
+    getLatestWithdrawableBlock() {
+        if (this.latestBlocks.length < 1) { return {} }
+        const now = +new Date() / 1000
+        const i = this.latestBlocks.findIndex(b => now - b.timeStamp > this.blockFreezeSeconds, this)
+        this.latestBlocks.length = i + 1     // throw away older than latest withdrawable
+        return this.latestBlocks[i]
     }
 
     /**
@@ -135,7 +155,7 @@ class Monoplasma {
         const share = new BN(amount).divRound(activeCount)
         activeMembers.forEach(m => m.addRevenue(share))
         this.tree.update(this.members)
-        this.totalRevenue.iaddn(amount)
+        this.totalEarnings.iaddn(amount)
     }
 
     /**
@@ -210,8 +230,13 @@ class Monoplasma {
      * @param {number} rootChainBlocknumber
      */
     async storeBlock(rootChainBlocknumber) {
-        const memberArray = this.members.toArray().map(m => m.toObject())
-        return this.store.saveBlock(memberArray, rootChainBlocknumber)
+        const members = this.members.toArray().map(m => m.toObject())
+        const latestBlock = {
+            members,
+            totalEarnings: this.getTotalRevenue(),
+        }
+        this.latestBlocks.unshift(latestBlock)  // = insert to beginning
+        return this.store.saveBlock(members, rootChainBlocknumber)
     }
 
     /**
