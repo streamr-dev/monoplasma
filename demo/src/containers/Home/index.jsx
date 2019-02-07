@@ -60,6 +60,8 @@ class Home extends Component<Props, State> {
                 this.setState({
                     config,
                 })
+            }, () => {
+                console.log(':boom:')
             })
 
         this.poolBlocks()

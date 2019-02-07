@@ -1,3 +1,5 @@
+const proxyRouter = require('./src/utils/proxyRouter')
+
 module.exports = {
     plugins: [
         'gatsby-plugin-eslint',
@@ -5,4 +7,7 @@ module.exports = {
         'gatsby-plugin-postcss',
         'gatsby-plugin-react-helmet',
     ],
+    developMiddleware: (app) => {
+        app.use(proxyRouter)
+    },
 }
