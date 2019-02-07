@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src static_web/js",
     "build": "npm run clean && truffle compile && ./flatten",
+    "build-demo": "cd demo && npm i && npm run build",
     "test-js": "./node_modules/.bin/mocha test/mocha test/utils-test --exit",
     "test-e2e": "./node_modules/.bin/mocha test/e2e  --exit",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
