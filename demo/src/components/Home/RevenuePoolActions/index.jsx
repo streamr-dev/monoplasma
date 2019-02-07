@@ -8,7 +8,7 @@ import styles from './revenuePoolActions.module.css'
 
 type Props = {
     onAddRevenueClick: (number) => void,
-    onForcePublishClick: (number) => void,
+    onForcePublishClick: () => void,
     defaultAmount?: string,
 }
 
@@ -41,17 +41,13 @@ class RevenuePoolActions extends Component<Props, State> {
         onAddRevenueClick(this.amount())
     }
 
-    onForcePublishClick = () => {
-        const { onForcePublishClick } = this.props
-        onForcePublishClick(this.amount())
-    }
-
     amount(): number {
         const { amount } = this.state
         return Math.max(0, Number.parseFloat(amount) || 0)
     }
 
     render() {
+        const { onForcePublishClick } = this.props
         const { amount } = this.state
         const disabled: boolean = !this.amount()
 
@@ -65,7 +61,7 @@ class RevenuePoolActions extends Component<Props, State> {
                     className={Input.styles.textField}
                 />
                 <Button disabled={disabled} onClick={this.onAddRevenueClick}>Add revenue</Button>
-                <Button onClick={this.onForcePublishClick} theme="edge">Force publish</Button>
+                <Button onClick={onForcePublishClick} theme="edge">Force publish</Button>
             </div>
         )
     }

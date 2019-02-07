@@ -97,8 +97,8 @@ class Home extends Component<Props, State> {
         console.log('Add revenue', amount, this)
     }
 
-    onForcePublishClick(amount: number) {
-        console.log('Force publish', amount, this)
+    onForcePublishClick() {
+        console.log('Force publish', this)
     }
 
     onAddUsersClick(addresses: Array<string>) {
