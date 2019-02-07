@@ -1,0 +1,13 @@
+.root h1 {
+  font-size: 2em;
+  font-weight: var(--extraLight);
+  letter-spacing: -0.67px;
+  margin: 0 0 0.5em;
+}
+
+.root p {
+  color: #525252;
+  font-family: var(--mono);
+  font-size: 0.75em;
+  margin: 0;
+}

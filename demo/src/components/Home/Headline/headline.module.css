@@ -1,0 +1,9 @@
+.root {
+  border-bottom: 1px solid #cdcdcd;
+  font-size: 1em;
+  font-weight: var(--medium);
+  letter-spacing: 2px;
+  margin: 0 0 2em;
+  padding-bottom: 1.25em;
+  text-transform: uppercase;
+}

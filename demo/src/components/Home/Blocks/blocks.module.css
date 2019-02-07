@@ -1,0 +1,36 @@
+.root {
+  border: solid #cdcdcd;
+  border-width: 1px 0;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1em;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+
+  > div {
+    padding: 1em 2em;
+  }
+
+  > div + div {
+    border-left: 1px solid #cdcdcd;
+  }
+
+  &:--even {
+    background-color: #ececec;
+  }
+}
+
+.columnNames {
+  border-bottom: 1px solid #cdcdcd;
+  font-weight: var(--medium);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+
+  > div {
+    padding-bottom: 1.5em;
+    padding-top: 1.5em;
+  }
+}

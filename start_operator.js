@@ -119,7 +119,7 @@ async function start() {
     app.use("/api", operatorRouter(operator.plasma))
     app.use("/admin", adminRouter(adminChannel))
     app.use("/demo", revenueDemoRouter(operator))
-    app.use(express.static(path.join(__dirname, "static_web")))
+    app.use(express.static(path.join(__dirname, "demo/public")))
     app.listen(port, () => log(`Revenue demo UI started at ${serverURL}`))
 
     log("[DONE]")

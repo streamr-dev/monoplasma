@@ -1,0 +1,77 @@
+.root {
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 1em;
+  font-weight: var(--semiBold);
+  height: 4em;
+  letter-spacing: 1.33px;
+  line-height: 1em;
+  padding: 0;
+  text-transform: uppercase;
+  transition: 150ms ease-in;
+  transition-property: transform, background-color, border-color, opacity;
+
+  &:--interact {
+    background-color: #0324ff;
+    border-color: #0324ff;
+    outline: 0;
+    transform: scale(1.05);
+    transition-duration: 75ms;
+    transition-time-function: ease-out;
+  }
+
+  &:--disabled,
+  &:--idle {
+    transform: scale(1);
+  }
+
+  &,
+  &:active {
+    background-color: #2037ce;
+    border: 1px solid #2037ce;
+  }
+
+  &:--disabled {
+    background-color: #2037ce;
+    border: 1px solid #2037ce;
+    opacity: 0.5;
+  }
+}
+
+.edge,
+.redEdge {
+  &,
+  &:--idle,
+  &:--disabled,
+  &:--interact {
+    background-color: transparent;
+  }
+}
+
+.edge {
+  &:--interact {
+    color: #0324ff;
+  }
+
+  &,
+  &:--disabled,
+  &:active {
+    color: #2037ce;
+  }
+}
+
+.redEdge {
+  &:--interact {
+    border-color: #ff0f2d;
+    color: #ff0f2d;
+  }
+
+  &,
+  &:--disabled,
+  &:active {
+    border-color: #d71c34;
+    color: #d71c34;
+  }
+}

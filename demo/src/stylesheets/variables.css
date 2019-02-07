@@ -1,0 +1,17 @@
+:root {
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+
+    --extraLight: 200;
+    --light: 300;
+    --regular: 400;
+    --medium: 500;
+    --semiBold: 600;
+    --bold: 700;
+}
+
+@custom-selector :--interact :hover, :focus;
+@custom-selector :--idle :active, :visited;
+@custom-selector :--disabled :disabled, [disabled];
+@custom-selector :--even :nth-child(even);
+@custom-selector :--odd :nth-child(odd);

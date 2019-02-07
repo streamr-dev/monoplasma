@@ -1,0 +1,31 @@
+.textField,
+.textArea {
+  border: 0;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-weight: var(--medium);
+  padding: 0 1.5em;
+  transition: 150ms ease-in-out box-shadow;
+
+  &::placeholder {
+    color: #a3a3a3;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 1px #0324ff;
+    outline: 0;
+  }
+
+  &::selection {
+    background-color: #cce9fd;
+  }
+}
+
+.textArea {
+  box-sizing: border-box;
+  line-height: 2em;
+  min-height: 10em;
+  padding-bottom: 1em;
+  padding-top: 1em;
+  resize: vertical;
+}

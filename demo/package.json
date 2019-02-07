@@ -1,0 +1,36 @@
+{
+  "name": "@streamr/revenue-sharing-demo",
+  "private": true,
+  "description": "Revenue sharing demo.",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "gatsby build",
+    "develop": "gatsby develop -H 0.0.0.0",
+    "start": "npm run develop",
+    "serve": "gatsby serve",
+    "test": "echo \"Write tests! -> https://gatsby.app/unit-testing\""
+  },
+  "dependencies": {
+    "bn.js": "^4.11.8",
+    "classnames": "^2.2.6",
+    "empty": "^0.10.1",
+    "eslint": "^5.13.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-streamr": "^1.1.8",
+    "eslint-loader": "^2.1.1",
+    "ethjs": "^0.4.0",
+    "flow-bin": "^0.92.0",
+    "gatsby": "^2.0.111",
+    "gatsby-plugin-eslint": "^2.0.4",
+    "gatsby-plugin-flow": "^1.0.2",
+    "gatsby-plugin-postcss": "^2.0.5",
+    "gatsby-plugin-react-helmet": "^3.0.6",
+    "normalize.css": "^8.0.1",
+    "precss": "^4.0.0",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-helmet": "^5.2.0",
+    "time-ago": "^0.2.1"
+  }
+}
