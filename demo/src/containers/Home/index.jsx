@@ -41,6 +41,7 @@ class Home extends Component<{}, State> {
             ['Total withdrawn', new BN(0)],
         ],
         blocks: [1, 2, 3, 4, 5],
+        config: {},
         onViewClick: this.onViewClick.bind(this),
         onKickClick: this.onKickClick.bind(this),
         onWithdrawClick: this.onWithdrawClick.bind(this),
@@ -54,7 +55,13 @@ class Home extends Component<{}, State> {
     unmounted: boolean = false
 
     componentDidMount() {
-        fetch('/data/operator.json').then((/* resp */) => { /* … */ }, console.log.bind(console))
+        fetch('/data/operator.json')
+            .then((resp) => resp.json())
+            .then((config) => {
+                this.setState({
+                    config,
+                })
+            })
 
         // From https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
         if (ethereum) {
