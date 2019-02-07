@@ -2,5 +2,10 @@
 
 import React from 'react'
 import Home from '../containers/Home'
+import Wallet from '../containers/Wallet'
 
-export default () => <Home />
+export default () => (
+    <Wallet>
+        <Home />
+    </Wallet>
+)
