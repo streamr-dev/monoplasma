@@ -113,12 +113,12 @@ class Home extends Component<{}, State> {
         console.log('Withdraw', address, this)
     }
 
-    onAddRevenueClick() {
-        console.log('Add revenue', this)
+    onAddRevenueClick(amount: number) {
+        console.log('Add revenue', amount, this)
     }
 
-    onForcePublishClick() {
-        console.log('Force publish', this)
+    onForcePublishClick(amount: number) {
+        console.log('Force publish', amount, this)
     }
 
     onAddUsersClick(addresses: Array<string>) {

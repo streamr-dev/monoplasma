@@ -66,9 +66,9 @@ class UserActions extends Component<Props, State> {
                     onChange={this.onAddressChange}
                     className={Input.styles.textField}
                 />
-                <Button onClick={this.onViewClick}>View</Button>
-                <Button onClick={this.onWithdrawClick} theme="edge">Withdraw</Button>
-                <Button onClick={this.onKickClick} theme="red-edge">Kick</Button>
+                <Button disabled={!address} onClick={this.onViewClick}>View</Button>
+                <Button disabled={!address} onClick={this.onWithdrawClick} theme="edge">Withdraw</Button>
+                <Button disabled={!address} onClick={this.onKickClick} theme="red-edge">Kick</Button>
             </div>
         )
     }
