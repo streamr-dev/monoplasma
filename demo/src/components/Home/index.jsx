@@ -1,10 +1,11 @@
 // @flow
 
-import React from 'react'
+import React, { type Node } from 'react'
 
 import Context, { type Props as ContextProps } from '../../contexts/Home'
 import Container from '../Container'
 import Layout from '../Layout'
+import Notification from '../Notification'
 import Hero from './Hero'
 import Section from './Section'
 import Stats from './Stats'
@@ -16,8 +17,11 @@ import Blocks from './Blocks'
 
 import styles from './home.module.css'
 
-type Props = ContextProps & {
+type OwnProps = {
+    notification: Node,
 }
+
+type Props = ContextProps & OwnProps
 
 const Home = ({
     account,
@@ -31,12 +35,18 @@ const Home = ({
     onAddUsersClick,
     onMintClick,
     onStealClick,
+    notification,
 }: Props) => (
     <Layout>
         <Hero />
         <Container
             className={styles.root}
         >
+            {notification && (
+                <Notification className={styles.notification}>
+                    {notification}
+                </Notification>
+            )}
             <Section
                 title="User account"
             >
@@ -76,7 +86,7 @@ const Home = ({
     </Layout>
 )
 
-export default (props: {}) => (
+export default (props: OwnProps) => (
     <Context.Consumer>
         {(context: ContextProps) => (
             <Home {...context} {...props} />

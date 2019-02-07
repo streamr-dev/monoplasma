@@ -2,16 +2,15 @@
 
 /* eslint-disable react/no-unused-state */
 
-import React, { Component } from 'react'
+import React, { Component, type Node, Fragment } from 'react'
 import BN from 'bn.js'
-import Eth from 'ethjs'
 import HomeComponent from '../../components/Home'
 import Context, { type Props as ContextProps } from '../../contexts/Home'
+import WalletContext, { type Props as WalletContextProps } from '../../contexts/Wallet'
 
-const { Web3, ethereum } = typeof window !== 'undefined' ? window : {}
+type Props = WalletContextProps & {}
 
-type State = ContextProps & {
-}
+type State = ContextProps & {}
 
 const tick = (): Promise<void> => (
     new Promise((resolve) => {
@@ -19,8 +18,10 @@ const tick = (): Promise<void> => (
     })
 )
 
-class Home extends Component<{}, State> {
+class Home extends Component<Props, State> {
     static BLOCK_ID: number = 770129
+
+    unmounted: boolean = false
 
     state = {
         account: [
@@ -52,8 +53,6 @@ class Home extends Component<{}, State> {
         onForcePublishClick: this.onForcePublishClick.bind(this),
     }
 
-    unmounted: boolean = false
-
     componentDidMount() {
         fetch('/data/operator.json')
             .then((resp) => resp.json())
@@ -62,32 +61,6 @@ class Home extends Component<{}, State> {
                     config,
                 })
             })
-
-        // From https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
-        if (ethereum) {
-            window.web3 = new Web3(ethereum)
-            window.eth = new Eth(ethereum)
-
-            ethereum.enable().then(() => {
-                // metamaskAddress = ethereum.selectedAddress
-                // document.getElementById("account-found").hidden = !metamaskAddress
-                // document.getElementById("no-accounts").hidden = !!metamaskAddress
-            })
-        } else if (window.web3) {
-            window.web3 = new Web3(window.web3.currentProvider)
-            window.eth = new Eth(window.web3.currentProvider)
-            window.eth.accounts().then((accounts) => {
-                console.log(accounts)
-                // metamaskAddress = accounts[0]
-                // document.getElementById("account-found").hidden = !metamaskAddress
-                // document.getElementById("no-accounts").hidden = !!metamaskAddress
-            })
-        }
-
-        if (!window.eth) {
-            console.log('No Ethereum support detected. Consider installing https://metamask.io/')
-            // document.getElementById("no-metamask").hidden = false
-        }
 
         this.poolBlocks()
     }
@@ -137,7 +110,9 @@ class Home extends Component<{}, State> {
     }
 
     onStealClick() {
+        const { eth, accountAddress, web3 } = this.props
         console.log('Steal tokens', this)
+        console.log(eth, accountAddress, web3)
     }
 
     addRandomBlock = () => {
@@ -168,13 +143,40 @@ class Home extends Component<{}, State> {
         tick().then(this.addRandomBlock).then(this.poolBlocks)
     }
 
+    notification(): Node {
+        const { eth, accountAddress } = this.props
+
+        switch (true) {
+            case !eth:
+                return (
+                    <Fragment>
+                        <span>No wallet detected. please install </span>
+                        <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">MetaMask</a>
+                    </Fragment>
+                )
+            case !accountAddress:
+                return 'Please unlock your wallet to continue'
+            default:
+        }
+
+        return null
+    }
+
     render() {
         return (
             <Context.Provider value={this.state}>
-                <HomeComponent />
+                <HomeComponent
+                    notification={this.notification()}
+                />
             </Context.Provider>
         )
     }
 }
 
-export default Home
+export default (props: {}) => (
+    <WalletContext.Consumer>
+        {(context) => (
+            <Home {...context} {...props} />
+        )}
+    </WalletContext.Consumer>
+)
