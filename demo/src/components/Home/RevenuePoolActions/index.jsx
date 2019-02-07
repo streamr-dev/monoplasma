@@ -65,7 +65,7 @@ class RevenuePoolActions extends Component<Props, State> {
                     className={Input.styles.textField}
                 />
                 <Button disabled={disabled} onClick={this.onAddRevenueClick}>Add revenue</Button>
-                <Button disabled={disabled} onClick={this.onForcePublishClick} theme="edge">Force publish</Button>
+                <Button onClick={this.onForcePublishClick} theme="edge">Force publish</Button>
             </div>
         )
     }
