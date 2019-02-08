@@ -6,11 +6,9 @@ const { spawn } = require("child_process")
 
 const Channel = require("../../src/joinPartChannel")
 
-const { until, untilStreamContains } = require("../utils/await-until")
+const { untilStreamContains } = require("../utils/await-until")
 
 const helperFile = path.normalize(path.join(__dirname, "..", "utils", "joinPartChannel"))
-
-const log = () => {} // console.log
 
 function assertThrows(fun, reason) {
     let failed = false
@@ -45,7 +43,7 @@ describe("joinPartChannel", () => {
     }).timeout(2000)
 
     it("can't double-start server", () => {
-        const channel = new Channel()
+        const channel = new Channel(9876)
         channel.startServer()
         assertThrows(() => channel.startServer(), "Already started as server")
         assertThrows(() => channel.listen(), "Already started as server")
@@ -53,7 +51,7 @@ describe("joinPartChannel", () => {
     })
 
     it("can't double-start client", () => {
-        const channel = new Channel()
+        const channel = new Channel(9876)
         channel.listen()
         assertThrows(() => channel.startServer(), "Already started as client")
         assertThrows(() => channel.listen(), "Already started as client")
