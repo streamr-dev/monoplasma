@@ -4,7 +4,7 @@ import React from 'react'
 import cx from 'classnames'
 import BN from 'bn.js'
 import Timestamp from '../../Timestamp'
-import formatNumber from '../../../utils/formatNumber'
+import formatFixedDecimal from '../../../utils/formatFixedDecimal'
 
 import styles from './blocks.module.css'
 
@@ -41,11 +41,11 @@ const Blocks = ({ items, className }: Props) => (
                     )
                 }
                 return (
-                    <div key={block.id} className={styles.row}>
-                        <div>{block.id}</div>
+                    <div key={block.blockNumber} className={styles.row}>
+                        <div>{block.blockNumber}</div>
                         <div><Timestamp value={block.timestamp} /></div>
-                        <div>{formatNumber(block.members)}</div>
-                        <div>{formatNumber(block.earnings)}</div>
+                        <div>{block.memberCount}</div>
+                        <div>{formatFixedDecimal(block.totalEarnings)}</div>
                     </div>
                 )
             })}

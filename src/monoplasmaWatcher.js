@@ -44,7 +44,17 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to root chain events...")
-        this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
+        //this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
+        this.tokenFilter = this.token.events.Transfer((error, event) => {
+            if (error) {
+                this.error(error)
+                return
+            }
+            const income = event.returnValues.value
+            this.log(`${income} tokens received`)
+            this.plasma.addRevenue(income)
+        })
+        /*
         this.tokenFilter.on("data", event => {
             const income = event.returnValues.value
             this.log(`${income} tokens received`)
@@ -52,16 +62,19 @@ module.exports = class MonoplasmaWatcher {
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
+        */
 
         this.log("Listening to joins/parts from the channel...")
         this.channel.listen()
         this.channel.on("join", addressList => {
             const count = this.plasma.addMembers(addressList)
             this.log(`Added or activated ${count} new member(s)`)
+            // TODO: write join into joinPartHistory
         })
         this.channel.on("part", addressList => {
             const count = this.plasma.removeMembers(addressList)
             this.log(`De-activated ${count} member(s)`)
+            // TODO: write part into joinPartHistory
         })
 
         await this.saveState()
@@ -78,6 +91,8 @@ module.exports = class MonoplasmaWatcher {
     }
 
     async playback(fromBlock, toBlock) {
+        // TODO: include joinPartHistory in playback
+        // TODO interim solution: take members from a recent block
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
@@ -92,7 +107,7 @@ module.exports = class MonoplasmaWatcher {
                 } break
                 // event BlockCreated(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash);
                 case "BlockCreated": {
-                    const num = event.returnValues.value
+                    const num = event.returnValues.rootChainBlockNumber
                     await this.plasma.storeBlock(num)
                 } break
                 default: {

@@ -73,10 +73,11 @@
         }, {
             "type": "node",
             "request": "launch",
-            "name": "operator (localhost:8545)",
+            "name": "operator (localhost:8545 + web:8080)",
             "program": "${workspaceFolder}/start_operator.js",
             "env": {
-                "ETHEREUM_SERVER": "http://localhost:8545/",
+                "EXTERNAL_UI_SERVER": "http://localhost:8080/",
+                "ETHEREUM_SERVER": "ws://localhost:8545/",
                 "ETHEREUM_PRIVATE_KEY": "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
             }
         }, {

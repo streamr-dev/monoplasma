@@ -4,6 +4,12 @@ const express = require("express")
 module.exports = plasma => {
     const router = express.Router()
 
+    router.get("/", (req, res) => {
+        res.send({
+            status: "ok",
+        })
+    })
+
     router.get("/status", (req, res) => {
         const memberCount = plasma.getMemberCount()
         const totalEarnings = plasma.getTotalRevenue()

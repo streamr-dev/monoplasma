@@ -15,6 +15,8 @@ module.exports = operator => {
         operator.publishBlock().then(receipt => {
             console.log("Block published: " + JSON.stringify(receipt))
             res.send(receipt)
+        }).catch(error => {
+            res.status(400).send({ error })
         })
     })
 
@@ -31,6 +33,8 @@ module.exports = operator => {
             console.log("Block published: " + JSON.stringify(receipt))
             operator.plasma = realPlasma
             res.send(receipt)
+        }).catch(error => {
+            res.status(400).send({ error })
         })
     })
 

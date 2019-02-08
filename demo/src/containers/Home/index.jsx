@@ -2,6 +2,7 @@
 
 /* eslint-disable react/no-unused-state */
 /* eslint-disable new-cap */
+/* eslint-disable no-console */
 
 import React, { Component, type Node, Fragment } from 'react'
 import BN from 'bn.js'
@@ -14,8 +15,10 @@ import WalletContext, { type Props as WalletContextProps } from '../../contexts/
 import tokenAbi from '../../utils/tokenAbi'
 import monoplasmaAbi from '../../utils/monoplasmaAbi'
 
-// TODO: move to where network is checked
+// TODO: move to where network is checked. This actually should depend on chosen network.
 const etherscanUrl = 'http://rinkeby.infura.io'
+
+const MINT_TOKEN_AMOUNT = Eth.toWei('10000', 'ether')
 
 type Props = WalletContextProps & {}
 
@@ -26,6 +29,14 @@ const tick = (): Promise<void> => (
         setTimeout(resolve, Math.floor(Math.random() * 5000))
     })
 )
+
+const toFixed18 = (num: number) => new BN(10).pow(new BN(18)).mul(new BN(num))
+
+// TODO: disable alert for demo  (;
+const handleError = (error) => {
+    console.error(error)
+    window.alert(error.message) // eslint-disable-line no-alert
+}
 
 class Home extends Component<Props, State> {
     unmounted: boolean = false
@@ -87,6 +98,12 @@ class Home extends Component<Props, State> {
 
     onKickClick(address: string) {
         console.log('Kick', address, this)
+        fetch(`http://localhost:8080/admin/members/${address}`, {
+            method: 'DELETE',
+        }).then((resp) => resp.json()).then((res) => {
+            console.log(`Kick user response: ${JSON.stringify(res)}`)
+            return this.updateCommunity()
+        }).catch(handleError)
     }
 
     onWithdrawClick(address: string) {
@@ -96,57 +113,76 @@ class Home extends Component<Props, State> {
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
         monoplasma.withdrawAll().then((txHash) => {
-            console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
+            console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
-            console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
-            this.updateUser()
+            console.log(`withdrawAll transaction successful: ${JSON.stringify(receipt)}`)
+            this.updateUser(address)
             this.updateCommunity()
-        }).catch((error) => {
-            window.alert(error.message)
-        })
+        }).catch(handleError)
     }
 
     onAddRevenueClick(amount: number) {
         console.log('Add revenue', amount, this)
-        const { config } = this.state
-        const { eth } = this.props
+        const { config, member } = this.state
+        const { eth, accountAddress } = this.props
         const amountWei = Eth.toWei(amount, 'ether')
+        const opts = {
+            from: accountAddress,
+        }
 
         const token = new eth.contract(tokenAbi).at(config.tokenAddress)
 
-        token.transfer(config.contractAddress, amountWei).then((txHash) => {
+        token.transfer(config.contractAddress, amountWei, opts).then((txHash) => {
             console.log(`transfer transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
             console.log(`add revenue / transfer transaction successful: ${JSON.stringify(receipt)}`)
-            this.updateUser()
+            if (member) {
+                this.updateUser(member.address)
+            }
             this.updateCommunity()
-        }).catch((error) => {
-            window.alert(error.message)
-        })
+        }).catch(handleError)
     }
 
     onForcePublishClick() {
         console.log('Force publish', this)
+        fetch('http://localhost:8080/demo/publishBlock').then((resp) => resp.json()).then((receipt) => {
+            console.log(`Block publish successful: ${JSON.stringify(receipt)}`)
+        })
     }
 
     onAddUsersClick(addresses: Array<string>) {
         console.log('Add users', addresses, this)
-        const userList = addresses.filter(window.Eth.isAddress)
-        fetch('/admin/members', {
+        const userList = addresses.filter(Eth.isAddress)
+        fetch('http://localhost:8080/admin/members', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(userList),
         }).then((resp) => resp.json()).then((res) => {
-            window.alert(res)
-        })
+            console.log(`Add users response: ${JSON.stringify(res)}`)
+            return this.updateCommunity()
+        }).catch(handleError)
     }
 
     onMintClick() {
         console.log('Mint tokens', this)
+        const { config } = this.state
+        const { eth, accountAddress } = this.props
+        const opts = {
+            from: accountAddress,
+        }
+
+        const token = new eth.contract(tokenAbi).at(config.tokenAddress)
+
+        token.mint(accountAddress, MINT_TOKEN_AMOUNT, opts).then((txHash) => {
+            console.log(`mint transaction pending: ${etherscanUrl}/tx/${txHash}`)
+            return eth.getTransactionSuccess(txHash)
+        }).then((receipt) => {
+            console.log(`mint transaction successful: ${JSON.stringify(receipt)}`)
+        }).catch(handleError)
     }
 
     onStealClick() {
@@ -157,7 +193,8 @@ class Home extends Component<Props, State> {
 
     addBlockToList = (block) => {
         if (this.unmounted) { return }
-        console.log(`Adding ${block} to list`)
+        if (!block || !block.blockNumber) { return }
+        console.log(`Adding ${JSON.stringify(block)} to list`)
 
         this.setState(({ blocks }) => ({
             blocks: [
@@ -175,7 +212,7 @@ class Home extends Component<Props, State> {
     pollBlocks = () => {
         if (this.unmounted) { return }
 
-        tick()./* then(this.updateCommunity). */then(this.pollBlocks)
+        tick().then(this.updateCommunity.bind(this)).then(this.pollBlocks)
     }
 
     updateUser(address: string) {
@@ -194,7 +231,7 @@ class Home extends Component<Props, State> {
                     ['Earnings accessible', new BN(member.withdrawable)],
                 ],
             })
-        })
+        }).catch(handleError)
     }
 
     updateCommunity() {
@@ -207,35 +244,41 @@ class Home extends Component<Props, State> {
 
         let contractBalance
         let totalWithdrawn
-        token.balanceOf(config.contractAddress).then((res) => {
-            contractBalance = new BN(res)
+        return token.balanceOf(config.contractAddress).then((res) => {
+            contractBalance = res[0] // eslint-disable-line prefer-destructuring
             return monoplasma.totalWithdrawn()
         }).then((res) => {
-            totalWithdrawn = new BN(res)
-            return fetch('/api/status').then((resp) => resp.json())
+            totalWithdrawn = res[0] // eslint-disable-line prefer-destructuring
+            return fetch('http://localhost:8080/api/status').then((resp) => resp.json())
         }).then((community) => {
-            const recorded = new BN(community.latestBlock.totalEarnings)
-            const withdrawable = new BN(community.latestWithdrawableBlock.totalEarnings)
+            if (!community.latestBlock) {
+                console.error(`Community status: ${JSON.stringify(community)}`)
+                return
+            }
+            const recorded = new BN(community.latestBlock.totalEarnings || 0)
+            const withdrawable = new BN(community.latestWithdrawableBlock.totalEarnings || 0)
             this.setState({
                 community,
                 revenuePool: [
-                    ['Members', community.memberCount.total],
-                    ['Total earnings', community.totalEarnings],
-                    ['Earnings frozen', recorded.sub(withdrawable)],
-                    ['Contract balance', contractBalance],
-                    ['Total earnings recorded', recorded],
-                    ['Earnings available', withdrawable],
+                    ['Members', toFixed18(community.memberCount.total)],
+                    ['Total earnings', new BN(community.totalEarnings)],
+                    ['Earnings frozen', new BN(recorded.sub(withdrawable))],
+                    ['Contract balance', new BN(contractBalance)],
+                    ['Total earnings recorded', new BN(recorded)],
+                    ['Earnings available', new BN(withdrawable)],
                     null,
-                    ['Total withdrawn', totalWithdrawn],
+                    ['Total withdrawn', new BN(totalWithdrawn)],
                 ],
             })
-            if (community.latestBlock.blockNumber !== latestBlockNumber) {
+            const bnum = community.latestBlock.blockNumber
+            if (bnum && bnum !== latestBlockNumber) {
                 this.setState({
-                    latestBlocknumber: community.latestBlock.blockNumber,
+                    latestBlocknumber: bnum,
                 })
                 this.addBlockToList(community.latestBlock)
             }
         })
+            .catch(handleError)
     }
 
     notification(): Node {

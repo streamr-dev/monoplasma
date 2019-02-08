@@ -3,6 +3,16 @@ const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
 const SortedMap = require("collections/sorted-map")
 
+function blockToApiObject(block) {
+    if (!block) { block = { members: [] } }
+    return {
+        blockNumber: block.blockNumber,
+        timestamp: block.timestamp,
+        memberCount: block.members.length,
+        totalEarnings: block.totalEarnings,
+    }
+}
+
 /**
  * Monoplasma state object
  *
@@ -59,7 +69,8 @@ class Monoplasma {
 
     getLatestBlock() {
         if (this.latestBlocks.length < 1) { return {} }
-        return this.latestBlocks[0]
+        const block = this.latestBlocks[0]
+        return blockToApiObject(block)
     }
 
     getLatestWithdrawableBlock() {
@@ -67,7 +78,8 @@ class Monoplasma {
         const now = +new Date() / 1000
         const i = this.latestBlocks.findIndex(b => now - b.timeStamp > this.blockFreezeSeconds, this)
         this.latestBlocks.length = i + 1     // throw away older than latest withdrawable
-        return this.latestBlocks[i]
+        const block = this.latestBlocks[i]
+        return blockToApiObject(block)
     }
 
     /**
@@ -96,6 +108,7 @@ class Monoplasma {
         const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
         const tree = new MerkleTree(members)
         member.proof = tree.getPath(address)
+        member.blockNumber = blockNumber
         return member
     }
 
@@ -146,16 +159,17 @@ class Monoplasma {
      */
     addRevenue(amount) {
         const activeMembers = this.members.filter(m => m.isActive())
-        const activeCount = new BN(activeMembers.length)
+        const activeCount = activeMembers.length
         if (activeCount === 0) {
             console.error("No active members in community!")
             return
         }
 
-        const share = new BN(amount).divRound(activeCount)
+        const amountBN = new BN(amount)
+        const share = amountBN.divn(activeCount)
         activeMembers.forEach(m => m.addRevenue(share))
         this.tree.update(this.members)
-        this.totalEarnings.iaddn(amount)
+        this.totalEarnings.iadd(amountBN)
     }
 
     /**
@@ -172,7 +186,7 @@ class Monoplasma {
             this.members.set(address, new MonoplasmaMember(name, address))
         }
         // tree.update(members)     // no need for update since no revenue allocated
-        return !!m
+        return !m                   // if m wasn't found, it's new
     }
 
     /**
@@ -227,16 +241,20 @@ class Monoplasma {
 
     /**
      * Stash the merkle tree state for later use
-     * @param {number} rootChainBlocknumber
+     * @param {number} blockNumber root-chain block number after which this block state is valid
      */
-    async storeBlock(rootChainBlocknumber) {
+    async storeBlock(blockNumber) {
         const members = this.members.toArray().map(m => m.toObject())
+        const timestamp = +new Date()
+        const totalEarnings = this.getTotalRevenue()
         const latestBlock = {
+            blockNumber,
             members,
-            totalEarnings: this.getTotalRevenue(),
+            timestamp,
+            totalEarnings,
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
-        return this.store.saveBlock(members, rootChainBlocknumber)
+        return this.store.saveBlock(members, blockNumber)
     }
 
     /**
