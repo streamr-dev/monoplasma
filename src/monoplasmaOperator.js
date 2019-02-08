@@ -5,7 +5,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
     constructor(...args) {
         super(...args)
 
-        this.minIntervalBlocks = this.state.minIntervalBlocks || 2  // TODO: think about it more closely
+        this.minIntervalBlocks = this.state.minIntervalBlocks || 0  // TODO: think about it more closely
         this.publishedBlocks = []
         this.address = this.state.operatorAddress
         this.state.gasPrice = this.state.gasPrice || 4000000000  // 4 gwei

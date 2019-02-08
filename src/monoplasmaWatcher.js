@@ -44,7 +44,7 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to root chain events...")
-        //this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
+        /*
         this.tokenFilter = this.token.events.Transfer((error, event) => {
             if (error) {
                 this.error(error)
@@ -54,7 +54,8 @@ module.exports = class MonoplasmaWatcher {
             this.log(`${income} tokens received`)
             this.plasma.addRevenue(income)
         })
-        /*
+        */
+        this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
             const income = event.returnValues.value
             this.log(`${income} tokens received`)
@@ -62,7 +63,6 @@ module.exports = class MonoplasmaWatcher {
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
-        */
 
         this.log("Listening to joins/parts from the channel...")
         this.channel.listen()

@@ -86,32 +86,13 @@ class Monoplasma {
      * Get member's current status (without valid withdrawal proof because it hasn't been recorded)
      * @param {string} address
      */
-    getMemberCurrent(address) {
+    getMember(address) {
         const m = this.members.get(address)
         if (!m) { return {} }
         const obj = m.toObject()
         obj.active = m.isActive()
         obj.proof = this.getProof(address)
         return obj
-    }
-
-    /**
-     * Get member's latest block status with valid recorded proof
-     * @param {string} address
-     */
-    getMember(address) {
-        const frozenBlock = this.getLatestBlock()
-        const withdrawableBlock = this.getLatestWithdrawableBlock()
-        const member = this.getMemberCurrent(address)
-        if (!frozenBlock.blockNumber || !withdrawableBlock.blockNumber) {
-            return member
-        }
-        const memberFrozen = this.getMemberAt(frozenBlock.blockNumber)
-        const memberWithdrawable = this.getMemberAt(withdrawableBlock.blockNumber)
-        member.frozenEarnings = memberFrozen.earnings
-        member.withdrawableEarnings = memberWithdrawable.earnings
-        member.withdrawableBlockNumber = withdrawableBlock.blockNumber
-        return member
     }
 
     /**
