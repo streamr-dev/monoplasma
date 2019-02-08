@@ -4,12 +4,12 @@ const BN = require("bn.js")
 const SortedMap = require("collections/sorted-map")
 
 function blockToApiObject(block) {
-    if (!block) { block = { members: [] } }
+    if (!block || !block.members) { block = { members: [] } }
     return {
-        blockNumber: block.blockNumber,
-        timestamp: block.timestamp,
+        blockNumber: block.blockNumber || 0,
+        timestamp: block.timestamp || 0,
         memberCount: block.members.length,
-        totalEarnings: block.totalEarnings,
+        totalEarnings: block.totalEarnings || 0,
     }
 }
 
@@ -83,17 +83,35 @@ class Monoplasma {
     }
 
     /**
-     * Get member's current status (without withdrawal proof)
+     * Get member's current status (without valid withdrawal proof because it hasn't been recorded)
      * @param {string} address
-     * @param {number} blockNumber at which (published) block
      */
-    getMember(address) {
+    getMemberCurrent(address) {
         const m = this.members.get(address)
         if (!m) { return {} }
         const obj = m.toObject()
         obj.active = m.isActive()
         obj.proof = this.getProof(address)
         return obj
+    }
+
+    /**
+     * Get member's latest block status with valid recorded proof
+     * @param {string} address
+     */
+    getMember(address) {
+        const frozenBlock = this.getLatestBlock()
+        const withdrawableBlock = this.getLatestWithdrawableBlock()
+        const member = this.getMemberCurrent(address)
+        if (!frozenBlock.blockNumber || !withdrawableBlock.blockNumber) {
+            return member
+        }
+        const memberFrozen = this.getMemberAt(frozenBlock.blockNumber)
+        const memberWithdrawable = this.getMemberAt(withdrawableBlock.blockNumber)
+        member.frozenEarnings = memberFrozen.earnings
+        member.withdrawableEarnings = memberWithdrawable.earnings
+        member.withdrawableBlockNumber = withdrawableBlock.blockNumber
+        return member
     }
 
     /**
@@ -108,7 +126,6 @@ class Monoplasma {
         const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
         const tree = new MerkleTree(members)
         member.proof = tree.getPath(address)
-        member.blockNumber = blockNumber
         return member
     }
 

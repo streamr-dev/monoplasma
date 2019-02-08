@@ -3,6 +3,7 @@
 /* eslint-disable react/no-unused-state */
 /* eslint-disable new-cap */
 /* eslint-disable no-console */
+/* eslint-disable newline-per-chained-call */
 
 import React, { Component, type Node, Fragment } from 'react'
 import BN from 'bn.js'
@@ -112,7 +113,10 @@ class Home extends Component<Props, State> {
         const { eth } = this.props
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
-        monoplasma.withdrawAll().then((txHash) => {
+        return fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json()).then((member) => {
+            const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
+            return monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof)
+        }).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
@@ -217,18 +221,32 @@ class Home extends Component<Props, State> {
 
     updateUser(address: string) {
         if (!Eth.isAddress(address)) {
-            console.error(`Bad address: ${address}`)
-            return
+            const error = new Error(`Bad address: ${address}`)
+            console.error(error)
+            return Promise.reject(error)
         }
-        fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json()).then((member) => {
+        const { eth } = this.props
+        const { config } = this.state
+
+        // TODO: move contract instances into the state
+        const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
+
+        let withdrawn
+        return monoplasma.withdrawn(address).then((res) => {
+            withdrawn = res[0] // eslint-disable-line prefer-destructuring
+            return fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json())
+        }).then((member) => {
+            const withdrawnBN = new BN(withdrawn || 0)
+            const recorded = new BN(member.withdrawableErnings || 0)
+            const withdrawable = recorded.sub(withdrawnBN)
             this.setState({
                 member,
                 account: [
                     ['Total earnings', new BN(member.earnings || 0)],
-                    ['Earnings frozen', new BN(member.earningsFrozen || 0)],
-                    ['Total withdrawn', new BN(member.withdrawn || 0)],
-                    ['Total earnings recorded', new BN(member.recordedEarnings || 0)],
-                    ['Earnings accessible', new BN(member.withdrawable)],
+                    ['Earnings frozen', new BN(member.frozenEarnings || 0)],
+                    ['Total withdrawn', withdrawnBN],
+                    ['Total earnings recorded', recorded],
+                    ['Earnings accessible', withdrawable],
                 ],
             })
         }).catch(handleError)
@@ -277,8 +295,7 @@ class Home extends Component<Props, State> {
                 })
                 this.addBlockToList(community.latestBlock)
             }
-        })
-            .catch(handleError)
+        }).catch(handleError)
     }
 
     notification(): Node {
