@@ -25,12 +25,6 @@ type Props = WalletContextProps & {}
 
 type State = ContextProps & {}
 
-const tick = (): Promise<void> => (
-    new Promise((resolve) => {
-        setTimeout(resolve, Math.floor(Math.random() * 5000))
-    })
-)
-
 const toFixed18 = (num: number) => new BN(10).pow(new BN(18)).mul(new BN(num))
 
 // TODO: disable alert for demo  (;
@@ -85,7 +79,21 @@ class Home extends Component<Props, State> {
                 console.log(':boom:')
             })
 
-        this.pollBlocks()
+        const self = this
+        function pollBlocks() {
+            if (self.unmounted) { return }
+
+            self.updateCommunity().then(() => {
+                const { member } = self.state
+                if (member) {
+                    return self.updateUser(member.address)
+                }
+                return null
+            }).catch(handleError).then(() => {
+                setTimeout(pollBlocks, 1000)
+            })
+        }
+        setTimeout(pollBlocks, 1000)
     }
 
     componentWillUnmount() {
@@ -115,6 +123,9 @@ class Home extends Component<Props, State> {
 
         return fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json()).then((member) => {
             const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
+            if (!withdrawableBlockNumber) {
+                throw new Error('No withdrawable blocks yet!')
+            }
             return monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof)
         }).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
@@ -196,22 +207,21 @@ class Home extends Component<Props, State> {
     }
 
     addBlockToList = (block) => {
+        const { blocks } = this.state
+
         if (this.unmounted) { return }
         if (!block || !block.blockNumber) { return }
+        if (blocks.find((b) => b.blockNumber === block.blockNumber)) {
+            console.log(`Trying to re-add block #${block.blockNumber}`)
+            return
+        }
         console.log(`Adding ${JSON.stringify(block)} to list`)
 
         // add new block to front, take 5 newest
-        const { blocks } = this.state
         const newBlocks = [block, ...blocks].slice(0, 5)
         this.setState({
             blocks: newBlocks,
         })
-    }
-
-    pollBlocks = () => {
-        if (this.unmounted) { return }
-
-        tick().then(this.updateCommunity.bind(this)).then(this.pollBlocks)
     }
 
     updateUser(address: string) {

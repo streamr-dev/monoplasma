@@ -45,17 +45,6 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to root chain events...")
-        /*
-        this.tokenFilter = this.token.events.Transfer((error, event) => {
-            if (error) {
-                this.error(error)
-                return
-            }
-            const income = event.returnValues.value
-            this.log(`${income} tokens received`)
-            this.plasma.addRevenue(income)
-        })
-        */
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
             const income = event.returnValues.value

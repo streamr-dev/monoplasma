@@ -16,7 +16,7 @@ module.exports = operator => {
             console.log("Block published: " + JSON.stringify(receipt))
             res.send(receipt)
         }).catch(error => {
-            res.status(400).send({ error })
+            res.status(400).send({ error: error.message })
         })
     })
 

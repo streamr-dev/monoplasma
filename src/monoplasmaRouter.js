@@ -61,7 +61,7 @@ module.exports = plasma => {
         member.frozenEarnings = new BN(member.recordedEarnings).sub(new BN(member.withdrawableEarnings)).toString(10)
         if (withdrawableBlock) {
             member.withdrawableBlockNumber = withdrawableBlock.blockNumber
-            member.proof = await plasma.getProofAt(withdrawableBlock.blockNumber)
+            member.proof = await plasma.getProofAt(address, withdrawableBlock.blockNumber)
         }
         res.send(member)
     })
