@@ -101,7 +101,7 @@ interface IERC20 {
   );
 }
 
-// File: contracts/AbstractRootChain.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/contracts/AbstractRootChain.sol
 
 /**
  * Monoplasma root chain contract
@@ -186,7 +186,7 @@ contract AbstractRootChain {
     }
 }
 
-// File: contracts/Ownable.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/contracts/Ownable.sol
 
 /**
  * @title Ownable

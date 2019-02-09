@@ -2,13 +2,18 @@ pragma solidity ^0.4.24;
 
 /**
  * Monoplasma root chain contract
+ * It verifies Merkle-tree inclusion proofs that show that certain address has
+ *   certain earnings balance, according to hash published ("signed") by a
+ *   sidechain operator or similar authority
  * TODO: plasma nomenclature to all interfaces!
+ * TODO: rename this to EarningsVerifier
+ * TODO: see if it could be turned into a library, so many contracts could use it
  */
 contract AbstractRootChain {
     event BlockCreated(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash);
 
     /**
-     * Sidechain "blocks" are simply root hashes merkle-trees constructed from its state
+     * Sidechain "blocks" are simply root hashes of merkle-trees constructed from its balances
      * @param uint root-chain block number "after" which the balances were recorded
      * @return bytes32 root of the balances merkle-tree at that time
      */

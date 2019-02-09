@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-// File: openzeppelin-solidity/contracts/token/ERC20/IERC20.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol
 
 /**
  * @title ERC20 interface
@@ -35,7 +35,7 @@ interface IERC20 {
   );
 }
 
-// File: openzeppelin-solidity/contracts/math/SafeMath.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol
 
 /**
  * @title SafeMath
@@ -101,7 +101,7 @@ library SafeMath {
   }
 }
 
-// File: openzeppelin-solidity/contracts/token/ERC20/ERC20.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol
 
 /**
  * @title Standard ERC20 token
@@ -172,7 +172,7 @@ contract ERC20 is IERC20 {
    * @param value The amount of tokens to be spent.
    */
   function approve(address spender, uint256 value) public returns (bool) {
-    require(spender != address(0), "stupid address");
+    require(spender != address(0));
 
     _allowed[msg.sender][spender] = value;
     emit Approval(msg.sender, spender, value);
@@ -193,7 +193,7 @@ contract ERC20 is IERC20 {
     public
     returns (bool)
   {
-    require(value <= _allowed[from][msg.sender], "not enough allowance");
+    require(value <= _allowed[from][msg.sender]);
 
     _allowed[from][msg.sender] = _allowed[from][msg.sender].sub(value);
     _transfer(from, to, value);
@@ -255,8 +255,8 @@ contract ERC20 is IERC20 {
   * @param value The amount to be transferred.
   */
   function _transfer(address from, address to, uint256 value) internal {
-    require(value <= _balances[from], "not enough tokens");
-    require(to != address(0), "zero address");
+    require(value <= _balances[from]);
+    require(to != address(0));
 
     _balances[from] = _balances[from].sub(value);
     _balances[to] = _balances[to].add(value);
@@ -310,7 +310,7 @@ contract ERC20 is IERC20 {
   }
 }
 
-// File: openzeppelin-solidity/contracts/access/Roles.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/node_modules/openzeppelin-solidity/contracts/access/Roles.sol
 
 /**
  * @title Roles
@@ -355,7 +355,7 @@ library Roles {
   }
 }
 
-// File: openzeppelin-solidity/contracts/access/roles/MinterRole.sol
+// File: /Users/jtakalai/Documents/workspace/monoplasma/node_modules/openzeppelin-solidity/contracts/access/roles/MinterRole.sol
 
 contract MinterRole {
   using Roles for Roles.Role;
