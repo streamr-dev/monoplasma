@@ -1,4 +1,5 @@
 const express = require("express")
+const BN = require("bn.js")
 const {utils: { isAddress }} = require("web3")
 
 /** Don't send the full member list back, only member count */
@@ -45,20 +46,23 @@ module.exports = plasma => {
             res.status(400).send({error: `Bad Ethereum address: ${address}`})
             return
         }
+        const member = plasma.getMember(address)
+        if (!member) {
+            res.status(404).send({error: `Member not found: ${address}`})
+            return
+        }
 
         const frozenBlock = plasma.getLatestBlock()
         const withdrawableBlock = plasma.getLatestWithdrawableBlock()
-        const member = plasma.getMember(address)
-        if (!frozenBlock.blockNumber || !withdrawableBlock.blockNumber) {
-            res.send(member)
-            return
+        const memberFrozen = frozenBlock ? frozenBlock.members.find(m => m.address === address) || {} : {}
+        const memberWithdrawable = withdrawableBlock ? withdrawableBlock.members.find(m => m.address === address) || {} : {}
+        member.recordedEarnings = memberFrozen.earnings || "0"
+        member.withdrawableEarnings = memberWithdrawable.earnings || "0"
+        member.frozenEarnings = new BN(member.recordedEarnings).sub(new BN(member.withdrawableEarnings)).toString(10)
+        if (withdrawableBlock) {
+            member.withdrawableBlockNumber = withdrawableBlock.blockNumber
+            member.proof = await plasma.getProofAt(withdrawableBlock.blockNumber)
         }
-        const memberFrozen = await plasma.getMemberAt(frozenBlock.blockNumber)
-        const memberWithdrawable = plasma.getMemberAt(withdrawableBlock.blockNumber)
-        member.frozenEarnings = memberFrozen.earnings
-        member.withdrawableEarnings = memberWithdrawable.earnings
-        member.withdrawableBlockNumber = withdrawableBlock.blockNumber
-        member.proof = memberWithdrawable.proof
         res.send(member)
     })
 
@@ -71,6 +75,8 @@ module.exports = plasma => {
 
         plasma.getBlock(blockNumber).then(block => {
             res.send(block)
+        }).catch(error => {
+            res.status(404).send(error)
         })
     })
 

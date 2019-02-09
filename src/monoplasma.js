@@ -63,16 +63,16 @@ class Monoplasma {
     }
 
     getLatestBlock() {
-        if (this.latestBlocks.length < 1) { return {} }
+        if (this.latestBlocks.length < 1) { return null }
         const block = this.latestBlocks[0]
         return block
     }
 
     getLatestWithdrawableBlock() {
-        if (this.latestBlocks.length < 1) { return {} }
+        if (this.latestBlocks.length < 1) { return null }
         const nowTimestamp = now()
         const i = this.latestBlocks.findIndex(b => nowTimestamp - b.timestamp > this.blockFreezeSeconds, this)
-        if (i === -1) { return {} }         // all blocks still frozen
+        if (i === -1) { return null }         // all blocks still frozen
         this.latestBlocks.length = i + 1    // throw away older than latest withdrawable
         const block = this.latestBlocks[i]
         return block
@@ -94,7 +94,7 @@ class Monoplasma {
      */
     getMember(address) {
         const m = this.members.get(address)
-        if (!m) { return {} }
+        if (!m) { return null }
         const obj = m.toObject()
         obj.active = m.isActive()
         obj.proof = this.getProof(address)

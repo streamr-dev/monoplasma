@@ -201,9 +201,11 @@ class Home extends Component<Props, State> {
         console.log(`Adding ${JSON.stringify(block)} to list`)
 
         // add new block to front, take 5 newest
-        this.setState(({ blocks }) => ({
-            blocks: [block, ...blocks].slice(0, 5),
-        }))
+        const { blocks } = this.state
+        const newBlocks = [block, ...blocks].slice(0, 5)
+        this.setState({
+            blocks: newBlocks,
+        })
     }
 
     pollBlocks = () => {
