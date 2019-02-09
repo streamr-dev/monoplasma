@@ -101,8 +101,8 @@ async function start() {
     // augment the config / saved state with variables that may be useful for the validators
     const config = RESET || !ethereumServer ? {} : await fileStore.loadState()
     config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
-    config.blockFreezePeriodSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezePeriodSeconds || 3600
-    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezePeriodSeconds, opts, log)
+    config.blockFreezeSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezeSeconds || 20
+    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, opts, log)
     config.ethereumServer = ethereumServer
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.operatorAddress = account.address

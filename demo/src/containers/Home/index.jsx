@@ -200,16 +200,9 @@ class Home extends Component<Props, State> {
         if (!block || !block.blockNumber) { return }
         console.log(`Adding ${JSON.stringify(block)} to list`)
 
+        // add new block to front, take 5 newest
         this.setState(({ blocks }) => ({
-            blocks: [
-                {
-                    id: block.blockNumber,
-                    timestamp: new Date(block.timestamp).getTime(),
-                    members: block.memberCount,
-                    earnings: block.totalEarnings,
-                },
-                ...blocks,
-            ].slice(0, 5),
+            blocks: [block, ...blocks].slice(0, 5),
         }))
     }
 
@@ -291,7 +284,7 @@ class Home extends Component<Props, State> {
             const bnum = community.latestBlock.blockNumber
             if (bnum && bnum !== latestBlockNumber) {
                 this.setState({
-                    latestBlocknumber: bnum,
+                    latestBlockNumber: bnum,
                 })
                 this.addBlockToList(community.latestBlock)
             }

@@ -29,6 +29,7 @@ module.exports = class MonoplasmaWatcher {
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         this.state.tokenAddress = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
+        this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
         this.plasma = new Monoplasma(this.state.balances, this.store, this.state.blockFreezeSeconds)
 
         // TODO: playback from joinPartChannel not implemented =>

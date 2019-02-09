@@ -3,14 +3,9 @@ const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
 const SortedMap = require("collections/sorted-map")
 
-function blockToApiObject(block) {
-    if (!block || !block.members) { block = { members: [] } }
-    return {
-        blockNumber: block.blockNumber || 0,
-        timestamp: block.timestamp || 0,
-        memberCount: block.members.length,
-        totalEarnings: block.totalEarnings || 0,
-    }
+/** Timestamp is seconds, just like Ethereum block.timestamp */
+function now() {
+    return Math.round(new Date() / 1000)
 }
 
 /**
@@ -70,16 +65,27 @@ class Monoplasma {
     getLatestBlock() {
         if (this.latestBlocks.length < 1) { return {} }
         const block = this.latestBlocks[0]
-        return blockToApiObject(block)
+        return block
     }
 
     getLatestWithdrawableBlock() {
         if (this.latestBlocks.length < 1) { return {} }
-        const now = +new Date() / 1000
-        const i = this.latestBlocks.findIndex(b => now - b.timeStamp > this.blockFreezeSeconds, this)
-        this.latestBlocks.length = i + 1     // throw away older than latest withdrawable
+        const nowTimestamp = now()
+        const i = this.latestBlocks.findIndex(b => nowTimestamp - b.timestamp > this.blockFreezeSeconds, this)
+        if (i === -1) { return {} }         // all blocks still frozen
+        this.latestBlocks.length = i + 1    // throw away older than latest withdrawable
         const block = this.latestBlocks[i]
-        return blockToApiObject(block)
+        return block
+    }
+
+    async getBlock(blockNumber) {
+        const cachedBlock = this.latestBlocks.find(b => b.blockNumber === blockNumber)
+        if (cachedBlock) {
+            return cachedBlock
+        }
+        if (!await this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
+        const block = await this.store.loadBlock(blockNumber)
+        return block
     }
 
     /**
@@ -101,10 +107,9 @@ class Monoplasma {
      * @param {number} blockNumber at which (published) block
      */
     async getMemberAt(address, blockNumber) {
-        if (!await this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
-        const block = await this.store.loadBlock(blockNumber)
-        const member = block.find(m => m.address === address)
-        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const block = await this.getBlock(blockNumber)
+        const member = block.members.find(m => m.address === address)
+        const members = new SortedMap(block.members.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
         const tree = new MerkleTree(members)
         member.proof = tree.getPath(address)
         return member
@@ -127,8 +132,7 @@ class Monoplasma {
      * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
      */
     async getProofAt(address, blockNumber) {
-        if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
-        const block = await this.store.loadBlock(blockNumber)
+        const block = await this.getBlock(blockNumber)
         const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
         const tree = new MerkleTree(members)
         const path = tree.getPath(address)
@@ -243,7 +247,7 @@ class Monoplasma {
      */
     async storeBlock(blockNumber) {
         const members = this.members.toArray().map(m => m.toObject())
-        const timestamp = +new Date()
+        const timestamp = now()
         const totalEarnings = this.getTotalRevenue()
         const latestBlock = {
             blockNumber,
@@ -252,7 +256,7 @@ class Monoplasma {
             totalEarnings,
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
-        return this.store.saveBlock(members, blockNumber)
+        return this.store.saveBlock(latestBlock, blockNumber)
     }
 
     /**

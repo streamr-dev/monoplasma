@@ -30,6 +30,7 @@ const Blocks = ({ items, className }: Props) => (
         </div>
         <div>
             {items.map((block) => {
+                // initial empty blocks are marked with numbers
                 if (typeof block === 'number') {
                     return (
                         <div key={block} className={styles.row}>
@@ -43,7 +44,7 @@ const Blocks = ({ items, className }: Props) => (
                 return (
                     <div key={block.blockNumber} className={styles.row}>
                         <div>{block.blockNumber}</div>
-                        <div><Timestamp value={block.timestamp} /></div>
+                        <div><Timestamp value={block.timestamp * 1000} /></div>
                         <div>{block.memberCount}</div>
                         <div>{formatFixedDecimal(block.totalEarnings)}</div>
                     </div>
