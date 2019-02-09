@@ -35,7 +35,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         this.lastBlockNumber = blockNumber || await this.web3.eth.getBlockNumber()
         const hash = this.plasma.getRootHash()
         const ipfsHash = ""
-        await this.plasma.storeBlock()
+        await this.plasma.storeBlock(this.lastBlockNumber)
         return this.contract.methods.recordBlock(this.lastBlockNumber, hash, ipfsHash).send({
             from: this.address,
             gas: 4000000,
