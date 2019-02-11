@@ -118,7 +118,7 @@ async function start() {
     const adminChannel = new Channel()
     adminChannel.startServer()
     app.use(cors())
-    app.use(bodyParser.json())
+    app.use(bodyParser.json({limit: '50mb'}))
     app.use("/api", operatorRouter(operator.plasma.getMemberApi()))
     app.use("/admin", adminRouter(adminChannel))
     app.use("/demo", revenueDemoRouter(operator))
