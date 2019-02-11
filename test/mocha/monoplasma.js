@@ -2,6 +2,7 @@
 const os = require("os")
 const path = require("path")
 const assert = require("assert")
+var crypto = require("crypto")
 
 const Monoplasma = require("../../src/monoplasma")
 
@@ -40,6 +41,18 @@ describe("Monoplasma", () => {
         assert.deepStrictEqual(plasma.getMembers(), [
             {"address": "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "earnings": "150", "name": "tester1"},
         ])
+    })
+
+    it("should not crash with large number of members", () => {
+        const initialMembers = []
+        while (initialMembers.length < 200000) {
+            initialMembers.push({
+              address: `0x${crypto.randomBytes(20).toString('hex')}`,
+              earnings: 0
+            })
+        }
+        const plasma = new Monoplasma(initialMembers, fileStore)
+        plasma.addRevenue(100)
     })
 
     it("should remember past blocks' earnings", async () => {
