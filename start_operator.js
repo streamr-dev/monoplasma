@@ -29,8 +29,7 @@ const {
     BLOCK_FREEZE_SECONDS,
     GAS_PRICE_GWEI,
     RESET,
-    STORE,
-    BLOCK_STORE_DIR,
+    STORE_DIR,
     QUIET,
 
     // these will be used  1) for demo token  2) if TOKEN_ADDRESS doesn't support name() and symbol()
@@ -53,9 +52,8 @@ const error = (e, ...args) => {
     process.exit(1)
 }
 
-const stateStorePath = fs.existsSync(STORE) ? STORE : __dirname + "/demo/public/data/operator.json"
-const blockStoreDir = fs.existsSync(BLOCK_STORE_DIR) ? BLOCK_STORE_DIR : __dirname + "/demo/public/data/blocks"
-const fileStore = require("./src/fileStore")(stateStorePath, blockStoreDir)
+const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/demo/public/data"
+const fileStore = require("./src/fileStore")(storeDir)
 
 let ganache = null
 function stopGanache() {
@@ -121,7 +119,7 @@ async function start() {
     adminChannel.startServer()
     app.use(cors())
     app.use(bodyParser.json())
-    app.use("/api", operatorRouter(operator.plasma))
+    app.use("/api", operatorRouter(operator.plasma.getMemberApi()))
     app.use("/admin", adminRouter(adminChannel))
     app.use("/demo", revenueDemoRouter(operator))
     app.use(express.static(path.join(__dirname, "demo/public")))

@@ -17,11 +17,16 @@ const maxLogLen = MAX_BLOCK_LOG_ENTRY_LENGTH || 840
  * @param {String} storeDir where json files are stored
  */
 module.exports = (storeDir) => {
+    log(`Setting up fileStore directories under ${storeDir}...`)
+    const blocksDir = path.join(storeDir, "blocks")
+    const eventsDir = path.join(storeDir, "events")
     fs.mkdirSync(storeDir, { recursive: true })
+    fs.mkdirSync(blocksDir, { recursive: true })
+    fs.mkdirSync(eventsDir, { recursive: true })
 
     const stateStorePath = path.join(storeDir, "state.json")
-    const getBlockPath = blockNumber => path.join(storeDir, `block-${blockNumber}.json`)
-    const getEventPath = blockNumber => path.join(storeDir, `events-${blockNumber}.json`)
+    const getBlockPath = blockNumber => path.join(blocksDir, blockNumber + ".json")
+    const getEventPath = blockNumber => path.join(eventsDir, blockNumber + ".json")
 
     return {
         /** @returns {OperatorState} Operator state from the file */
@@ -81,6 +86,7 @@ module.exports = (storeDir) => {
         /**
          * @typedef {Object} Event join/part events are stored in file for playback, others come from Ethereum
          * @property {number} blockNumber Root-chain block number after which events happened
+         * @property {number} transactionIndex index within block, for join/part it should just be large
          * @property {string} event "Join" or "Part" (TODO: could jsdoc enums handle this?)
          * @property {Array<string>} addressList
          */

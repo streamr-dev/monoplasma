@@ -33,7 +33,7 @@ const Blocks = ({ items, className }: Props) => (
                 // initial empty blocks are marked with numbers
                 if (typeof block === 'number') {
                     return (
-                        <div key={block} className={styles.row}>
+                        <div key={`dummy${block}`} className={styles.row}>
                             <div>&zwnj;</div>
                             <div>&zwnj;</div>
                             <div>&zwnj;</div>

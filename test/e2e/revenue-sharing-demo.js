@@ -19,21 +19,19 @@ const projectRoot = __dirname.split("/test/e2e")[0]
 
 const fetch = require("node-fetch")
 
-const STORE = __dirname + "/tmp/state.json"
-const BLOCK_STORE_DIR = __dirname + "/tmp/blocks"
+const STORE_DIR = __dirname + `/test-store-${+new Date()}`
 const GANACHE_PORT = 8586
 const WEBSERVER_PORT = 3030
 
 const from = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 
-const { loadState } = require("../../src/fileStore")(STORE, BLOCK_STORE_DIR)
+const { loadState } = require("../../src/fileStore")(STORE_DIR)
 
 describe("Revenue sharing demo", () => {
     it("should run the happy path demo", async () => {
         console.log("Running start_operator.js...")
         const operatorProcess = spawn(process.execPath, ["start_operator.js"], { env: {
-            STORE,
-            BLOCK_STORE_DIR,
+            STORE_DIR,
             GANACHE_PORT,
             WEBSERVER_PORT,
             RESET: "yesplease"
@@ -46,7 +44,7 @@ describe("Revenue sharing demo", () => {
         await untilStreamContains(operatorProcess.stdout, "[DONE]")
 
         console.log("Getting the init state")
-        const state = await loadState(STORE)
+        const state = await loadState()
 
         const web3 = new Web3("http://localhost:8588")
         const contract = new web3.eth.Contract(MonoplasmaJson.abi, state.contractAddress)

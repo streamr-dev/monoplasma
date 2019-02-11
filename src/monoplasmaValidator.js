@@ -20,17 +20,14 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
             .on("data", event => { this.checkBlock(event.arguments) })
             .on("changed", event => { this.error("Event removed in re-org!", event) })
             .on("error", this.error)
-    }
 
-    async onEvent(event) {
-        super.onEvent(event)
-        this.eventQueue.push(event)
+        // TODO: listener for all events: this.eventQueue.push(event)
     }
 
     async checkBlock(block) {
         // update the "validated" version to the block number whose hash was published
-        const blockNum = block.rootChainBlockNumber
-        const [events, remaining] = partition(this.eventQueue, e => e.blockNumber <= blockNum)
+        const { blockNumber } = block
+        const [events, remaining] = partition(this.eventQueue, e => e.blockNumber <= blockNumber)
         replayEvents(this.validatedPlasma, events)
         this.eventQueue = remaining
 

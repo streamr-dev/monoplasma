@@ -22,7 +22,7 @@ function mergeEventLists(events1, events2) {
     let li1 = events1[0].logIndex
     let li2 = events2[0].logIndex
     for (;;) {
-        if (block1 < block2 || block1 === block2 && (txi1 < txi2 || txi1 === txi2 && li1 < li2)) {
+        if (block1 < block2 || block1 === block2 && (txi1 < txi2 || txi1 === txi2 && li1 <= li2)) {
             ret.push(events1[i1++])
             if (i1 >= events1.length) {
                 return ret.concat(events2.slice(i2))

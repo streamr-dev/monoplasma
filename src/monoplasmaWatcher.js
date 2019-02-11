@@ -17,7 +17,6 @@ module.exports = class MonoplasmaWatcher {
         this.store = store
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
-        this.lastBlockNumber = 0
         this.explorerUrl = this.state.explorerUrl
         this.filters = {}
     }
@@ -25,59 +24,68 @@ module.exports = class MonoplasmaWatcher {
     async start() {
         await throwIfSetButNotContract(this.web3, this.state.contractAddress, "startState contractAddress")
 
-        this.log("Initializing...")
+        this.log("Initializing Monoplasma state...")
+        // double-check state from contracts as a sanity check (TODO: alert if there were wrong in startState?)
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         this.state.tokenAddress = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
-        this.plasma = new Monoplasma(this.state.balances, this.store, this.state.blockFreezeSeconds)
+
+        const savedMembers = this.state.lastPublishedBlock ? await this.store.loadBlock(this.state.lastPublishedBlock) : []
+        this.plasma = new Monoplasma(savedMembers, this.store, this.state.blockFreezeSeconds)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
         //   the failing will probably be quite quickly noticed though, so at least validators would simply restart
         //   if the operator fails though...
-        this.log("Playing back root chain events...")
         const latestBlock = await this.web3.eth.getBlockNumber()
-        const playbackStartingBlock = this.state.rootChainBlock + 1 || 0
+        const playbackStartingBlock = this.state.lastBlockNumber + 1 || 0
         if (playbackStartingBlock <= latestBlock) {
+            this.log("Playing back events from Ethereum and Channel...")
             await this.playback(playbackStartingBlock, latestBlock)
-            this.lastBlockNumber = this.state.rootChainBlock + 1
+            this.state.lastBlockNumber = latestBlock
         }
 
-        this.log("Listening to root chain events...")
+        this.log("Listening to Ethereum events...")
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
             const income = event.returnValues.value
             this.log(`${income} tokens received`)
             this.plasma.addRevenue(income)
+            this.state.lastBlockNumber = event.blockNumber
+            this.store.saveState(this.state).catch(this.error)
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
 
-        this.log("Listening to joins/parts from the channel...")
+        this.log("Listening to joins/parts from the Channel...")
         this.channel.listen()
         this.channel.on("join", addressList => {
-            const count = this.plasma.addMembers(addressList)
-            this.log(`Added or activated ${count} new member(s)`)
-            // TODO: write join into joinPartHistory
+            const bnum = this.state.lastBlockNumber
+            const addedMembers = this.plasma.addMembers(addressList)
+            this.log(`Added or activated ${addedMembers.length} new member(s) at block ${bnum}`)
+            this.store.saveEvents(bnum, {
+                event: "Join",
+                addressList: addedMembers,
+            })
         })
         this.channel.on("part", addressList => {
-            const count = this.plasma.removeMembers(addressList)
-            this.log(`De-activated ${count} member(s)`)
-            // TODO: write part into joinPartHistory
+            const blockNumber = this.state.lastBlockNumber
+            const removedMembers = this.plasma.removeMembers(addressList)
+            this.log(`De-activated ${removedMembers.length} member(s) at block ${blockNumber}`)
+            this.store.saveEvents(blockNumber, {
+                blockNumber,
+                event: "Part",
+                addressList: removedMembers,
+            })
         })
 
-        await this.saveState()
+        await this.store.saveState(this.state)
     }
 
     async stop() {
         this.tokenFilter.unsubscribe()
         this.channel.close()
-    }
-
-    async saveState(){
-        this.state.balances = this.plasma.getMembers()
-        await this.store.saveState(this.state)
     }
 
     async playback(fromBlock, toBlock) {
@@ -86,26 +94,34 @@ module.exports = class MonoplasmaWatcher {
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
-        const allEvents = mergeEventLists(blockCreateEvents, transferEvents)
+        const joinPartEvents = await this.store.loadEvents(fromBlock, toBlock)
+        const ethereumEvents = mergeEventLists(blockCreateEvents, transferEvents)
+        const allEvents = mergeEventLists(ethereumEvents, joinPartEvents)
         for (const event of allEvents) {
             switch (event.event) {
                 // event Transfer(address indexed from, address indexed to, uint256 value);
                 case "Transfer": {
-                    const income = event.returnValues.value
-                    this.log(`Playback: ${income} tokens received @ block ${event.blockNumber}`)
-                    this.plasma.addRevenue(income)
+                    const { value } = event.returnValues
+                    this.log(`Playback: ${value} tokens received @ block ${event.blockNumber}`)
+                    this.plasma.addRevenue(value)
                 } break
-                // event BlockCreated(uint rootChainBlockNumber, bytes32 rootHash, string ipfsHash);
+                // event BlockCreated(uint blockNumber, bytes32 rootHash, string ipfsHash);
                 case "BlockCreated": {
-                    const num = event.returnValues.rootChainBlockNumber
-                    await this.plasma.storeBlock(num)
+                    const { blockNumber } = event.returnValues
+                    await this.plasma.storeBlock(blockNumber)
+                } break
+                case "Join": {
+                    const { addressList } = event
+                    this.plasma.addMembers(addressList)
+                } break
+                case "Part": {
+                    const { addressList } = event
+                    this.plasma.removeMembers(addressList)
                 } break
                 default: {
                     this.error(`Unexpected event: ${JSON.stringify(event)}`)
                 }
             }
         }
-        this.state.rootChainBlock = toBlock
-        this.state.balances = this.plasma.getMembers()
     }
 }

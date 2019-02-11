@@ -54,6 +54,7 @@ class Home extends Component<Props, State> {
             null,
             ['Total withdrawn', new BN(0)],
         ],
+        serverConnectionError: false,
         blocks: [1, 2, 3, 4, 5],
         member: null,
         config: null,
@@ -69,7 +70,7 @@ class Home extends Component<Props, State> {
     }
 
     componentDidMount() {
-        fetch('/data/operator.json')
+        fetch('/data/state.json')
             .then((resp) => resp.json())
             .then((config) => {
                 this.setState({
@@ -89,8 +90,17 @@ class Home extends Component<Props, State> {
                     return self.updateUser(member.address)
                 }
                 return null
-            }).catch(handleError).then(() => {
+            }).then(() => {
+                self.setState({
+                    serverConnectionError: false,
+                })
                 setTimeout(pollBlocks, 1000)
+            }).catch((error) => {
+                console.error(error)
+                self.setState({
+                    serverConnectionError: true,
+                })
+                setTimeout(pollBlocks, 5000)
             })
         }
         setTimeout(pollBlocks, 1000)
@@ -117,17 +127,21 @@ class Home extends Component<Props, State> {
 
     onWithdrawClick(address: string) {
         console.log('Withdraw', address, this)
-        const { config } = this.state
+        const { config, member } = this.state
         const { eth } = this.props
+        if (!member) {
+            handleError(new Error("Please select a member first by entering Ethereum address and clicking 'view'"))
+            return
+        }
+        const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
+        if (!withdrawableBlockNumber) {
+            handleError(new Error("Please select a member first by entering Ethereum address and clicking 'view'"))
+            return
+        }
+
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
-        return fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json()).then((member) => {
-            const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
-            if (!withdrawableBlockNumber) {
-                throw new Error('No withdrawable blocks yet!')
-            }
-            return monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof)
-        }).then((txHash) => {
+        monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
@@ -254,7 +268,7 @@ class Home extends Component<Props, State> {
                     ['Earnings accessible', withdrawable],
                 ],
             })
-        }).catch(handleError)
+        })
     }
 
     updateCommunity() {
@@ -300,23 +314,28 @@ class Home extends Component<Props, State> {
                 })
                 this.addBlockToList(community.latestBlock)
             }
-        }).catch(handleError)
+        })
     }
 
     notification(): Node {
         const { eth, accountAddress } = this.props
+        const { serverConnectionError } = this.state
 
-        switch (true) {
-            case !eth:
-                return (
-                    <Fragment>
-                        <span>No wallet detected. please install </span>
-                        <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">MetaMask</a>
-                    </Fragment>
-                )
-            case !accountAddress:
-                return 'Please unlock your wallet to continue'
-            default:
+        if (!eth) {
+            return (
+                <Fragment>
+                    <span>No wallet detected. please install </span>
+                    <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">MetaMask</a>
+                </Fragment>
+            )
+        }
+
+        if (!accountAddress) {
+            return 'Please unlock your wallet to continue'
+        }
+
+        if (serverConnectionError) {
+            return 'Error connecting to server...'
         }
 
         return null

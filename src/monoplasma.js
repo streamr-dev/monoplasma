@@ -78,6 +78,10 @@ class Monoplasma {
         return block
     }
 
+    /**
+     * Retrieve snapshot written in {this.storeBlock}
+     * @param {number} blockNumber
+     */
     async getBlock(blockNumber) {
         const cachedBlock = this.latestBlocks.find(b => b.blockNumber === blockNumber)
         if (cachedBlock) {
@@ -133,7 +137,7 @@ class Monoplasma {
      */
     async getProofAt(address, blockNumber) {
         const block = await this.getBlock(blockNumber)
-        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const members = new SortedMap(block.members.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
         const tree = new MerkleTree(members)
         const path = tree.getPath(address)
         return path
@@ -215,15 +219,14 @@ class Monoplasma {
     /**
      * Add active recipients into Community, or re-activate existing ones (previously removed)
      * @param {Array<IncomingMember|string>} members
+     * @returns {Array<IncomingMember|string>} members that were actually added
      */
     addMembers(members) {
-        let added = 0
+        const added = []
         members.forEach(member => {
-            if (typeof member === "string") {
-                member = { address: member }
-            }
-            const wasNew = this.addMember(member.address, member.name)
-            added += wasNew ? 1 : 0
+            const m = typeof member === "string" ? { address: member } : member
+            const wasNew = this.addMember(m.address, m.name)
+            if (wasNew) { added.push(member) }
         })
         return added
     }
@@ -231,18 +234,19 @@ class Monoplasma {
     /**
      * De-activate members: they will not receive revenues until re-activated
      * @param {Array<string>} addresses
+     * @returns {Array<string>} addresses of members that were actually removed
      */
     removeMembers(addresses) {
-        let removed = 0
+        const removed = []
         addresses.forEach(address => {
             const wasActive = this.removeMember(address)
-            removed += wasActive ? 1 : 0
+            if (wasActive) { removed.push(address) }
         })
         return removed
     }
 
     /**
-     * Stash the merkle tree state for later use
+     * Snapshot the Monoplasma state for later use (getMemberAt, getProofAt)
      * @param {number} blockNumber root-chain block number after which this block state is valid
      */
     async storeBlock(blockNumber) {
@@ -256,7 +260,7 @@ class Monoplasma {
             totalEarnings,
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
-        return this.store.saveBlock(latestBlock, blockNumber)
+        return this.store.saveBlock(latestBlock)
     }
 
     /**
@@ -266,9 +270,13 @@ class Monoplasma {
         return {
             getMembers: this.getMembers.bind(this),
             getMember: this.getMember.bind(this),
-            getProof: this.getProof.bind(this),
-            getRootHash: this.getRootHash.bind(this),
+            getMemberCount: this.getMemberCount.bind(this),
             getTotalRevenue: this.getTotalRevenue.bind(this),
+            getProof: this.getProof.bind(this),
+            getProofAt: this.getProofAt.bind(this),
+            getRootHash: this.getRootHash.bind(this),
+            getLatestBlock: this.getLatestBlock.bind(this),
+            getLatestWithdrawableBlock: this.getLatestWithdrawableBlock.bind(this),
         }
     }
 }

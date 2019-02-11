@@ -3,7 +3,7 @@
     "constant": false,
     "inputs": [
       {
-        "name": "rootChainBlockNumber",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {
@@ -71,7 +71,7 @@
     "constant": false,
     "inputs": [
       {
-        "name": "rootChainBlockNumber",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {
@@ -201,7 +201,7 @@
     "constant": true,
     "inputs": [
       {
-        "name": "rootChainBlockNumber",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {
@@ -307,7 +307,7 @@
     "inputs": [
       {
         "indexed": false,
-        "name": "rootChainBlockNumber",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {
@@ -328,7 +328,7 @@
     "constant": false,
     "inputs": [
       {
-        "name": "rootChainBlockNumber",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {

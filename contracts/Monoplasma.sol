@@ -28,8 +28,8 @@ contract Monoplasma is AbstractRootChain, Ownable {
     /**
      * Block number => timestamp
      * Publish time of a block, where the block freeze period starts from.
-     * Note that block number is the "root-chain block number" that corresponds to the
-     *   published blockHash with same number, not e.g. block where BlockCreated was emitted
+     * Note that block number points to the block after which the root hash is calculated,
+     *   not the block where BlockCreated was emitted (event must come later)
      */
     mapping (uint => uint) public blockTimestamp;
 
@@ -47,9 +47,9 @@ contract Monoplasma is AbstractRootChain, Ownable {
     /**
      * Owner creates the side-chain blocks
      */
-    function onRecordBlock(uint rootChainBlockNumber, bytes32, string) internal {
+    function onRecordBlock(uint blockNumber, bytes32, string) internal {
         require(msg.sender == owner, "error_notPermitted");
-        blockTimestamp[rootChainBlockNumber] = now;
+        blockTimestamp[blockNumber] = now;
     }
 
     /**
@@ -58,8 +58,8 @@ contract Monoplasma is AbstractRootChain, Ownable {
      *   or just "cement" the earnings so far into root chain even without withdrawing
      *   (though it's probably a lot more expensive than withdrawing itself...)
      */
-    function onVerifySuccess(uint rootChainBlockNumber, address account, uint totalEarnings) internal {
-        uint blockFreezeStart = blockTimestamp[rootChainBlockNumber];
+    function onVerifySuccess(uint blockNumber, address account, uint totalEarnings) internal {
+        uint blockFreezeStart = blockTimestamp[blockNumber];
         require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(earnings[account] < totalEarnings, "error_oldEarnings");
         earnings[account] = totalEarnings;
@@ -67,12 +67,12 @@ contract Monoplasma is AbstractRootChain, Ownable {
 
     /**
      * Withdraw the whole revenue share from sidechain in one transaction
-     * @param rootChainBlockNumber of the leaf to verify
+     * @param blockNumber of the leaf to verify
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAll(uint rootChainBlockNumber, uint totalEarnings, bytes32[] proof) external {
-        proveSidechainBalance(rootChainBlockNumber, msg.sender, totalEarnings, proof);
+    function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+        proveSidechainBalance(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
         withdraw(withdrawable);
     }
