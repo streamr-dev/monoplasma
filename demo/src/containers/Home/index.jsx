@@ -285,9 +285,13 @@ class Home extends Component<Props, State> {
         })
     }
 
-    updateCommunity() {
+    async updateCommunity() {
         const { eth } = this.props
         const { config, latestBlockNumber } = this.state
+
+        if (!config) {
+            return null
+        }
 
         // TODO: move contract instances into the state
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
@@ -295,6 +299,7 @@ class Home extends Component<Props, State> {
 
         let contractBalance
         let totalWithdrawn
+
         return token.balanceOf(config.contractAddress).then((res) => {
             contractBalance = res[0] // eslint-disable-line prefer-destructuring
             return monoplasma.totalWithdrawn()
