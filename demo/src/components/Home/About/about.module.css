@@ -2,6 +2,10 @@
   line-height: 1.75em;
 }
 
+.root + .root {
+  margin-top: 6rem;
+}
+
 .root p,
 .root ul {
   margin: 0;

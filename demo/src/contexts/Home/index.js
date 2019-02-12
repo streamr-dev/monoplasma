@@ -2,6 +2,7 @@
 
 import { createContext } from 'react'
 import { type Block } from '../../components/Home/Blocks'
+import { type Setting } from '../../components/Home/Settings'
 
 export type Props = {
     account: Array<any>,
@@ -15,6 +16,7 @@ export type Props = {
     onAddUsersClick: (Array<string>) => void,
     onMintClick: () => void,
     onStealClick: () => void,
+    settings: ?Setting,
 }
 
 export default createContext<Props>({
@@ -29,4 +31,5 @@ export default createContext<Props>({
     onAddUsersClick: () => {},
     onMintClick: () => {},
     onStealClick: () => {},
+    settings: null,
 })

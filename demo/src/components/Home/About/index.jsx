@@ -42,4 +42,6 @@ const About = () => (
     </Section>
 )
 
+About.styles = styles
+
 export default About

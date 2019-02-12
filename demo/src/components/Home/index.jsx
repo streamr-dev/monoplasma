@@ -14,6 +14,7 @@ import UserActions from './UserActions'
 import RevenuePoolActions from './RevenuePoolActions'
 import Management from './Management'
 import Blocks from './Blocks'
+import Settings from './Settings'
 
 import styles from './home.module.css'
 
@@ -36,6 +37,7 @@ const Home = ({
     onMintClick,
     onStealClick,
     notification,
+    settings,
 }: Props) => (
     <Layout>
         <Hero />
@@ -82,6 +84,9 @@ const Home = ({
                 onStealClick={onStealClick}
             />
             <About />
+            <Settings
+                value={settings}
+            />
         </Container>
     </Layout>
 )

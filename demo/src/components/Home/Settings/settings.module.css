@@ -1,0 +1,18 @@
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.placeholder {
+  animation: spin 1s linear infinite;
+  border: 2px solid;
+  border-color: #cdcdcd transparent transparent #cdcdcd;
+  border-radius: 50%;
+  display: inline-block;
+  height: 0.3em;
+  width: 0.3em;
+}
