@@ -9,9 +9,10 @@
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
+  position: relative;
 
   > div {
-    padding: 1em 2em;
+    padding: 1em 2rem;
   }
 
   > div + div {
@@ -21,7 +22,16 @@
   &:--even {
     background-color: #ececec;
   }
+
+  &.frozen {
+    background-color: #eaf1f3;
+  }
+
+  &.frozen:--even {
+    background-color: #e5ecee;
+  }
 }
+
 
 .columnNames {
   border-bottom: 1px solid #cdcdcd;
@@ -33,4 +43,12 @@
     padding-bottom: 1.5em;
     padding-top: 1.5em;
   }
+}
+
+.flake {
+  left: 0.5rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
 }
