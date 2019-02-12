@@ -40,15 +40,15 @@ const Home = ({
     settings,
 }: Props) => (
     <Layout>
+        {notification && (
+            <Notification className={styles.notification}>
+                {notification}
+            </Notification>
+        )}
         <Hero />
         <Container
             className={styles.root}
         >
-            {notification && (
-                <Notification className={styles.notification}>
-                    {notification}
-                </Notification>
-            )}
             <Section
                 title="User account"
             >

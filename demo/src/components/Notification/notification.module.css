@@ -5,8 +5,11 @@
   font-weight: var(--medium);
   letter-spacing: 2px;
   padding: 2rem;
+  position: absolute;
   text-align: center;
   text-transform: uppercase;
+  top: 2.5rem;
+  width: 100%;
 }
 
 .root a {
