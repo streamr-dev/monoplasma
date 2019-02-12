@@ -14,32 +14,20 @@
   text-align: right;
 }
 
-.addUsers {
+.addUsers button {
   padding: 0 2em;
+  width: auto;
 }
 
 .tokens {
   display: flex;
   flex-direction: column;
 
-  button {
+  .button {
     width: 100%;
   }
 
-  .hint,
-  button + button {
+  .button + .button {
     margin-top: 2em;
   }
-}
-
-.hint {
-  background-color: white;
-  border-radius: 4px;
-  color: #525252;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  font-family: var(--mono);
-  font-size: 0.75em;
-  line-height: 1.25rem;
-  margin: 0.5em 0 0;
-  padding: 1rem 1em;
 }

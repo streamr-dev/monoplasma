@@ -1,4 +1,8 @@
 .root {
+  position: relative;
+}
+
+.inner {
   border-radius: 4px;
   color: white;
   cursor: pointer;
@@ -12,6 +16,7 @@
   text-transform: uppercase;
   transition: 150ms ease-in;
   transition-property: transform, background-color, border-color, opacity;
+  width: 100%;
 
   &:--interact {
     background-color: #0324ff;
@@ -35,8 +40,26 @@
 
   &:--disabled {
     background-color: #2037ce;
+    cursor: default;
     border: 1px solid #2037ce;
     opacity: 0.5;
+  }
+
+  &:--interact + .tooltip {
+    opacity: 1;
+    transform: translateY(0.5rem);
+    visibility: visible;
+  }
+
+  &:--disabled + .tooltip {
+    opacity: 0;
+    transform: translateY(0.5rem);
+    visibility: hidden;
+  }
+
+  &:--disabled + .tooltip,
+  &:--interact + .tooltip {
+    transition-delay: 0s, 0s, 0s;
   }
 }
 

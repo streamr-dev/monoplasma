@@ -60,20 +60,20 @@ class Management extends Component<Props, State> {
                     </div>
                     <div className={styles.tokens}>
                         <Button
+                            className={styles.button}
                             theme="edge"
                             onClick={onMintClick}
                         >
                             Mint tokens
                         </Button>
                         <Button
+                            className={styles.button}
                             theme="red-edge"
                             onClick={onStealClick}
+                            tooltip="Lorem ipsum dolor sit emai, sir!"
                         >
                             Steal all tokens
                         </Button>
-                        {/* <div className={styles.hint}>
-                            Operator can try to publish a block where all tokens have been allocated to them.
-                        </div> */}
                     </div>
                 </div>
             </Section>

@@ -1,0 +1,22 @@
+.root {
+  background-color: white;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #525252;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-family: var(--mono);
+  font-size: 0.75em;
+  line-height: 1.25rem;
+  margin: 0.5em 0 0;
+  min-width: 100%;
+  opacity: 0;
+  padding: 1rem 1em;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  transform: translateY(-0.5rem);
+  transition: 200ms ease-out;
+  transition-delay: 200ms, 0ms, 0ms;
+  transition-property: visibility opacity transform;
+  visibility: hidden;
+}
