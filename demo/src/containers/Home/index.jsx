@@ -71,6 +71,7 @@ class Home extends Component<Props, State> {
     }
 
     componentDidMount() {
+        // TODO: retry on error (server not up yet?)
         fetch('/data/state.json')
             .then((resp) => resp.json())
             .then((config) => {
@@ -142,7 +143,7 @@ class Home extends Component<Props, State> {
     onWithdrawClick(address: string) {
         console.log('Withdraw', address, this)
         const { config, member } = this.state
-        const { eth } = this.props
+        const { eth, accountAddress } = this.props
         if (!member) {
             handleError(new Error("Please select a member first by entering Ethereum address and clicking 'view'"))
             return
@@ -153,9 +154,13 @@ class Home extends Component<Props, State> {
             return
         }
 
+        const opts = {
+            from: accountAddress,
+        }
+
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
-        monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof).then((txHash) => {
+        monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof, opts).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
@@ -260,6 +265,10 @@ class Home extends Component<Props, State> {
         }
         const { eth } = this.props
         const { config } = this.state
+
+        if (!config) {
+            return null
+        }
 
         // TODO: move contract instances into the state
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
