@@ -31,7 +31,8 @@ module.exports = class MonoplasmaWatcher {
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
 
-        const savedMembers = this.state.lastPublishedBlock ? await this.store.loadBlock(this.state.lastPublishedBlock) : []
+        const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
+        const savedMembers = lastBlock ? lastBlock.members : []
         this.plasma = new Monoplasma(savedMembers, this.store, this.state.blockFreezeSeconds)
 
         // TODO: playback from joinPartChannel not implemented =>
@@ -49,10 +50,10 @@ module.exports = class MonoplasmaWatcher {
         this.log("Listening to Ethereum events...")
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
+            this.state.lastBlockNumber = event.blockNumber
             const income = event.returnValues.value
             this.log(`${income} tokens received`)
             this.plasma.addRevenue(income)
-            this.state.lastBlockNumber = event.blockNumber
             this.store.saveState(this.state).catch(this.error)
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })

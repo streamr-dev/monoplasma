@@ -48,12 +48,16 @@ class MonoplasmaMember {
     }
 
     /** Produces a hashable string representation in hex form (starts with "0x") */
-    toStringData() {
+    toHashableString() {
         return this.address + this.earnings.toString(16, 64)
     }
 
     getProof(tree) {
         return this.earnings.gt(new BN(0)) ? tree.getPath(this.address) : []
+    }
+
+    static getHashableString(address, earnings) {
+        return address + earnings.toString(16, 64)
     }
 
     static validateAddress(address) {

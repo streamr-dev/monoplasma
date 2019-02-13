@@ -1,16 +1,17 @@
+/*global contract artifacts assert before describe it web3 */
+
 // AbstractRootChain cannot be instantiated so "minimal viable implementation" Airdrop is used instead
 const Airdrop = artifacts.require("./Airdrop.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
 const { assertEqual, assertFails } = require("../utils/web3Assert")
-const { increaseTime } = require("../utils/fakeTime")
 
+const MonoplasmaMember = require("../../src/monoplasmaMember")
 const Monoplasma = require("../../src/monoplasma")
 const plasma = new Monoplasma()
 
 const MerkleTree = require("../../src/merkletree")
 
-let market
 let token
 let airdrop
 contract("AbstractRootChain", accounts => {
@@ -30,8 +31,8 @@ contract("AbstractRootChain", accounts => {
 
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
-        const rootChainBlockNumber = await web3.eth.getBlockNumber()
-        const resp = await airdrop.recordBlock(rootChainBlockNumber, root, "ipfs lol", {from: admin})
+        const blockNumber = await web3.eth.getBlockNumber()
+        const resp = await airdrop.recordBlock(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
@@ -40,7 +41,7 @@ contract("AbstractRootChain", accounts => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
             const resp = await airdrop.recordBlock(123, root, "ipfs lol", {from: admin})
             const block = resp.logs.find(L => L.event === "BlockCreated").args
-            assertEqual(block.rootChainBlockNumber, 123)
+            assertEqual(block.blockNumber, 123)
             assertEqual(block.rootHash, root)
             assertEqual(await airdrop.blockHash(123), root)
         })
@@ -55,20 +56,21 @@ contract("AbstractRootChain", accounts => {
         // see test/merklepath.js
         it("correctly validate a proof", async () => {
             plasma.addRevenue(1000)
-            const member = plasma.members.get(anotherRecipient)
+            const memberObj = plasma.getMember(anotherRecipient)
+            const member = MonoplasmaMember.fromObject(memberObj)
             const root = plasma.tree.getRootHash()
             const proof = plasma.getProof(anotherRecipient)
             const block = await publishBlock(root)
             // check that block was published correctly
             assertEqual(block.rootHash, root)
             // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.hash(member.toStringData()).toString("hex")
+            const hash = "0x" + MerkleTree.hash(member.toHashableString()).toString("hex")
             assertEqual(await airdrop.calculateRootHash(hash, proof), root)
             // check that contract checks proof correctly
-            assert(await airdrop.proofIsCorrect(block.rootChainBlockNumber, member.address, member.earnings, proof))
+            assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof))
             // check that contract proves earnings correctly (freeze period)
             assertEqual(await token.balanceOf(member.address), 0)
-            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
+            await airdrop.proveSidechainBalance(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
             assertEqual(await token.balanceOf(member.address), member.earnings)
         })
     })

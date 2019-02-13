@@ -1,13 +1,13 @@
+/*global contract artifacts before describe it web3 */
+
 const Airdrop = artifacts.require("./Airdrop.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
 const { assertEqual, assertFails } = require("../utils/web3Assert")
-const { increaseTime } = require("../utils/fakeTime")
 
 const Monoplasma = require("../../src/monoplasma")
 const plasma = new Monoplasma()
 
-let market
 let token
 let airdrop
 contract("Airdrop", accounts => {
@@ -27,8 +27,8 @@ contract("Airdrop", accounts => {
 
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
-        const rootChainBlockNumber = await web3.eth.getBlockNumber()
-        const resp = await airdrop.recordBlock(rootChainBlockNumber, root, "ipfs lol", {from: admin})
+        const blockNumber = await web3.eth.getBlockNumber()
+        const resp = await airdrop.recordBlock(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
@@ -37,14 +37,13 @@ contract("Airdrop", accounts => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             const proof = plasma.getProof(recipient)
-            const { earnings } = plasma.getMember(recipient)
-            await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, 100000, proof))
+            await assertFails(airdrop.proveSidechainBalance(block.blockNumber, recipient, 100000, proof))
         })
         it("can not withdraw with bad proof", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             const { earnings } = plasma.getMember(recipient)
-            await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, [
+            await assertFails(airdrop.proveSidechainBalance(block.blockNumber, recipient, earnings, [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",
             ]))
@@ -55,11 +54,11 @@ contract("Airdrop", accounts => {
             const proof = plasma.getProof(recipient)
             const { earnings } = plasma.getMember(recipient)
             assertEqual(await token.balanceOf(recipient), 0)
-            await airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof)
+            await airdrop.proveSidechainBalance(block.blockNumber, recipient, earnings, proof)
             assertEqual(await token.balanceOf(recipient), earnings)
 
             // second time will fail with "error_oldEarnings"
-            await assertFails(airdrop.proveSidechainBalance(block.rootChainBlockNumber, recipient, earnings, proof))
+            await assertFails(airdrop.proveSidechainBalance(block.blockNumber, recipient, earnings, proof))
         })
     })
 })

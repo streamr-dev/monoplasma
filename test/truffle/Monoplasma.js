@@ -29,8 +29,8 @@ contract("Monoplasma", accounts => {
 
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
-        const rootChainBlockNumber = await web3.eth.getBlockNumber()
-        const resp = await rootchain.recordBlock(rootChainBlockNumber, root, "ipfs lol", {from: admin})
+        const blockNumber = await web3.eth.getBlockNumber()
+        const resp = await rootchain.recordBlock(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
@@ -40,7 +40,7 @@ contract("Monoplasma", accounts => {
             const resp = await rootchain.recordBlock(123, root, "ipfs lol", {from: admin})
             const event = resp.logs.find(L => L.event === "BlockCreated")
             const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
-            assertEqual(event.args.rootChainBlockNumber, 123)
+            assertEqual(event.args.blockNumber, 123)
             assertEqual(event.args.rootHash, root)
             assertEqual(await rootchain.blockHash(123), root)
             assertEqual(await rootchain.blockTimestamp(123), timestamp)
@@ -50,7 +50,7 @@ contract("Monoplasma", accounts => {
     describe("Admin", () => {
         it("can publish blocks", async () => {
             const block = await publishBlock()
-            assertEqual(await rootchain.blockHash(block.rootChainBlockNumber), block.rootHash)
+            assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)
         })
     })
 
@@ -62,27 +62,27 @@ contract("Monoplasma", accounts => {
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             assertEqual(await token.balanceOf(producer), 0)
-            await rootchain.withdrawAll(block.rootChainBlockNumber, earnings, proof, {from: producer})
+            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
         })
         it("can not withdraw earnings before freeze period is over", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             const proof = plasma.getProof(producer)
-            await assertFails(rootchain.withdrawAll(block.rootChainBlockNumber, 500, proof, {from: producer}))
+            await assertFails(rootchain.withdrawAll(block.blockNumber, 500, proof, {from: producer}))
         })
         it("can not withdraw wrong amount", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             await increaseTime(blockFreezePeriodSeconds + 1)
             const proof = plasma.getProof(producer)
-            await assertFails(rootchain.withdrawAll(block.rootChainBlockNumber, 50000, proof))
+            await assertFails(rootchain.withdrawAll(block.blockNumber, 50000, proof))
         })
         it("can not withdraw with bad proof", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             await increaseTime(blockFreezePeriodSeconds + 1)
-            await assertFails(rootchain.withdrawAll(block.rootChainBlockNumber, 500, [
+            await assertFails(rootchain.withdrawAll(block.blockNumber, 500, [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",
             ], {from: producer}))

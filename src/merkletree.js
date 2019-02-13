@@ -44,7 +44,7 @@ function buildMerkleTree(leafContents) {
     let i = branchCount
     leafContents.forEach(m => {
         indexOf[m.address] = i
-        hashes[i++] = hash(m.toStringData()) // eslint-disable-line no-plusplus
+        hashes[i++] = hash(m.toHashableString()) // eslint-disable-line no-plusplus
     })
 
     // Branch hashes: start from leaves, populate branches with hash(hash of left + right child)

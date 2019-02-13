@@ -5,7 +5,7 @@ var monoplasmaAbi = [{
     "constant": false,
     "inputs": [
         {
-            "name": "rootChainBlockNumber",
+            "name": "blockNumber",
             "type": "uint256"
         },
         {

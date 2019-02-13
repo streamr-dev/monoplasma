@@ -18,8 +18,8 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
     // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
     async onTokensReceived(event) {
-        this.lastBlockNumber = event.blockNumber    // update here too, because there's no guarantee MonoplasmaWatcher's listener gets called first
-        if (event.blockNumber >= this.state.lastPublishedBlock + this.minIntervalBlocks) {
+        this.state.lastBlockNumber = event.blockNumber    // update here too, because there's no guarantee MonoplasmaWatcher's listener gets called first
+        if (this.state.lastBlockNumber >= this.state.lastPublishedBlock + this.minIntervalBlocks) {
             const ee = await this.publishBlock()
             if (this.explorerUrl) {
                 ee.on("transactionHash", hash => {
@@ -30,7 +30,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
     }
 
     async publishBlock(blockNumber) {
-        const bnum = blockNumber || this.lastBlockNumber
+        const bnum = blockNumber || this.state.lastBlockNumber
         if (blockNumber <= this.state.lastPublishedBlock) {
             throw new Error(`Block #${this.state.lastPublishedBlock} has already been published, can't publish #${blockNumber}`)
         }

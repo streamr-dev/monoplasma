@@ -3,37 +3,47 @@
 const MonoplasmaOperator = require("../../src/monoplasmaOperator")
 const assert = require("assert")
 const sinon = require("sinon")
+const sleep = require("../utils/sleep-promise")
 
-const log = () => {} //console.log
+const log = () => {} // console.log
 
-function getTransferEvent(tokens) {
-    return {
-        event: "Transfer",
-        returnValues: {
-            value: tokens,
-        }
-    }
+const initialBlock = {
+    blockNumber: 3,
+    members: [
+        { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "50" },
+        { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
+    ],
+    totalEarnings: 70,
 }
 
-function getMockWeb3(blockNumber, tokenEvents) {
-    const web3 = { eth: {}, utils: {} }
+function getMockWeb3(blockNumber, events) {
+    const web3 = { eth: {}, utils: {}, transferListeners: {} }
     web3.utils.isAddress = () => true
     web3.eth.getCode = () => Promise.resolve("")
     web3.eth.Contract = function(abi, address) {
         this.address = address
     }
-    web3.eth.Contract.prototype.methods = { token: () => ({ call: () => "tokenAddress" }) }
-    web3.eth.Contract.prototype.getPastEvents = () => tokenEvents
+    web3.eth.Contract.prototype.methods = {
+        token: () => ({ call: () => "tokenAddress" }),
+        blockFreezeSeconds: () => ({ call: () => 1000 }),
+        recordBlock: () => ({ send: async () => {} })
+    }
+    web3.eth.Contract.prototype.getPastEvents = event => events && events[event] || []
     web3.eth.Contract.prototype.events = {
-        Transfer: () => {
-            const listener = {}
-            listener.on = (eventCode, func) => {
-                listener.eventCode = func
-            }
-            return listener
-        }
+        Transfer: () => ({ on: (eventCode, func) => {
+            if (!web3.transferListeners[eventCode]) { web3.transferListeners[eventCode] = [] }
+            web3.transferListeners[eventCode].push(func)
+        }})
     }
     web3.eth.getBlockNumber = () => blockNumber
+
+    web3.mockTransfer = async (...args) => {
+        for (const func of web3.transferListeners.data) {
+            func(...args)
+            await sleep(1)  // give the async handler(s) time to finish
+        }
+    }
+
     return web3
 }
 
@@ -50,11 +60,8 @@ function getMockChannel() {
 
 function getState() {
     return {
-        balances: [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "50" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
-        ],
-        rootChainBlock: 5,
+        lastBlockNumber: 5,
+        lastPublishedBlock: 3,
         contractAddress: "contractAddress",
     }
 }
@@ -70,19 +77,14 @@ function getMockStore(storeObject) {
         log(`Loading state: ${state}`)
         return state
     }
-    store.saveBlock = async (members, blockNumber) => {
-        log(`Saving block ${blockNumber}: ${JSON.stringify(members)}`)
-        storeObject.lastSavedBlock = members
+    store.saveBlock = async (data) => {
+        log(`Saving block ${data.blockNumber}: ${JSON.stringify(data)}`)
+        storeObject.lastSavedBlock = data
     }
-    store.loadBlock = async blockNumber => {
-        const state = getState()
-        log(`Loading block ${blockNumber}: ${state.balances}`)
-        return state.balances
-    }
-    store.blockExists = async blockNumber => {
-        log(`Checking block ${blockNumber} exists, answering yes`)
-        return true
-    }
+    store.loadBlock = async () => initialBlock
+    store.blockExists = async () => true
+    store.loadEvents = async () => []
+    store.saveEvents = async () => {}
     return store
 }
 
@@ -102,20 +104,24 @@ describe("monoplasmaOperator", () => {
     })
 
     it("Monoplasma member is saved to the state", async () => {
-        const store = {}
+        const store = { initialBlock }
         const web3 = getMockWeb3(10, [], [])
         const channel = getMockChannel()
         const operator = new MonoplasmaOperator(web3, channel, getState(), getMockStore(store), log, error)
         await operator.start()
         channel.publish("join", ["0x5ffe8050112448ed2e4409be47e1a50ebac0b299"])
-        await operator.saveState()
+        await web3.mockTransfer({
+            event: "Transfer",
+            blockNumber: 11,
+            returnValues: { value: 30 },
+        })
         assert(store.lastSavedState)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "50" },
-            { address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299", earnings: "0" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "30" },
+            { address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299", earnings: "10" },
         ]
-        assert.deepStrictEqual(store.lastSavedState.balances, newBalances)
+        assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
     })
 
     it("Monoplasma member is removed from the state", async () => {
@@ -125,17 +131,24 @@ describe("monoplasmaOperator", () => {
         const operator = new MonoplasmaOperator(web3, channel, getState(), getMockStore(store), log, error)
         await operator.start()
         channel.publish("part", ["0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"])
-        await operator.saveState()
+        await web3.mockTransfer({
+            event: "Transfer",
+            blockNumber: 11,
+            returnValues: { value: 10 },
+        })
         assert(store.lastSavedState)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "50" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
         ]
-        assert.deepStrictEqual(store.lastSavedState.balances, newBalances)
+        assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
     })
 
-    it("Tokens are shared between members and the state is updated", async () => {
+    it("Tokens are shared between members and the state is updated during playback", async () => {
         const store = {}
-        const web3 = getMockWeb3(10, [getTransferEvent(100)], [])
+        const web3 = getMockWeb3(10, {
+            Transfer: [{ event: "Transfer", returnValues: { value: 100 }}]
+        }, [])
         const channel = getMockChannel()
         const operator = new MonoplasmaOperator(web3, channel, getState(), getMockStore(store), log, error)
         await operator.start()
@@ -144,6 +157,8 @@ describe("monoplasmaOperator", () => {
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "100" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" },
         ]
-        assert.deepStrictEqual(store.lastSavedState.balances, newBalances)
+        assert.deepStrictEqual(operator.plasma.members.map(m => m.toObject()), newBalances)
     })
+
+    // TODO: test channel (Join/Part events) playback, too
 })

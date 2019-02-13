@@ -48,9 +48,9 @@ describe("Merkle tree", () => {
             "00c99bd92a2211cbeaab19380a2aa0b9a36980228b5695c69f8265f9055444e1", //              C
             "0000000000000000000000000000000000000000000000000000000000000000", //                 (missing)
         ])
-        assert.strictEqual(hashList[4], hash(a.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[5], hash(b.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[6], hash(c.toStringData()).toString("hex"))
+        assert.strictEqual(hashList[4], hash(a.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[5], hash(b.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[6], hash(c.toHashableString()).toString("hex"))
         assert.strictEqual(hashList[3], hashList[6].toString("hex"))
         assert.strictEqual(hashList[2], hashCombined(hashList[5], hashList[4]).toString("hex"))
         assert.strictEqual(hashList[1], hashCombined(hashList[3], hashList[2]).toString("hex"))
@@ -76,11 +76,11 @@ describe("Merkle tree", () => {
             "0000000000000000000000000000000000000000000000000000000000000000", //                   (missing)
         ])
 
-        assert.strictEqual(hashList[8], hash(a.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[9], hash(b.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[10], hash(c.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[11], hash(d.toStringData()).toString("hex"))
-        assert.strictEqual(hashList[12], hash(e.toStringData()).toString("hex"))
+        assert.strictEqual(hashList[8], hash(a.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[9], hash(b.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[10], hash(c.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[11], hash(d.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[12], hash(e.toHashableString()).toString("hex"))
         assert.strictEqual(hashList[1], hashCombined(hashList[2],  hashList[3]).toString("hex"))
         assert.strictEqual(hashList[2], hashCombined(hashList[5],  hashList[4]).toString("hex"))
         assert.strictEqual(hashList[3], hashList[6])    // odd needs no hashing
@@ -118,7 +118,7 @@ describe("Merkle tree", () => {
             "0x39720c89aa9c0c443c3c9e9e283a8bf1064c15bb8cd066c78a98fa31573aa95a",
         ])
 
-        const memberHash = hash(e.toStringData())
+        const memberHash = hash(e.toHashableString())
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
@@ -138,7 +138,7 @@ describe("Merkle tree", () => {
             "0xa697780bec0c72e7a647f0cc067dd2b30732cbbb362d63f2eccee67dee345690"
         ])
 
-        const memberHash = hash(members.find(m => m.address === "0x50428050ea2448ed2e4409be47e1a50ebac0b2d2").toStringData())
+        const memberHash = hash(members.find(m => m.address === "0x50428050ea2448ed2e4409be47e1a50ebac0b2d2").toHashableString())
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })

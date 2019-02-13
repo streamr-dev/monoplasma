@@ -137,7 +137,7 @@ window.monoplasmaAbi = [
         "constant": false,
         "inputs": [
             {
-                "name": "rootChainBlockNumber",
+                "name": "blockNumber",
                 "type": "uint256"
             },
             {
@@ -191,7 +191,7 @@ window.monoplasmaAbi = [
         "constant": false,
         "inputs": [
             {
-                "name": "rootChainBlockNumber",
+                "name": "blockNumber",
                 "type": "uint256"
             },
             {
@@ -340,7 +340,7 @@ window.monoplasmaAbi = [
         "constant": true,
         "inputs": [
             {
-                "name": "rootChainBlockNumber",
+                "name": "blockNumber",
                 "type": "uint256"
             },
             {
@@ -470,7 +470,7 @@ window.monoplasmaAbi = [
         "inputs": [
             {
                 "indexed": false,
-                "name": "rootChainBlockNumber",
+                "name": "blockNumber",
                 "type": "uint256"
             },
             {
@@ -519,7 +519,7 @@ window.monoplasmaAbi = [
         "constant": false,
         "inputs": [
             {
-                "name": "rootChainBlockNumber",
+                "name": "blockNumber",
                 "type": "uint256"
             },
             {
