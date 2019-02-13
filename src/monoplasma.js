@@ -1,7 +1,6 @@
 const MonoplasmaMember = require("./monoplasmaMember")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
-const SortedMap = require("collections/sorted-map")
 
 /** Timestamp is seconds, just like Ethereum block.timestamp */
 function now() {
@@ -31,11 +30,13 @@ class Monoplasma {
         /** @property {Array<Block>} latestBlocks that have been stored. Kept to figure out  */
         this.latestBlocks = []
 
-        // SortedMap constructor wants [[key1, value1], [key2, value2], ...]
-        /** @property {Map<MonoplasmaMember>} members */
-        this.members = new SortedMap(initialMembers.map(m => [m.address, new MonoplasmaMember(undefined, m.address, m.earnings)]))
+        /** @property {Array<MonoplasmaMember>} members */
+        this.members = initialMembers.map(m => new MonoplasmaMember(undefined, m.address, m.earnings))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
+
+        this.indexOf = {}
+        this.members.forEach((m, i) => { this.indexOf[m.address] = i })
     }
 
     // ///////////////////////////////////
@@ -49,8 +50,8 @@ class Monoplasma {
     }
 
     getMemberCount() {
-        const total = this.members.size
-        const active = this.members.filter(m => m.isActive()).size
+        const total = this.members.length
+        const active = this.members.filter(m => m.isActive()).length
         return {
             total,
             active,
@@ -97,8 +98,10 @@ class Monoplasma {
      * @param {string} address
      */
     getMember(address) {
-        const m = this.members.get(address)
-        if (!m) { return null }
+        const i = this.indexOf[address]
+        if (i === undefined) { return null }
+        const m = this.members[i]
+        if (!m) { throw new Error(`Bad index ${i}`) }   // TODO: change to return null in production
         const obj = m.toObject()
         obj.active = m.isActive()
         obj.proof = this.getProof(address)
@@ -112,8 +115,8 @@ class Monoplasma {
      */
     async getMemberAt(address, blockNumber) {
         const block = await this.getBlock(blockNumber)
-        const member = block.members.find(m => m.address === address)
-        const members = new SortedMap(block.members.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const member = block.members.find(m => m.address === address)   // TODO: DANGER: O(n^2) potential here! If members were sorted (or indexOF retained), this would be faster
+        const members = block.members.map(m => MonoplasmaMember.fromObject(m))
         const tree = new MerkleTree(members)
         member.proof = tree.getPath(address)
         return member
@@ -137,7 +140,7 @@ class Monoplasma {
      */
     async getProofAt(address, blockNumber) {
         const block = await this.getBlock(blockNumber)
-        const members = new SortedMap(block.members.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const members = block.members.map(m => MonoplasmaMember.fromObject(m))
         const tree = new MerkleTree(members)
         const path = tree.getPath(address)
         return path
@@ -150,7 +153,7 @@ class Monoplasma {
     async getRootHashAt(blockNumber) {
         if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
         const block = await this.store.loadBlock(blockNumber)
-        const members = new SortedMap(block.map(m => [m.address, MonoplasmaMember.fromObject(m)]))
+        const members = block.map(m => MonoplasmaMember.fromObject(m))
         const tree = new MerkleTree(members)
         const rootHash = tree.getRootHash()
         return rootHash
@@ -185,14 +188,19 @@ class Monoplasma {
      * @returns {boolean} if the added member was new (previously unseen)
      */
     addMember(address, name) {
-        const m = this.members.get(address)
-        if (m) {
-            m.setActive(true)
+        const i = this.indexOf[address]
+        const newAddress = i === undefined
+        if (newAddress) {
+            const m = new MonoplasmaMember(name, address)
+            const newI = this.members.push(m) - 1
+            this.indexOf[address] = newI
         } else {
-            this.members.set(address, new MonoplasmaMember(name, address))
+            const m = this.members[i]
+            if (!m) { throw new Error(`Bad index ${i}`) }   // TODO: remove in production; this means updating indexOf has been botched
+            m.setActive(true)
         }
         // tree.update(members)     // no need for update since no revenue allocated
-        return !m                   // if m wasn't found, it's new
+        return newAddress
     }
 
     /**
@@ -201,9 +209,12 @@ class Monoplasma {
      * @returns {boolean} if the de-activated member was previously active (and existing)
      */
     removeMember(address) {
-        const m = this.members.get(address)
-        const wasActive = m && m.isActive()
-        if (wasActive) {
+        let wasActive = false
+        const i = this.indexOf[address]
+        if (i !== undefined) {
+            const m = this.members[i]
+            if (!m) { throw new Error(`Bad index ${i}`) }   // TODO: remove in production; this means updating indexOf has been botched
+            wasActive = m.isActive()
             m.setActive(false)
         }
         // tree.update(members)     // no need for update since no revenue allocated
@@ -250,7 +261,7 @@ class Monoplasma {
      * @param {number} blockNumber root-chain block number after which this block state is valid
      */
     async storeBlock(blockNumber) {
-        const members = this.members.toArray().map(m => m.toObject())
+        const members = this.members.map(m => m.toObject())
         const timestamp = now()
         const totalEarnings = this.getTotalRevenue()
         const latestBlock = {

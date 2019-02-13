@@ -31,7 +31,6 @@
   "dependencies": {
     "bn.js": "4.11.8",
     "body-parser": "^1.18.3",
-    "collections": "^5.1.5",
     "cors": "^2.8.5",
     "eth-lib": "^0.2.8",
     "exit-hook": "^2.0.0",

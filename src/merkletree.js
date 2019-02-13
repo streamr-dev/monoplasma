@@ -30,8 +30,8 @@ function roundUpToPowerOfTwo(x) {
     return i
 }
 
-// TODO: --omg-optimisation: tree array could be a Buffer too! Hash digests are constant 32 bytes in length.
-//          Currently the tree is "collections/sorted-map"
+// TODO: --omg-optimisation: tree contents could be one big Buffer too! Hash digests are constant 32 bytes in length.
+//          Currently the tree contents is Array<MonoplasmaMember>
 function buildMerkleTree(leafContents) {
     const leafCount = leafContents.length + (leafContents.length % 2)   // room for zero next to odd leaf
     const branchCount = roundUpToPowerOfTwo(leafCount)
@@ -74,8 +74,7 @@ function buildMerkleTree(leafContents) {
 
 class MerkleTree {
     constructor(initialContents) {
-        this.contents = initialContents || []
-        this.isDirty = true
+        this.update(initialContents || [])
     }
 
     /**
@@ -92,10 +91,17 @@ class MerkleTree {
             throw new Error("Can't construct a MerkleTree with empty contents!")
         }
         if (this.isDirty) {
+            // TODO: sort, to enforce determinism?
             this.cached = buildMerkleTree(this.contents)
             this.isDirty = false
         }
         return this.cached
+    }
+
+    getMember(address) {
+        const { indexOf } = this.getContents()
+        const index = indexOf[address]
+        return index ? this.contents[index] : null
     }
 
     /**
@@ -109,12 +115,11 @@ class MerkleTree {
      * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
      */
     getPath(address) {
-        const m = this.contents.get(address)
-        if (!m) {
-            throw new Error(`Address ${address} not found!`)
-        }
         const { hashes, indexOf } = this.getContents()
         const index = indexOf[address]
+        if (!index) {
+            throw new Error(`Address ${address} not found!`)
+        }
         const path = []
         for (let i = index; i > 1; i >>= 1) {
             path.push(hashes[i ^ 1])  // the other sibling

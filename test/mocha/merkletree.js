@@ -1,7 +1,6 @@
 /*global describe it */
 
 const assert = require("assert")
-const SortedMap = require("collections/sorted-map")
 const MonoplasmaMember = require("../../src/monoplasmaMember")
 const MerkleTree = require("../../src/merkletree")
 const { hash, hashCombined } = MerkleTree
@@ -26,13 +25,7 @@ describe("Merkle tree", () => {
     const c = new MonoplasmaMember("C", "0x3f428050ea2448ed2e4409be47e1a50ebac0b2d2", 5)
     const d = new MonoplasmaMember("D", "0x4f428050ea2448ed2e4409be47e1a50ebac0b2d2", 6)
     const e = new MonoplasmaMember("E", "0x5f428050ea2448ed2e4409be47e1a50ebac0b2d2", 7)
-    const testSmall = n => new SortedMap([
-        ["0x1f428050ea2448ed2e4409be47e1a50ebac0b2d2", a],
-        ["0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", b],
-        ["0x3f428050ea2448ed2e4409be47e1a50ebac0b2d2", c],
-        ["0x4f428050ea2448ed2e4409be47e1a50ebac0b2d2", d],
-        ["0x5f428050ea2448ed2e4409be47e1a50ebac0b2d2", e],
-    ].slice(0, n))
+    const testSmall = n => [a, b, c, d, e].slice(0, n)
 
     function buildValidAddress(i) {
         const nbDigits = i.toString().length
@@ -40,9 +33,7 @@ describe("Merkle tree", () => {
         return `0x${i}${rest}`
     }
 
-    const testLarge = n => new SortedMap(Array.from(Array(n)).map((undef, i) => [
-        buildValidAddress(i), new MonoplasmaMember(`Acco${i}`, buildValidAddress(i), i),
-    ]))
+    const testLarge = n => Array.from(Array(n)).map((undef, i) => new MonoplasmaMember(`Acco${i}`, buildValidAddress(i), i))
 
     it("is constructed correctly for 3 items", () => {
         const tree = new MerkleTree(testSmall(3))
@@ -127,7 +118,7 @@ describe("Merkle tree", () => {
             "0x39720c89aa9c0c443c3c9e9e283a8bf1064c15bb8cd066c78a98fa31573aa95a",
         ])
 
-        const memberHash = hash(members.get("0x5f428050ea2448ed2e4409be47e1a50ebac0b2d2").toStringData())
+        const memberHash = hash(e.toStringData())
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
@@ -138,16 +129,16 @@ describe("Merkle tree", () => {
         const path = tree.getPath("0x50428050ea2448ed2e4409be47e1a50ebac0b2d2")
         const root = tree.getRootHash()
         assert.deepStrictEqual(path, [
-            "0x261f22fa7ac838e75a0596713d566f291dd0bd8d51df4cf3611fbc2a32c63fe8",
-            "0xd472fca33b271b24edb7c6fbad7380e3799ec38e2f08554eedac4506931f9199",
-            "0x833bef868d67b9ef1100da233db7bf0f38df45dbd22791a22545b466db849963",
-            "0x823be73c51b248eec74156e8a5413055140da41185f78620ee7f8f3e5769ad1e",
-            "0x0624cb491ef539d8066c71c8b3f9371b7edc3cbbe1b4a8ef0ebcd16f499c8a5b",
-            "0x402f319023ccda4a2590ea1c65392f794d77d31b71388ded4c8d3b7a5471af32",
-            "0x255b87cc5a4facb08fb36b4075fbaa66a9c4a89a1fa28c6806bad537c38b912f",
+            "0x3899f1e3196adaca54e5fce47c83478bbc68d82e1c4db340ff4d5be077da5809",
+            "0xc27f2d90363c8681b7703d71466b0d29bc971e176548d925e9252568f9b93a4a",
+            "0x22a472070f84cb2259fc2dcdf5b7b387390e0fc01fd949dd113f4b2426af24d7",
+            "0xc09fb967d65193de64670085a09a814f51be24c9461b361c960f9fe049be724d",
+            "0xc49d351e156eedeff8dc29f1414835e8d243d9d98cb8ab0d62b76e4e159fa7c5",
+            "0x368cc389cf2618d7c101a854fff75ed5a547d0986bf78da6153da23b8fea16ee",
+            "0xa697780bec0c72e7a647f0cc067dd2b30732cbbb362d63f2eccee67dee345690"
         ])
 
-        const memberHash = hash(members.get("0x50428050ea2448ed2e4409be47e1a50ebac0b2d2").toStringData())
+        const memberHash = hash(members.find(m => m.address === "0x50428050ea2448ed2e4409be47e1a50ebac0b2d2").toStringData())
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
