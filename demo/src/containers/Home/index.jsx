@@ -66,7 +66,6 @@ class Home extends Component<Props, State> {
         onAddUsersClick: this.onAddUsersClick.bind(this),
         onMintClick: this.onMintClick.bind(this),
         onStealClick: this.onStealClick.bind(this),
-        settings: null,
         onForcePublishClick: this.onForcePublishClick.bind(this),
     }
 
@@ -106,19 +105,6 @@ class Home extends Component<Props, State> {
             })
         }
         setTimeout(pollBlocks, 1000)
-
-        /* TODO: Replace with the real settings setup. */
-        setTimeout(() => {
-            this.setState({
-                settings: {
-                    blockFreezePeriod: '20 sec',
-                    monoplasmaContractAddress: '0xEAA002f7Dc60178B6103f8617Be45a9D3df659B6',
-                    tokenAddress: '0xbAA81A0179015bE47Ad439566374F2Bae098686F',
-                    ethereumNode: 'ws://127.0.0.1:8545',
-                    operatorAddress: '0xa3d1F77ACfF0060F7213D7BF3c7fEC78df847De1',
-                },
-            })
-        }, 10000)
     }
 
     componentWillUnmount() {

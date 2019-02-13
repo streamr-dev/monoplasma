@@ -3,19 +3,12 @@
 import React from 'react'
 import About from '../About'
 import Section from '../Section'
+import { type Config } from '../../../contexts/Home'
 
 import styles from './settings.module.css'
 
-export type Setting = {
-    blockFreezePeriod: number,
-    monoplasmaContractAddress: string,
-    tokenAddress: string,
-    ethereumNode: string,
-    operatorAddress: string,
-}
-
 type Props = {
-    value: ?Setting,
+    value: ?Config,
 }
 
 const withPlaceholder = (value: any) => (
@@ -26,11 +19,11 @@ const withPlaceholder = (value: any) => (
 
 const Settings = ({ value }: Props) => {
     const {
-        blockFreezePeriod,
-        monoplasmaContractAddress,
-        tokenAddress,
-        ethereumNode,
+        blockFreezeSeconds,
+        contractAddress,
+        ethereumServer,
         operatorAddress,
+        tokenAddress,
     } = value || {}
 
     return (
@@ -38,11 +31,11 @@ const Settings = ({ value }: Props) => {
             <ul>
                 <li>
                     <strong>Block freeze period: </strong>
-                    {withPlaceholder(blockFreezePeriod)}
+                    {withPlaceholder(blockFreezeSeconds)}
                 </li>
                 <li>
                     <strong>Monoplasma contract address: </strong>
-                    {withPlaceholder(monoplasmaContractAddress)}
+                    {withPlaceholder(contractAddress)}
                 </li>
                 <li>
                     <strong>Token address: </strong>
@@ -50,7 +43,7 @@ const Settings = ({ value }: Props) => {
                 </li>
                 <li>
                     <strong>Ethereum node: </strong>
-                    {withPlaceholder(ethereumNode)}
+                    {withPlaceholder(ethereumServer)}
                 </li>
                 <li>
                     <strong>Operator address: </strong>

@@ -2,7 +2,17 @@
 
 import { createContext } from 'react'
 import { type Block } from '../../components/Home/Blocks'
-import { type Setting } from '../../components/Home/Settings'
+
+export type Config = {
+    blockFreezeSeconds: string,
+    contractAddress: string,
+    ethereumServer: string,
+    gasPrice: number,
+    lastBlockNumber: number,
+    lastPublishedBlock: number,
+    operatorAddress: string,
+    tokenAddress: string,
+}
 
 export type Props = {
     account: Array<any>,
@@ -16,7 +26,7 @@ export type Props = {
     onAddUsersClick: (Array<string>) => void,
     onMintClick: () => void,
     onStealClick: () => void,
-    settings: ?Setting,
+    config: ?Config,
 }
 
 export default createContext<Props>({
@@ -31,5 +41,5 @@ export default createContext<Props>({
     onAddUsersClick: () => {},
     onMintClick: () => {},
     onStealClick: () => {},
-    settings: null,
+    config: null,
 })

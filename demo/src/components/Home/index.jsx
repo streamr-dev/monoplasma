@@ -37,7 +37,7 @@ const Home = ({
     onMintClick,
     onStealClick,
     notification,
-    settings,
+    config,
 }: Props) => (
     <Layout>
         {notification && (
@@ -85,7 +85,7 @@ const Home = ({
             />
             <About />
             <Settings
-                value={settings}
+                value={config}
             />
         </Container>
     </Layout>
