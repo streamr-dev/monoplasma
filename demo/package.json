@@ -30,8 +30,8 @@
     "http-proxy-middleware": "^0.19.1",
     "normalize.css": "^8.0.1",
     "precss": "^4.0.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
     "react-helmet": "^5.2.0",
     "time-ago": "^0.2.1"
   }
