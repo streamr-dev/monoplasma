@@ -72,6 +72,9 @@ const Home = ({
                 <Blocks
                     className={styles.blocks}
                     items={blocks}
+                    blockFreezeSeconds={(config || {
+                        blockFreezeSeconds: Number.NEGATIVE_INFINITY,
+                    }).blockFreezeSeconds}
                 />
                 <RevenuePoolActions
                     onAddRevenueClick={onAddRevenueClick}
