@@ -12,6 +12,7 @@ import Eth from 'ethjs'
 import HomeComponent from '../../components/Home'
 import Context, { type Props as ContextProps } from '../../contexts/Home'
 import WalletContext, { type Props as WalletContextProps } from '../../contexts/Wallet'
+import { type Block } from '../../components/Home/Blocks'
 
 import tokenAbi from '../../utils/tokenAbi'
 import monoplasmaAbi from '../../utils/monoplasmaAbi'
@@ -23,7 +24,12 @@ const MINT_TOKEN_AMOUNT = Eth.toWei('10000', 'ether')
 
 type Props = WalletContextProps & {}
 
-type State = ContextProps & {}
+type State = ContextProps & {
+    serverConnectionError: boolean,
+    latestBlockNumber: number,
+    community: any,
+    member: any,
+}
 
 const toFixed18 = (num: number) => new BN(10).pow(new BN(18)).mul(new BN(num))
 
@@ -67,6 +73,7 @@ class Home extends Component<Props, State> {
         onMintClick: this.onMintClick.bind(this),
         onStealClick: this.onStealClick.bind(this),
         onForcePublishClick: this.onForcePublishClick.bind(this),
+        community: null,
     }
 
     componentDidMount() {
@@ -140,6 +147,11 @@ class Home extends Component<Props, State> {
             return
         }
 
+        if (!config) {
+            console.warn('Missing config.')
+            return
+        }
+
         const opts = {
             from: accountAddress,
         }
@@ -163,6 +175,11 @@ class Home extends Component<Props, State> {
         const amountWei = Eth.toWei(amount, 'ether')
         const opts = {
             from: accountAddress,
+        }
+
+        if (!config) {
+            console.warn('Missing config.')
+            return
         }
 
         const token = new eth.contract(tokenAbi).at(config.tokenAddress)
@@ -209,6 +226,11 @@ class Home extends Component<Props, State> {
             from: accountAddress,
         }
 
+        if (!config) {
+            console.warn('Missing config.')
+            return
+        }
+
         const token = new eth.contract(tokenAbi).at(config.tokenAddress)
 
         token.mint(accountAddress, MINT_TOKEN_AMOUNT, opts).then((txHash) => {
@@ -225,12 +247,12 @@ class Home extends Component<Props, State> {
         console.log(eth, accountAddress, web3)
     }
 
-    addBlockToList = (block) => {
+    addBlockToList = (block: ?Block) => {
         const { blocks } = this.state
 
-        if (this.unmounted) { return }
-        if (!block || !block.blockNumber) { return }
-        if (blocks.find((b) => b.blockNumber === block.blockNumber)) {
+        if (this.unmounted || !block || !block.blockNumber) { return }
+
+        if (blocks.find((b) => typeof b !== 'number' && block && b.blockNumber === block.blockNumber)) {
             console.log(`Trying to re-add block #${block.blockNumber}`)
             return
         }

@@ -10,10 +10,10 @@ import Clock from '../../Clock'
 import styles from './blocks.module.css'
 
 export type Block = {
-    id: number,
+    blockNumber: number,
     timestamp: number,
-    members: number,
-    earnings: BN,
+    memberCount: number,
+    totalEarnings: BN,
     frozen?: boolean,
 }
 
