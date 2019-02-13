@@ -60,8 +60,20 @@ class RevenuePoolActions extends Component<Props, State> {
                     onChange={this.onAmountChange}
                     className={Input.styles.textField}
                 />
-                <Button disabled={disabled} onClick={this.onAddRevenueClick}>Add revenue</Button>
-                <Button onClick={onForcePublishClick} theme="edge">Force publish</Button>
+                <Button
+                    disabled={disabled}
+                    onClick={this.onAddRevenueClick}
+                    tooltip="Send tokens to the Monoplasma smart contract."
+                >
+                    Add revenue
+                </Button>
+                <Button
+                    onClick={onForcePublishClick}
+                    theme="edge"
+                    tooltip="Force the Operator to publish a block even during the cooldown period, or if no revenue has been added."
+                >
+                    Force publish
+                </Button>
             </div>
         )
     }

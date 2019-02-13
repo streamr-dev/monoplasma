@@ -53,6 +53,9 @@ class Management extends Component<Props, State> {
                             <Button
                                 className={styles.addUsers}
                                 onClick={this.onAddUsersClick}
+                                tooltip="Add the addresses to the revenue sharing pool.
+                                These users will then receive revenue shares from tokens that are
+                                transferred to the Monoplasma contract."
                             >
                                 Add users
                             </Button>
@@ -63,6 +66,7 @@ class Management extends Component<Props, State> {
                             className={styles.button}
                             theme="edge"
                             onClick={onMintClick}
+                            tooltip="Mints new tokens to the currently selected account in Metamask."
                         >
                             Mint tokens
                         </Button>
@@ -70,7 +74,8 @@ class Management extends Component<Props, State> {
                             className={styles.button}
                             theme="red-edge"
                             onClick={onStealClick}
-                            tooltip="Lorem ipsum dolor sit emai, sir!"
+                            tooltip="Operator can try to publish a block where all tokens
+                            have been allocated to it. Validators should notice."
                         >
                             Steal all tokens
                         </Button>

@@ -19,4 +19,5 @@
   transition-delay: 200ms, 0ms, 0ms;
   transition-property: visibility opacity transform;
   visibility: hidden;
+  z-index: 100;
 }
