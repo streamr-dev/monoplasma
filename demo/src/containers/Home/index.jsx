@@ -39,7 +39,7 @@ const handleError = (error) => {
     window.alert(error.message) // eslint-disable-line no-alert
 }
 
-function sleep(ms) {
+function sleep(ms: number) {
     return new Promise((done) => {
         setTimeout(done, ms)
     })
@@ -272,7 +272,7 @@ class Home extends Component<Props, State> {
             }
             stealInstructions = res
             console.log(`Steal request successful: ${JSON.stringify(stealInstructions)}. Waiting for block to unfreeze...`)
-            return sleep(config.blockFreezeSeconds)
+            return sleep(Number.parseInt(config.blockFreezeSeconds, 10))
         }).then(() => {
             const { blockNumber, tokens, proof } = stealInstructions
             return monoplasma.withdrawAll(blockNumber, tokens, proof, opts)
