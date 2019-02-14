@@ -287,16 +287,16 @@ class Home extends Component<Props, State> {
             return fetch(`http://localhost:8080/api/members/${address}`).then((resp) => resp.json())
         }).then((member) => {
             const withdrawnBN = new BN(withdrawn || 0)
-            const recorded = new BN(member.withdrawableErnings || 0)
-            const withdrawable = recorded.sub(withdrawnBN)
+            const recordedBN = new BN(member.withdrawableEarnings || 0)
+            const withdrawableBN = recordedBN.sub(withdrawnBN)
             this.setState({
                 member,
                 account: [
                     ['Total earnings', new BN(member.earnings || 0)],
                     ['Earnings frozen', new BN(member.frozenEarnings || 0)],
                     ['Total withdrawn', withdrawnBN],
-                    ['Total earnings recorded', recorded],
-                    ['Earnings accessible', withdrawable],
+                    ['Total earnings recorded', recordedBN],
+                    ['Earnings accessible', withdrawableBN],
                 ],
             })
         })
