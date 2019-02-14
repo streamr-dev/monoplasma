@@ -39,10 +39,25 @@ class Wallet extends Component<Props, State> {
                 })
             }
         })
+
+        if (ethereum) {
+            ethereum.on('accountsChanged', this.onAccountChange)
+        }
     }
 
     componentWillUnmount() {
         this.unmounted = true
+        if (ethereum) {
+            ethereum.off('accountsChanged', this.onAccountChange)
+        }
+    }
+
+    onAccountChange = (accounts: Array<string>) => {
+        if (!this.unmounted) {
+            this.setState({
+                accountAddress: accounts[0] || null,
+            })
+        }
     }
 
     async getAccountAddress(): Promise<?string> {
