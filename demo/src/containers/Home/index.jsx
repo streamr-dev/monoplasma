@@ -329,16 +329,17 @@ class Home extends Component<Props, State> {
                 return
             }
             const recorded = new BN(community.latestBlock.totalEarnings || 0)
-            const withdrawable = new BN(community.latestWithdrawableBlock.totalEarnings || 0)
+            const totalEarningsInLatestWithdrawable = new BN(community.latestWithdrawableBlock.totalEarnings || 0)
+            const earningsAvailable = totalEarningsInLatestWithdrawable.sub(new BN(totalWithdrawn))
             this.setState({
                 community,
                 revenuePool: [
                     ['Members', toFixed18(community.memberCount.total)],
                     ['Total earnings', new BN(community.totalEarnings)],
-                    ['Earnings frozen', new BN(recorded.sub(withdrawable))],
+                    ['Earnings frozen', new BN(recorded.sub(totalEarningsInLatestWithdrawable))],
                     ['Contract balance', new BN(contractBalance)],
                     ['Total earnings recorded', new BN(recorded)],
-                    ['Earnings available', new BN(withdrawable)],
+                    ['Earnings available', earningsAvailable],
                     null,
                     ['Total withdrawn', new BN(totalWithdrawn)],
                 ],
