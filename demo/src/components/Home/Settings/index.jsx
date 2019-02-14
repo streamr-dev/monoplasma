@@ -30,7 +30,7 @@ const Settings = ({ value }: Props) => {
         <Section title="Settings" className={About.styles.root}>
             <ul>
                 <li>
-                    <strong>Block freeze period: </strong>
+                    <strong>Block freeze period (sec): </strong>
                     {withPlaceholder(blockFreezeSeconds)}
                 </li>
                 <li>
