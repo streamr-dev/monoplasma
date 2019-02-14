@@ -90,8 +90,8 @@ The demo creates a demo unicorn token (🦄). Let's configure that to Metamask a
 
 - In Metamask, select Alice's account. 
 - Under the Menu icon, where you see your balances, you should see some ETH as well as (scroll down) a link to "ADD TOKEN". Click that.
-- Open the Custom Token tab and paste the token's address `0xbAA81A0179015bE47Ad439566374F2Bae098686F`. 
-- You might need to repeat this procedure for Bob.
+- Open the Custom Token tab and paste the token's address `0xbAA81A0179015bE47Ad439566374F2Bae098686F`. The token name 🦄 and its settings should be filled automatically. Click Next, then Add Tokens.
+- Repeat the previous step for Bob, if you don't see the token listed on Bob's account.
 
 ## Demo Walkthrough
 
