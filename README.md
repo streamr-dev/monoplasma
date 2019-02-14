@@ -78,7 +78,7 @@ npm start
 
 - Point your browser to http://0.0.0.0:8000/
 - Metamask might pop up, asking you to unlock and/or give permissions to the page use it. Accept.
-- In your Metamask, add a custom network with RPC URL http://127.0.0.1:8545, and select this network
+- In your Metamask, select the "Localhost 8545" network if it's listed. If it isn't, add a custom network with RPC URL http://127.0.0.1:8545.
 - You should see the control panel with everything empty and zero. 
 
 By default the demo runs on `ganache`, with a mnemonic that creates a certain set of accounts. We'll use two of them. Import to your Metamask the following private keys (do not use these accounts on real networks):
