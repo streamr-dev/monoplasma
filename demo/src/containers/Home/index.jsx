@@ -158,7 +158,7 @@ class Home extends Component<Props, State> {
         const { eth, accountAddress } = this.props
 
         if (!config) {
-            console.warn('Missing config.')
+            console.warn('Missing config. Has not loaded yet?')
             return
         }
 
@@ -191,7 +191,7 @@ class Home extends Component<Props, State> {
         }
 
         if (!config) {
-            console.warn('Missing config.')
+            console.warn('Missing config. Has not loaded yet?')
             return
         }
 
@@ -240,7 +240,7 @@ class Home extends Component<Props, State> {
         }
 
         if (!config) {
-            console.warn('Missing config.')
+            console.warn('Missing config. Has not loaded yet?')
             return
         }
 
@@ -261,6 +261,16 @@ class Home extends Component<Props, State> {
 
         const opts = {
             from: accountAddress,
+        }
+
+        if (!config) {
+            console.warn('Missing config. Has not loaded yet?')
+            return
+        }
+
+        if (!accountAddress) {
+            console.warn('Missing account address.')
+            return
         }
 
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
