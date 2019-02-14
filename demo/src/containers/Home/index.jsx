@@ -54,7 +54,7 @@ class Home extends Component<Props, State> {
             ['Earnings frozen', new BN(0)],
             ['Total withdrawn', new BN(0)],
             ['Total earnings recorded', new BN(0)],
-            ['Earnings accessible', new BN(0)],
+            ['Earnings available', new BN(0)],
         ],
         revenuePool: [
             ['Members', new BN(0)],
@@ -329,7 +329,7 @@ class Home extends Component<Props, State> {
                     ['Earnings frozen', new BN(member.frozenEarnings || 0)],
                     ['Total withdrawn', withdrawnBN],
                     ['Total earnings recorded', recordedBN],
-                    ['Earnings accessible', withdrawableBN],
+                    ['Earnings available', withdrawableBN],
                 ],
             })
             return member
