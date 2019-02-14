@@ -45,14 +45,15 @@ const Blocks = ({ items, className, blockFreezeSeconds }: Props) => (
                     )
                 }
                 return (
-                    <Clock>
+                    <Clock
+                        key={block.blockNumber}
+                    >
                         {(timestamp) => {
                             const threshold = typeof blockFreezeSeconds === 'number' ? blockFreezeSeconds : Number.parseInt(blockFreezeSeconds, 10)
                             const frozen = Math.floor((timestamp / 1000) - block.timestamp) < threshold
 
                             return (
                                 <div
-                                    key={block.blockNumber}
                                     className={cx(styles.row, {
                                         [styles.frozen]: frozen,
                                     })}
