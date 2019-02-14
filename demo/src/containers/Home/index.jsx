@@ -120,32 +120,23 @@ class Home extends Component<Props, State> {
 
     onViewClick(address: string) {
         console.log('View ', address, this)
-        this.updateUser(address)
+        this.updateUser(address).catch(handleError)
     }
 
     onKickClick(address: string) {
         console.log('Kick', address, this)
         fetch(`http://localhost:8080/admin/members/${address}`, {
             method: 'DELETE',
-        }).then((resp) => resp.json()).then((res) => {
-            console.log(`Kick user response: ${JSON.stringify(res)}`)
+        }).then((res) => {
+            console.log(`Kick response status code: ${JSON.stringify(res.status)}`)
             return this.updateCommunity()
         }).catch(handleError)
     }
 
     onWithdrawClick(address: string) {
         console.log('Withdraw', address, this)
-        const { config, member } = this.state
+        const { config } = this.state
         const { eth, accountAddress } = this.props
-        if (!member) {
-            handleError(new Error("Please select a member first by entering Ethereum address and clicking 'view'"))
-            return
-        }
-        const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
-        if (!withdrawableBlockNumber) {
-            handleError(new Error("Please select a member first by entering Ethereum address and clicking 'view'"))
-            return
-        }
 
         if (!config) {
             console.warn('Missing config.')
@@ -158,7 +149,10 @@ class Home extends Component<Props, State> {
 
         const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
 
-        monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof, opts).then((txHash) => {
+        this.updateUser(address).then((member) => {
+            const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
+            return monoplasma.withdrawAll(withdrawableBlockNumber, withdrawableEarnings, proof, opts)
+        }).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)
             return eth.getTransactionSuccess(txHash)
         }).then((receipt) => {
@@ -200,7 +194,7 @@ class Home extends Component<Props, State> {
         console.log('Force publish', this)
         fetch('http://localhost:8080/demo/publishBlock').then((resp) => resp.json()).then((receipt) => {
             console.log(`Block publish successful: ${JSON.stringify(receipt)}`)
-        })
+        }).catch(handleError)
     }
 
     onAddUsersClick(addresses: Array<string>) {
@@ -245,6 +239,9 @@ class Home extends Component<Props, State> {
         const { eth, accountAddress, web3 } = this.props
         console.log('Steal tokens', this)
         console.log(eth, accountAddress, web3)
+        fetch('http://localhost:8080/demo/stealAllTokens').then((resp) => resp.json()).then((receipt) => {
+            console.log(`Steal request successful: ${JSON.stringify(receipt)}`)
+        }).catch(handleError)
     }
 
     addBlockToList = (block: ?Block) => {
@@ -267,15 +264,13 @@ class Home extends Component<Props, State> {
 
     updateUser(address: string) {
         if (!Eth.isAddress(address)) {
-            const error = new Error(`Bad address: ${address}`)
-            console.error(error)
-            return Promise.reject(error)
+            throw new Error(`Bad address: ${address}`)
         }
         const { eth } = this.props
         const { config } = this.state
 
         if (!config) {
-            return null
+            throw new Error('Config hasn\'t been loaded from server, try refreshing the page')
         }
 
         // TODO: move contract instances into the state
@@ -299,6 +294,7 @@ class Home extends Component<Props, State> {
                     ['Earnings accessible', withdrawableBN],
                 ],
             })
+            return member
         })
     }
 
@@ -307,7 +303,7 @@ class Home extends Component<Props, State> {
         const { config, latestBlockNumber } = this.state
 
         if (!config) {
-            return null
+            throw new Error('Config hasn\'t been loaded from server, try refreshing the page')
         }
 
         // TODO: move contract instances into the state
@@ -326,7 +322,7 @@ class Home extends Component<Props, State> {
         }).then((community) => {
             if (!community.latestBlock) {
                 console.error(`Community status: ${JSON.stringify(community)}`)
-                return
+                return community
             }
             const recorded = new BN(community.latestBlock.totalEarnings || 0)
             const totalEarningsInLatestWithdrawable = new BN(community.latestWithdrawableBlock.totalEarnings || 0)
@@ -334,7 +330,7 @@ class Home extends Component<Props, State> {
             this.setState({
                 community,
                 revenuePool: [
-                    ['Members', toFixed18(community.memberCount.total)],
+                    ['Members', toFixed18(community.memberCount.active)],
                     ['Total earnings', new BN(community.totalEarnings)],
                     ['Earnings frozen', new BN(recorded.sub(totalEarningsInLatestWithdrawable))],
                     ['Contract balance', new BN(contractBalance)],
@@ -351,6 +347,7 @@ class Home extends Component<Props, State> {
                 })
                 this.addBlockToList(community.latestBlock)
             }
+            return community
         })
     }
 

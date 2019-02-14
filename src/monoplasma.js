@@ -93,6 +93,10 @@ class Monoplasma {
         return block
     }
 
+    async listBlockNumbers(maxNumberLatest) {
+        return this.store.listBlockNumbers(maxNumberLatest)
+    }
+
     /**
      * Get member's current status (without valid withdrawal proof because it hasn't been recorded)
      * @param {string} address
@@ -286,8 +290,10 @@ class Monoplasma {
             getProof: this.getProof.bind(this),
             getProofAt: this.getProofAt.bind(this),
             getRootHash: this.getRootHash.bind(this),
+            getBlock: this.getBlock.bind(this),
             getLatestBlock: this.getLatestBlock.bind(this),
             getLatestWithdrawableBlock: this.getLatestWithdrawableBlock.bind(this),
+            listBlockNumbers: this.listBlockNumbers.bind(this),
         }
     }
 }

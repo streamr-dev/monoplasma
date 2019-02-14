@@ -1,6 +1,7 @@
 // @flow
 
 import React, { Component } from 'react'
+import Eth from 'ethjs'
 import Button from '../../Button'
 import Input from '../../Input'
 
@@ -67,14 +68,14 @@ class UserActions extends Component<Props, State> {
                     className={Input.styles.textField}
                 />
                 <Button
-                    disabled={!address}
+                    disabled={!Eth.isAddress(address)}
                     onClick={this.onViewClick}
                     tooltip="View the earnings and withdrawals of a given address."
                 >
                   View
                 </Button>
                 <Button
-                    disabled={!address}
+                    disabled={!Eth.isAddress(address)}
                     onClick={this.onWithdrawClick}
                     theme="edge"
                     tooltip="Sends the latest unfrozen proof of earnings to the
@@ -83,7 +84,7 @@ class UserActions extends Component<Props, State> {
                   Withdraw
                 </Button>
                 <Button
-                    disabled={!address}
+                    disabled={!Eth.isAddress(address)}
                     onClick={this.onKickClick}
                     theme="red-edge"
                     tooltip="Deactivates the selected user. That user will not

@@ -2,6 +2,12 @@ const express = require("express")
 const BN = require("bn.js")
 const {utils: { isAddress }} = require("web3")
 
+const {
+    QUIET,
+} = process.env
+
+const log = QUIET ? () => {} : console.log
+
 /** Don't send the full member list back, only member count */
 function blockToApiObject(block) {
     if (!block || !block.members) { block = { members: [] } }
@@ -24,6 +30,7 @@ module.exports = plasma => {
     })
 
     router.get("/status", (req, res) => {
+        log("Requested monoplasma status")
         const memberCount = plasma.getMemberCount()
         const totalEarnings = plasma.getTotalRevenue()
         const latestBlock = blockToApiObject(plasma.getLatestBlock())
@@ -37,11 +44,13 @@ module.exports = plasma => {
     })
 
     router.get("/members", (req, res) => {
+        log("Requested monoplasma members")
         res.send(plasma.getMembers())
     })
 
     router.get("/members/:address", async (req, res) => {
         const address = req.params.address
+        log(`Requested member ${address}`)
         if (!isAddress(address)) {
             res.status(400).send({error: `Bad Ethereum address: ${address}`})
             return
@@ -66,14 +75,28 @@ module.exports = plasma => {
         res.send(member)
     })
 
+    router.get("/blocks", (req, res) => {
+        const maxNumberLatest = req.query.n
+        log(`Requested ${maxNumberLatest || "ALL"} latest blocks`)
+        plasma.listBlockNumbers(maxNumberLatest).then(blockNumberList => {
+            return Promise.all(blockNumberList.map(bnum => {
+                return plasma.getBlock(bnum).then(blockToApiObject)
+            }))
+        }).then(blockList => {
+            res.send(blockList)
+        })
+    })
+
     router.get("/blocks/:blockNumber", (req, res) => {
         const blockNumber = +req.params.blockNumber
+        log(`Requested block ${blockNumber}`)
         if (Number.isNaN(blockNumber)) {
             res.status(400).send({error: `Bad block number: ${req.params.blockNumber}`})
             return
         }
 
         plasma.getBlock(blockNumber).then(block => {
+            // todo: blockToApiObject?
             res.send(block)
         }).catch(error => {
             res.status(404).send(error)

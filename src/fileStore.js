@@ -23,6 +23,7 @@ module.exports = (storeDir) => {
     fs.mkdirSync(storeDir, { recursive: true })
     fs.mkdirSync(blocksDir, { recursive: true })
     fs.mkdirSync(eventsDir, { recursive: true })
+    const blockNameRE = /(\d*)\.json/
 
     const stateStorePath = path.join(storeDir, "state.json")
     const getBlockPath = blockNumber => path.join(blocksDir, blockNumber + ".json")
@@ -62,6 +63,23 @@ module.exports = (storeDir) => {
         blockExists: async blockNumber => {
             const path = getBlockPath(blockNumber)
             return fs.exists(path)
+        },
+
+        /**
+         * @param {number} [maxNumberLatest] of latest blocks to list
+         * @returns {Promise<Array<number>>} block numbers that have been stored
+         */
+        listBlockNumbers: async maxNumberLatest => {
+            const fileList = await fs.readdir(blocksDir)
+            let blockNumbers = fileList
+                .map(fname => fname.match(blockNameRE))
+                .filter(x => x)
+                .map(match => +match[1])
+            blockNumbers.sort()
+            if (maxNumberLatest) {
+                blockNumbers = blockNumbers.slice(-maxNumberLatest)
+            }
+            return blockNumbers
         },
 
         /**
