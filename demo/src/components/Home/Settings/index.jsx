@@ -43,7 +43,7 @@ const Settings = ({ value }: Props) => {
                 </li>
                 <li>
                     <strong>Ethereum node: </strong>
-                    {withPlaceholder(ethereumServer)}
+                    {withPlaceholder(ethereumServer ? ethereumServer.replace('ws://', 'http://') : ethereumServer)}
                 </li>
                 <li>
                     <strong>Operator address: </strong>
