@@ -66,15 +66,39 @@ contract Monoplasma is AbstractRootChain, Ownable {
     }
 
     /**
-     * Withdraw the whole revenue share from sidechain in one transaction
+     * Prove and withdraw the whole revenue share for a given address from sidechain in one transaction
+     * @param recipient the address we're proving and withdrawing
+     * @param blockNumber of the leaf to verify
+     * @param totalEarnings in the side-chain
+     * @param proof list of hashes to prove the totalEarnings
+     */
+    function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+        proveSidechainBalance(blockNumber, recipient, totalEarnings, proof);
+        uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
+        withdrawFor(recipient, withdrawable);
+    }
+
+    /**
+     * Prove and withdraw the whole revenue share from sidechain in one transaction
      * @param blockNumber of the leaf to verify
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
-        proveSidechainBalance(blockNumber, msg.sender, totalEarnings, proof);
-        uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
-        withdraw(withdrawable);
+        this.withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
+    }
+
+    /**
+     * @dev It is up to the sidechain implementation to make sure
+     * @dev  always token balance >= sum of earnings - sum of withdrawn
+     */
+    function withdrawFor(address recipient, uint amount) public {
+        require(amount > 0, "error_zeroWithdraw");
+        uint w = withdrawn[recipient].add(amount);
+        require(w <= earnings[recipient], "error_overdraft");
+        withdrawn[recipient] = w;
+        totalWithdrawn = totalWithdrawn.add(amount);
+        require(token.transfer(recipient, amount), "error_transfer");
     }
 
     /**
@@ -82,11 +106,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
      * @dev  always token balance >= sum of earnings - sum of withdrawn
      */
     function withdraw(uint amount) public {
-        require(amount > 0, "error_zeroWithdraw");
-        uint w = withdrawn[msg.sender].add(amount);
-        require(w <= earnings[msg.sender], "error_overdraft");
-        withdrawn[msg.sender] = w;
-        totalWithdrawn = totalWithdrawn.add(amount);
-        require(token.transfer(msg.sender, amount), "error_transfer");
+        withdrawFor(msg.sender, amount);
     }
+
 }
