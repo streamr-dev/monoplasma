@@ -88,6 +88,14 @@ class Home extends Component<Props, State> {
                 console.log(':boom:')
             })
 
+        fetch('http://localhost:8080/api/blocks?n=5')
+            .then((resp) => resp.json())
+            .then((blockList) => {
+                blockList.forEach((block) => {
+                    this.addBlockToList(block)
+                })
+            })
+
         const self = this
         function pollBlocks() {
             if (self.unmounted) { return }

@@ -75,7 +75,7 @@ module.exports = (storeDir) => {
                 .map(fname => fname.match(blockNameRE))
                 .filter(x => x)
                 .map(match => +match[1])
-            blockNumbers.sort()
+            blockNumbers.sort((a, b) => a - b)  // sort as numbers, just sort() converts to strings first
             if (maxNumberLatest) {
                 blockNumbers = blockNumbers.slice(-maxNumberLatest)
             }
