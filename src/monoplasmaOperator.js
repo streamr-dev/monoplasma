@@ -34,6 +34,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         if (blockNumber <= this.state.lastPublishedBlock) {
             throw new Error(`Block #${this.state.lastPublishedBlock} has already been published, can't publish #${blockNumber}`)
         }
+        this.log(`Publishing block ${bnum}`)
         const hash = this.plasma.getRootHash()
         const ipfsHash = ""
         await this.contract.methods.recordBlock(bnum, hash, ipfsHash).send({

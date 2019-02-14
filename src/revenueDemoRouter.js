@@ -21,20 +21,29 @@ module.exports = operator => {
     })
 
     router.get("/stealAllTokens", (req, res) => {
-        const address = req.params.targetAddress || operator.address
-        console.log("Swapping operator's side-chain with something where we have all the tokens")
-        const tokenBalance = 1
+        const address = req.query.targetAddress || operator.address
         const realPlasma = operator.plasma
-        operator.plasma = new Monoplasma([{
-            address,
-            earnings: tokenBalance,
-        }])
-        operator.publishBlock().then(receipt => {
-            console.log("Block published: " + JSON.stringify(receipt))
+        let tokens, proof
+        operator.getContractTokenBalance().then(res => {
+            tokens = res
+            const fakePlasma = new Monoplasma([{
+                address,
+                earnings: tokens,
+            }], {
+                saveBlock: () => {}
+            }, 0)
+            proof = fakePlasma.getProof(address)        // should be just ["0x0"]
+            console.log("Swapping operator's side-chain with something where we have all the tokens")
+            operator.plasma = fakePlasma
+            return operator.publishBlock(+new Date() / 1000)   // avoid revert with error_overwrite
+        }).then(block => {
+            console.log(`Block published: ${JSON.stringify(block)}. Swapping back the real side-chain like nothing happened.`)
             operator.plasma = realPlasma
-            res.send(receipt)
+            const blockNumber = block.blockNumber
+            res.send({ blockNumber, tokens, proof })
         }).catch(error => {
-            res.status(400).send({ error })
+            operator.plasma = realPlasma
+            res.status(400).send({ error: error.message })
         })
     })
 

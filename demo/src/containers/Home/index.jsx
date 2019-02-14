@@ -39,6 +39,12 @@ const handleError = (error) => {
     window.alert(error.message) // eslint-disable-line no-alert
 }
 
+function sleep(ms) {
+    return new Promise((done) => {
+        setTimeout(done, ms)
+    })
+}
+
 class Home extends Component<Props, State> {
     unmounted: boolean = false
 
@@ -91,8 +97,13 @@ class Home extends Component<Props, State> {
         fetch('http://localhost:8080/api/blocks?n=5')
             .then((resp) => resp.json())
             .then((blockList) => {
+                let latestBlockNumber = 0
                 blockList.forEach((block) => {
                     this.addBlockToList(block)
+                    latestBlockNumber = block.blockNumber > latestBlockNumber ? block.blockNumber : latestBlockNumber
+                })
+                this.setState({
+                    latestBlockNumber,
                 })
             })
 
@@ -244,11 +255,30 @@ class Home extends Component<Props, State> {
     }
 
     onStealClick() {
-        const { eth, accountAddress, web3 } = this.props
-        console.log('Steal tokens', this)
-        console.log(eth, accountAddress, web3)
-        fetch('http://localhost:8080/demo/stealAllTokens').then((resp) => resp.json()).then((receipt) => {
-            console.log(`Steal request successful: ${JSON.stringify(receipt)}`)
+        const { eth, accountAddress } = this.props
+        const { config } = this.state
+        console.log('Steal tokens')
+
+        const opts = {
+            from: accountAddress,
+        }
+
+        const monoplasma = new eth.contract(monoplasmaAbi).at(config.contractAddress)
+
+        let stealInstructions
+        fetch(`http://localhost:8080/demo/stealAllTokens?targetAddress=${accountAddress}`).then((resp) => resp.json()).then((res) => {
+            if (res.error) {
+                throw new Error(`Stealing failed, reason: ${res.error}`)
+            }
+            stealInstructions = res
+            console.log(`Steal request successful: ${JSON.stringify(stealInstructions)}. Waiting for block to unfreeze...`)
+            return sleep(config.blockFreezeSeconds)
+        }).then(() => {
+            const { blockNumber, tokens, proof } = stealInstructions
+            return monoplasma.withdrawAll(blockNumber, tokens, proof, opts)
+        }).then(() => {
+            // eslint-disable-next-line no-alert
+            window.alert('Successfully stole all tokens, check your balances  :)')
         }).catch(handleError)
     }
 

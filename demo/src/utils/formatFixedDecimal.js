@@ -8,7 +8,7 @@ import BN from 'bn.js'
 export default (value: BN | number | string): string => {
     // const [int, fraction] = value.toString().split('.')
     const num = new BN(value).toString(10, 36)
-    const int = num.slice(0, 18).replace(/^0*/, '')
+    const int = num.slice(0, 18).replace(/^(-?)0*/, '$1')
         .split('')
         .reverse()
         .join('')

@@ -30,7 +30,7 @@ module.exports = plasma => {
     })
 
     router.get("/status", (req, res) => {
-        log("Requested monoplasma status")
+        //log("Requested monoplasma status")  // commented out because demo UI spams it
         const memberCount = plasma.getMemberCount()
         const totalEarnings = plasma.getTotalRevenue()
         const latestBlock = blockToApiObject(plasma.getLatestBlock())
@@ -50,7 +50,7 @@ module.exports = plasma => {
 
     router.get("/members/:address", async (req, res) => {
         const address = req.params.address
-        log(`Requested member ${address}`)
+        //log(`Requested member ${address}`)  // commented out because demo UI spams it
         if (!isAddress(address)) {
             res.status(400).send({error: `Bad Ethereum address: ${address}`})
             return

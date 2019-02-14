@@ -275,7 +275,8 @@ class Monoplasma {
             totalEarnings,
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
-        return this.store.saveBlock(latestBlock)
+        await this.store.saveBlock(latestBlock)
+        return latestBlock
     }
 
     /**

@@ -125,4 +125,9 @@ module.exports = class MonoplasmaWatcher {
             }
         }
     }
+
+    async getContractTokenBalance() {
+        const balance = await this.token.methods.balanceOf(this.state.contractAddress).call()
+        return balance
+    }
 }
