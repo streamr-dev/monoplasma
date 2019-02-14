@@ -53,7 +53,7 @@ But in case the operator simply doesn't provide the fudged accounts book (operat
 - node.js (tested on v10.14.0)
 - git
 
-## Setting up
+## Building
 
 Build Monoplasma and the Revenue sharing demo:
 ```
@@ -61,18 +61,6 @@ git clone git@github.com:streamr-dev/monoplasma.git
 cd monoplasma
 npm run build && npm run build-demo
 ```
-
-By default the demo runs on `ganache`, with a mnemonic that creates a certain set of accounts. We'll use two of them. Import to your Metamask the following private keys (do not use these accounts on real networks):
-
-- Alice: `0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0`
-- Bob: `0xe5af7834455b7239881b85be89d905d6881dcb4751063897f12be1b0dd546bdb`
-
-The demo creates a demo unicorn token (🦄). Let's configure that to Metamask as well.
-
-- In Metamask, select Alice's account. 
-- Under the Menu icon, where you see your balances, you should see some ETH as well as (scroll down) a link to "ADD TOKEN". Click that.
-- Open the Custom Token tab and paste the token's address `0xbAA81A0179015bE47Ad439566374F2Bae098686F`. 
-- You might need to repeat this procedure for Bob.
 
 ## Start the operator
 
@@ -86,12 +74,26 @@ cd demo
 npm start
 ```
 
-## Using the control panel
+## Setting up the browser and Metamask
 
 - Point your browser to http://0.0.0.0:8000/
 - Metamask might pop up, asking you to unlock and/or give permissions to the page use it. Accept.
 - In your Metamask, add a custom network with RPC URL http://127.0.0.1:8545, and select this network
 - You should see the control panel with everything empty and zero. 
+
+By default the demo runs on `ganache`, with a mnemonic that creates a certain set of accounts. We'll use two of them. Import to your Metamask the following private keys (do not use these accounts on real networks):
+
+- Alice: `0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0`
+- Bob: `0xe5af7834455b7239881b85be89d905d6881dcb4751063897f12be1b0dd546bdb`
+
+The demo creates a demo unicorn token (🦄). Let's configure that to Metamask as well.
+
+- In Metamask, select Alice's account. 
+- Under the Menu icon, where you see your balances, you should see some ETH as well as (scroll down) a link to "ADD TOKEN". Click that.
+- Open the Custom Token tab and paste the token's address `0xbAA81A0179015bE47Ad439566374F2Bae098686F`. 
+- You might need to repeat this procedure for Bob.
+
+## Demo Walkthrough
 
 **Let's add some accounts to the revenue sharing pool:**
 
