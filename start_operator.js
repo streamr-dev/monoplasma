@@ -77,7 +77,7 @@ async function start() {
         privateKey = "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
         log("Starting Ethereum simulator...")
         const ganachePort = GANACHE_PORT || 8545
-        const ganacheLog = msg => { log(" Ganache> " + msg) }
+        const ganacheLog = msg => { log(" <Ganache> " + msg) }
         ganache = await require("./src/startGanache")(ganachePort, ganacheLog, error)
         ethereumServer = ganache.url
     }
@@ -105,9 +105,10 @@ async function start() {
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.operatorAddress = account.address
 
-    log("Starting the joinPartChannel")
+    log("Starting the joinPartChannel and Operator")
+    const adminChannel = new Channel()
+    adminChannel.startServer()
     const operatorChannel = new Channel()
-
     const operator = new Operator(web3, operatorChannel, config, fileStore, log, error)
     await operator.start()
 
@@ -115,15 +116,13 @@ async function start() {
     const port = WEBSERVER_PORT || 8080
     const serverURL = `http://localhost:${port}`
     const app = express()
-    const adminChannel = new Channel()
-    adminChannel.startServer()
     app.use(cors())
     app.use(bodyParser.json({limit: "50mb"}))
     app.use("/api", operatorRouter(operator.plasma.getMemberApi()))
     app.use("/admin", adminRouter(adminChannel))
     app.use("/demo", revenueDemoRouter(operator))
     app.use(express.static(path.join(__dirname, "demo/public")))
-    app.listen(port, () => log(`Revenue demo API started at ${serverURL}`))
+    app.listen(port, () => log(`Web server started at ${serverURL}`))
 
     log("[DONE]")
 }

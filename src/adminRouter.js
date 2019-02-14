@@ -24,7 +24,7 @@ module.exports = channel => {
             }
         }
         channel.publish("join", addresses)
-        res.set("Location", `${req.url}/${addresses[0].address}`).status(201).send({
+        res.set("Location", `${req.url}/${addresses[0].address || addresses[0]}`).status(201).send({
             status: "Join sent"
         })
     })
