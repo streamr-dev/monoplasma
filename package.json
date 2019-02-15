@@ -16,7 +16,6 @@
   "author": "",
   "license": "AGPL-3.0",
   "devDependencies": {
-    "await-timeout": "^0.3.0",
     "eslint": "^4.19.1",
     "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
