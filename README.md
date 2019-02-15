@@ -105,7 +105,6 @@ Now Bob is alone in the pool, and all revenue would be attributed to him. Let's 
 **Now you should have a bunch of people in the pool, with everything else zero. Let's add some revenue!**
 
 - Select Alice's account on Metamask. You might notice that she has 1 million 🦄 on her account.
-- Refresh the page just in case.
 - Metamask should pop up and ask you to confirm the transaction.
 - In the text field beside the "Add revenue" button, enter a number of tokens, for example 100000, and click the "Add revenue" button. This just transfers a number of 🦄 to the Monoplasma smart contract.
 
@@ -131,6 +130,5 @@ On-chain, all the tokens are in the Monoplasma smart contract. But off-chain, Bo
 
 ## Troubleshooting
 
-- When you switch accounts in Metamask, refresh the page. Otherwise you might encounter weird problems doing transactions.
 - If you stop the operator and your `ganache` was running implicitly within it, you can restart from scratch by doing a `npm run build && node start_operator.js`.
 - If you wipe the blockchain state by doing the above, Metamask will get thrown off if it's currently connected to the localhost network, because the blockchain state just vanished. It will recover if you temporarily select another network (such as mainnet) and then re-select the local network.
