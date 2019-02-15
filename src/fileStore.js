@@ -8,6 +8,7 @@ const {
 
 const log = QUIET ? () => {} : console.log
 const maxLogLen = MAX_BLOCK_LOG_ENTRY_LENGTH || 840
+const sanitize = logEntry => logEntry.length < maxLogLen ? logEntry : logEntry.slice(0, maxLogLen) + "... TOTAL LENGTH: " + logEntry.length
 
 /**
  * @typedef {Object} OperatorState
@@ -96,7 +97,7 @@ module.exports = (storeDir) => {
             if (!block || !block.blockNumber) { throw new Error(`Bad block: ${JSON.stringify(block)}`) }
             const path = getBlockPath(block.blockNumber)
             const raw = JSON.stringify(block)
-            log(`Saving block ${block.blockNumber} to ${path}: ${raw.length < maxLogLen ? raw : raw.slice(0, maxLogLen) + "... TOTAL LENGTH: " + raw.length}`)
+            log(`Saving block ${block.blockNumber} to ${path}: ${sanitize(raw)}`)
             if (await fs.exists(path)) { console.error(`Overwriting block ${block.blockNumber}!`) }
             return fs.writeFile(path, raw)
         },
@@ -121,7 +122,7 @@ module.exports = (storeDir) => {
             const path = getEventPath(blockNumber)
             const rawOld = await fs.readFile(path).catch(() => "[]")
             const oldEvents = JSON.parse(rawOld)
-            log(`Saving ${events.length} event(s like) ${JSON.stringify(events[0])} to ${path} (adding to ${oldEvents.length} events)`)
+            log(`Saving ${events.length} event(s like) ${sanitize(JSON.stringify(events[0]))} to ${path} (adding to ${oldEvents.length} events)`)
             const newEvents = oldEvents.concat(events)
             const raw = JSON.stringify(newEvents)
             return fs.writeFile(path, raw)
