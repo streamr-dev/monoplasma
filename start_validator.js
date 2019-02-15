@@ -31,9 +31,10 @@ function error() {
 const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/temp"
 const fileStore = require("./src/fileStore")(storeDir)
 
+// TODO: get rid of this copy hack; past events sync should happen through the monoplasmaRouter and HTTP
 const eventsDir = path.join(storeDir, "events")
 const pastEventsDir = fs.existsSync(PLAYBACK_EVENTS_DIR) ? PLAYBACK_EVENTS_DIR : __dirname + "/demo/public/data/events"
-log(`Copying past events ${pastEventsDir} -> ${eventsDir}`)
+log(`Channel playback hack: Copying past events ${pastEventsDir} -> ${eventsDir}`)
 fsEx.copySync(pastEventsDir, eventsDir)
 
 async function start() {
