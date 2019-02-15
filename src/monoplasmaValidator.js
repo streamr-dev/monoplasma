@@ -8,7 +8,12 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         this.watchedAccounts = watchedAccounts
         this.address = myAddress
         this.eventQueue = []
-        this.validatedPlasma = new Monoplasma(0, [], { saveBlock: async () => {} })
+        this.lastSavedBlock = null
+        this.validatedPlasma = new Monoplasma(0, [], {
+            saveBlock: async block => {
+                this.lastSavedBlock = block
+            }
+        })
     }
 
     async start() {
@@ -23,7 +28,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
     async checkBlock(block) {
         // add the block to store; this won't be done by Watcher because Operator does it now
         // TODO: move this to Watcher
-        const { blockNumber } = block
+        const blockNumber = +block.blockNumber
         this.plasma.storeBlock(blockNumber)
 
         // update the "validated" version to the block number whose hash was published
@@ -31,6 +36,8 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         this.lastCheckedBlock = blockNumber
 
         // check that the hash at that point in history matches
+        // TODO: get hash from this.lastSavedBlock
+        // TODO: if there's a Transfer after BlockCreated in same block, current approach breaks
         const hash = this.validatedPlasma.getRootHash()
         if (hash === block.rootHash) {
             this.log(`Root hash @ ${blockNumber} validated.`)

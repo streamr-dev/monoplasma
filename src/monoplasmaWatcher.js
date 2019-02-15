@@ -19,7 +19,7 @@ module.exports = class MonoplasmaWatcher {
         this.error = errorFunc || console.error
         this.explorerUrl = this.state.explorerUrl
         this.filters = {}
-        this.eventTxIndex = +new Date()
+        this.eventLogIndex = +new Date()
     }
 
     async start() {
@@ -51,7 +51,7 @@ module.exports = class MonoplasmaWatcher {
         this.log("Listening to Ethereum events...")
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
-            this.state.lastBlockNumber = event.blockNumber
+            this.state.lastBlockNumber = +event.blockNumber
             replayEvent(this.plasma, event).catch(this.error)
             this.store.saveState(this.state).catch(this.error)
         })
@@ -61,23 +61,25 @@ module.exports = class MonoplasmaWatcher {
         this.log("Listening to joins/parts from the Channel...")
         this.channel.listen()
         this.channel.on("join", addressList => {
-            const blockNumber = this.state.lastBlockNumber
+            const blockNumber = this.state.lastBlockNumber + 1
             const addedMembers = this.plasma.addMembers(addressList)
-            this.log(`Added or activated ${addedMembers.length} new member(s) at block ${blockNumber}`)
+            this.log(`Added or activated ${addedMembers.length} new member(s) before block ${blockNumber}`)
             this.store.saveEvents(blockNumber, {
                 blockNumber,
-                transactionIndex: this.eventTxIndex++,    // make sure join/part tx after real Ethereum tx but still is internally ordered
+                transactionIndex: -1,              // make sure join/part happens BEFORE real Ethereum tx
+                logIndex: this.eventLogIndex++,    // ... but still is internally ordered
                 event: "Join",
                 addressList: addedMembers,
             }).catch(this.error)
         })
         this.channel.on("part", addressList => {
-            const blockNumber = this.state.lastBlockNumber
+            const blockNumber = this.state.lastBlockNumber + 1
             const removedMembers = this.plasma.removeMembers(addressList)
-            this.log(`De-activated ${removedMembers.length} member(s) at block ${blockNumber}`)
+            this.log(`De-activated ${removedMembers.length} member(s) before block ${blockNumber}`)
             this.store.saveEvents(blockNumber, {
                 blockNumber,
-                transactionIndex: this.eventTxIndex++,
+                transactionIndex: -1,              // make sure join/part happens BEFORE real Ethereum tx
+                logIndex: this.eventLogIndex++,    // ... but still is internally ordered
                 event: "Part",
                 addressList: removedMembers,
             }).catch(this.error)
@@ -99,9 +101,9 @@ module.exports = class MonoplasmaWatcher {
         // TODO: include joinPartHistory in playback
         // TODO interim solution: take members from a recent block
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
+        const joinPartEvents = await this.store.loadEvents(fromBlock, toBlock)
         const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
-        const joinPartEvents = await this.store.loadEvents(fromBlock, toBlock)
         const ethereumEvents = mergeEventLists(blockCreateEvents, transferEvents)
         const allEvents = mergeEventLists(ethereumEvents, joinPartEvents)
         for (const event of allEvents) {

@@ -6,9 +6,9 @@ const { mergeEventLists } = require("../../src/ethSync")
 describe("mergeEventLists", () => {
     it("merges event lists correctly", () => {
         const events1 = [
-            { event: "A", blockNumber: 5, transactionIndex: 1, logIndex: 1 },
+            { event: "A", blockNumber: 5, transactionIndex: -1, logIndex: 1 },
             { event: "B", blockNumber: 6, transactionIndex: 1, logIndex: 1 },
-            { event: "C", blockNumber: 7, transactionIndex: 1, logIndex: 1 },
+            { event: "C", blockNumber: 7, transactionIndex: -1, logIndex: 1 },
             { event: "D", blockNumber: 8, transactionIndex: 1, logIndex: 1 },
             { event: "E", blockNumber: 9, transactionIndex: 1, logIndex: 1 },
         ]
@@ -20,7 +20,7 @@ describe("mergeEventLists", () => {
             { event: "5", blockNumber: 9, transactionIndex: 1, logIndex: 2 },
         ]
         const merged = mergeEventLists(events1, events2)
-        assert.strictEqual(merged.map(e => e.event).join(""), "123ABC4DE5")
+        assert.strictEqual(merged.map(e => e.event).join(""), "12A3BC4DE5")
     })
 
     it("handles empty lists correctly", () => {
