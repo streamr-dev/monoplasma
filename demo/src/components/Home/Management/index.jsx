@@ -33,6 +33,9 @@ class Management extends Component<Props, State> {
         const { addresses } = this.state
 
         onAddUsersClick(addresses.split(/[\r\n]/m).filter(Boolean))
+        this.setState({
+            addresses: '',
+        })
     }
 
     render() {
