@@ -17,7 +17,7 @@ export default (value: BN | number | string): string => {
         .reverse()
         .join('')
         .replace(/^,/, '') || '0'
-    const fraction = num.slice(18).replace(/0*$/, '')
+    const fraction = num.slice(18, 30 - int.length).replace(/0*$/, '')
         .replace(/\d{3}/g, '$&,')
         .replace(/,$/, '')
 
