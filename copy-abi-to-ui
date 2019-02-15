@@ -1,4 +1,0 @@
-#/bin/sh
-
-./node_modules/.bin/jq .abi build/contracts/DemoToken.json > demo/src/utils/tokenAbi.json
-./node_modules/.bin/jq .abi build/contracts/Monoplasma.json > demo/src/utils/monoplasmaAbi.json
