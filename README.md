@@ -33,7 +33,7 @@ The name was so chosen because we wanted a sidechain to handle the token distrib
 
 ## Attacks
 
-Main threat scenario: plasma side-chain operator creates a sock-puppet account, assigns it infinity tokens, publishes the hash, and drains the [root chain contract](contracts/SidechainCommunity.sol) by withdrawing. To combat this, there's a freeze period after the side chain block hash is published. In case of faulty or missing (withheld) side chain block contents, everyone can exit using old unfrozen root hashes.
+Main threat scenario: plasma side-chain operator creates a sock-puppet account, assigns it infinity tokens, publishes the hash, and drains the root chain contract by withdrawing. To combat this, there's a freeze period after the side chain block hash is published. In case of faulty or missing (withheld) side chain block contents, everyone can exit using old unfrozen root hashes.
 
 There could be fraud proofs for this particular scenario: (interactive) proof that sum of balances is greater than amount of tokens held in the root chain contract; proof that a particular balance decreased; etc.
 
