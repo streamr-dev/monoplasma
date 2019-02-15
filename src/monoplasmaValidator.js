@@ -34,11 +34,11 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         // check that the hash at that point in history matches
         const hash = this.validatedPlasma.getRootHash()
         if (hash === block.rootHash) {
-            this.log(`Root hash @ ${blockNum} validated.`)
-            this.lastValidatedBlock = blockNum
+            this.log(`Root hash @ ${blockNumber} validated.`)
+            this.lastValidatedBlock = blockNumber
             this.lastValidatedProofs = this.watchedAccounts.map(this.validatedPlasma.getMember)
         } else {
-            this.log(`Discrepancy detected @ ${blockNum}!`)
+            this.log(`Discrepancy detected @ ${blockNumber}!`)
             // TODO: recovery attempt logic before gtfo and blowing up everything?
             // TODO: needs more research into possible and probable failure modes
             await this.exit(this.lastValidatedBlock, this.lastValidatedProofs)
