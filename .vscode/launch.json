@@ -97,36 +97,6 @@
             "request": "launch",
             "name": "Start Monoplasma validator",
             "program": "${workspaceFolder}/start_validator.js"
-        }, {
-            "type": "node",
-            "request": "launch",
-            "name": "Start airdrop (simulated)",
-            "program": "${workspaceFolder}/start_airdrop.js",
-            "env": {
-                "INPUT_FILE": "10_addresses.txt"
-            }
-        }, {
-            "type": "node",
-            "request": "launch",
-            "name": "Start airdrop (local)",
-            "program": "${workspaceFolder}/start_airdrop.js",
-            "env": {
-                "ETHEREUM_SERVER": "http://localhost:8545",
-                "ETHEREUM_PRIVATE_KEY": "0xe5af7834455b7239881b85be89d905d6881dcb4751063897f12be1b0dd546bdb",
-                "INPUT_FILE": "10_addresses.txt"
-            }
-        }, {
-            "type": "node",
-            "request": "launch",
-            "name": "Start airdrop (rinkeby)",
-            "program": "${workspaceFolder}/start_airdrop.js",
-            "env": {
-                "ETHEREUM_NETWORK_ID": "4",
-                "ETHEREUM_PRIVATE_KEY": "0x6E340F41A1C6E03E6E0A4E9805D1CEA342F6A299E7C931D6F3DA6DD34CB6E17D",
-                "TOKEN_ADDRESS": "0x0c89795f75eEA923Cd1faEea50777c1B87787A06",
-                "CONTRACT_ADDRESS": "0x430ba685740fd234399Dd2757b2c9795d1B9F669",
-                "INPUT_FILE": "10_addresses.txt"
-            }
         }
     ]
 }
