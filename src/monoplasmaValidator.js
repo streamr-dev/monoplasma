@@ -73,13 +73,16 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         // TODO: Investigate and compare
         //return Promise.all(members.map(m => contract.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)))
         for (const m of members) {
-            await this.contract.methods.proveSidechainBalance(blockNumber, m.address, m.earnings, m.proof).send(opts)
+            this.log(`Recording the earnings for ${m.address}: ${m.earnings}`)
+            await this.contract.methods.proveSidechainBalance(blockNumber, m.address, m.earnings, m.proof).send(opts).catch(console.error)
         }
     }
 
     // TODO: validate also during playback? That would happen automagically if replayEvents would be hooked somehow
-    async playback(...args) {
-        await super.playback(...args)
+    async playback(from, to) {
+        await super.playback(from, to)
         this.validatedPlasma = new Monoplasma(0, this.plasma.getMembers(), this.validatedPlasma.store)
+        this.lastValidatedBlock = to
+        this.lastValidatedMembers = this.watchedAccounts.map(address => this.validatedPlasma.getMember(address))
     }
 }

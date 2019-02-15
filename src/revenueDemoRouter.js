@@ -29,9 +29,7 @@ module.exports = operator => {
             const fakePlasma = new Monoplasma(0, [{
                 address,
                 earnings: tokens,
-            }], {
-                saveBlock: () => {}
-            })
+            }], operator.store)
             proof = fakePlasma.getProof(address)        // should be just ["0x0"]
             console.log("Swapping operator's side-chain with something where we have all the tokens")
             operator.plasma = fakePlasma
