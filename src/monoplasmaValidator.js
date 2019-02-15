@@ -1,34 +1,46 @@
 const Monoplasma = require("./monoplasma")
 const MonoplasmaWatcher = require("./monoplasmaWatcher")
-const { replayEvents } = require("./ethSync")
+const { replayEvent } = require("./ethSync")
 const partition = require("./partitionArray")
 
-module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
+module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
     constructor(watchedAccounts, myAddress, ...args) {
         super(...args)
 
         this.watchedAccounts = watchedAccounts
         this.address = myAddress
         this.eventQueue = []
-        this.validatedPlasma = new Monoplasma()
+        const self = this
+        this.validatedPlasma = new Monoplasma(0, [], {
+            saveBlock: async () => {},
+            saveEvents: (blockNumber, event) => {
+                self.eventQueue.push(event)
+            }
+        })
     }
 
     async start() {
         await super.start()
 
-        this.filters.blockFilter = this.contract.events.BlockCreated({})
-            .on("data", event => { this.checkBlock(event.arguments) })
-            .on("changed", event => { this.error("Event removed in re-org!", event) })
-            .on("error", this.error)
-
-        // TODO: listener for all events: this.eventQueue.push(event)
+        this.log("Starting validator's listeners")
+        this.contract.events.BlockCreated({}, (error, event) => this.checkBlock(event.returnValues))
+        const self = this
+        this.token.events.Transfer({ filter: { to: this.state.contractAddress } },
+            (error, event) => self.eventQueue.push(event)
+        )
     }
 
     async checkBlock(block) {
-        // update the "validated" version to the block number whose hash was published
+        // add the block to store; this won't be done by Watcher because Operator does it now
+        // TODO: move this to Watcher
         const { blockNumber } = block
+        this.plasma.storeBlock(blockNumber)
+
+        // update the "validated" version to the block number whose hash was published
         const [events, remaining] = partition(this.eventQueue, e => e.blockNumber <= blockNumber)
-        replayEvents(this.validatedPlasma, events)
+        for (const event of events) {
+            await replayEvent(this.validatedPlasma, event)
+        }
         this.eventQueue = remaining
 
         // check that the hash at that point in history matches
@@ -36,12 +48,12 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         if (hash === block.rootHash) {
             this.log(`Root hash @ ${blockNumber} validated.`)
             this.lastValidatedBlock = blockNumber
-            this.lastValidatedProofs = this.watchedAccounts.map(this.validatedPlasma.getMember)
+            this.lastValidatedMembers = this.watchedAccounts.map(address => this.validatedPlasma.getMember(address))
         } else {
             this.log(`Discrepancy detected @ ${blockNumber}!`)
             // TODO: recovery attempt logic before gtfo and blowing up everything?
             // TODO: needs more research into possible and probable failure modes
-            await this.exit(this.lastValidatedBlock, this.lastValidatedProofs)
+            await this.exit(this.lastValidatedBlock, this.lastValidatedMembers)
         }
     }
 
@@ -57,16 +69,16 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         }
 
         // There should be no hurry, so sequential execution is ok, and it might hurt to send() all at once.
-        // TODO: Investigate
-        //return Promise.all(members.map(m => community.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)))
+        // TODO: Investigate and compare
+        //return Promise.all(members.map(m => contract.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)))
         for (const m of members) {
-            await this.community.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)
+            await this.contract.methods.proveSidechainBalance(blockNumber, m.address, m.earnings, m.proof).send(opts)
         }
     }
 
-    // TODO: validate also during playback
+    // TODO: validate also during playback? That would happen automagically if replayEvents would be hooked somehow
     async playback(...args) {
         super.playback(args)
-        this.validatedPlasma = new Monoplasma(this.plasma.getMembers())
+        this.validatedPlasma = new Monoplasma(0, this.plasma.getMembers(), this.validatedPlasma.store)
     }
 }

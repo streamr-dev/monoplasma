@@ -8,7 +8,7 @@ module.exports = async function startGanache(port, log, error, timeoutMs) {
     log = log || console.log
     error = error || log || console.error
     port = port || 8545
-    const ganache = spawn(process.execPath, ["./node_modules/.bin/ganache-cli", "-m", "testrpc", "-p", port])
+    const ganache = spawn(process.execPath, ["./node_modules/.bin/ganache-cli", "-m", "testrpc", "-p", port]) // "-b", "1"  // to generate blocks every second instead of after each tx
     function onClose(code) { error(new Error("Ganache ethereum simulator exited with code " + code)) }
     ganache.on("close", onClose)
     function shutdown() {

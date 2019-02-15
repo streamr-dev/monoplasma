@@ -36,6 +36,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
     uint public totalWithdrawn;
+    uint public totalVerified;
 
     IERC20 public token;
 
@@ -58,11 +59,13 @@ contract Monoplasma is AbstractRootChain, Ownable {
      *   or just "cement" the earnings so far into root chain even without withdrawing
      *   (though it's probably a lot more expensive than withdrawing itself...)
      */
-    function onVerifySuccess(uint blockNumber, address account, uint totalEarnings) internal {
+    function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
         uint blockFreezeStart = blockTimestamp[blockNumber];
         require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
-        require(earnings[account] < totalEarnings, "error_oldEarnings");
-        earnings[account] = totalEarnings;
+        require(earnings[account] < newEarnings, "error_oldEarnings");
+        totalVerified = totalVerified.add(newEarnings).sub(earnings[account]);
+        require(totalVerified <= token.balanceOf(this), "error_missingBalance");
+        earnings[account] = newEarnings;
     }
 
     /**

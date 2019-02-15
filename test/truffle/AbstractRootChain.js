@@ -8,7 +8,7 @@ const { assertEqual, assertFails } = require("../utils/web3Assert")
 
 const MonoplasmaMember = require("../../src/monoplasmaMember")
 const Monoplasma = require("../../src/monoplasma")
-const plasma = new Monoplasma()
+const plasma = new Monoplasma(0, [], { saveBlock: () => {} })
 
 const MerkleTree = require("../../src/merkletree")
 

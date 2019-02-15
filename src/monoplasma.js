@@ -16,7 +16,7 @@ class Monoplasma {
     /**
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      */
-    constructor(initialMembers, store, blockFreezeSeconds) {
+    constructor(blockFreezeSeconds, initialMembers, store) {
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }

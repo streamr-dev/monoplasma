@@ -39,6 +39,8 @@ const {
     // if ETHEREUM_SERVER isn't specified, start a local Ethereum simulator (Ganache) in given port
     GANACHE_PORT,
 
+    JOIN_PART_CHANNEL_PORT,
+
     // web UI for revenue sharing demo
     WEBSERVER_PORT,
     // don't launch web server in start_operator script
@@ -106,9 +108,9 @@ async function start() {
     config.operatorAddress = account.address
 
     log("Starting the joinPartChannel and Operator")
-    const adminChannel = new Channel()
+    const adminChannel = new Channel(JOIN_PART_CHANNEL_PORT)
     adminChannel.startServer()
-    const operatorChannel = new Channel()
+    const operatorChannel = new Channel(JOIN_PART_CHANNEL_PORT)
     const operator = new Operator(web3, operatorChannel, config, fileStore, log, error)
     await operator.start()
 

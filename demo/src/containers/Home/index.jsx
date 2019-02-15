@@ -20,7 +20,7 @@ import monoplasmaAbi from '../../utils/monoplasmaAbi'
 // TODO: move to where network is checked. This actually should depend on chosen network.
 const etherscanUrl = 'http://rinkeby.infura.io'
 
-const MINT_TOKEN_AMOUNT = Eth.toWei('10000', 'ether')
+const MINT_TOKEN_AMOUNT = Eth.toWei('1000000', 'ether')
 
 type Props = WalletContextProps & {}
 

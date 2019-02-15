@@ -1,5 +1,5 @@
 const Monoplasma = require("./monoplasma")
-const { throwIfSetButNotContract, mergeEventLists } = require("./ethSync")
+const { replayEvent, throwIfSetButNotContract, mergeEventLists } = require("./ethSync")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
@@ -19,6 +19,7 @@ module.exports = class MonoplasmaWatcher {
         this.error = errorFunc || console.error
         this.explorerUrl = this.state.explorerUrl
         this.filters = {}
+        this.eventTxIndex = +new Date()
     }
 
     async start() {
@@ -33,7 +34,7 @@ module.exports = class MonoplasmaWatcher {
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
-        this.plasma = new Monoplasma(savedMembers, this.store, this.state.blockFreezeSeconds)
+        this.plasma = new Monoplasma(this.state.blockFreezeSeconds, savedMembers, this.store)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -51,9 +52,7 @@ module.exports = class MonoplasmaWatcher {
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
             this.state.lastBlockNumber = event.blockNumber
-            const income = event.returnValues.value
-            this.log(`${income} tokens received`)
-            this.plasma.addRevenue(income)
+            replayEvent(this.plasma, event).catch(this.error)
             this.store.saveState(this.state).catch(this.error)
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
@@ -62,10 +61,12 @@ module.exports = class MonoplasmaWatcher {
         this.log("Listening to joins/parts from the Channel...")
         this.channel.listen()
         this.channel.on("join", addressList => {
-            const bnum = this.state.lastBlockNumber
+            const blockNumber = this.state.lastBlockNumber
             const addedMembers = this.plasma.addMembers(addressList)
-            this.log(`Added or activated ${addedMembers.length} new member(s) at block ${bnum}`)
-            this.store.saveEvents(bnum, {
+            this.log(`Added or activated ${addedMembers.length} new member(s) at block ${blockNumber}`)
+            this.store.saveEvents(blockNumber, {
+                blockNumber,
+                transactionIndex: this.eventTxIndex++,    // make sure join/part tx after real Ethereum tx but still is internally ordered
                 event: "Join",
                 addressList: addedMembers,
             })
@@ -76,6 +77,7 @@ module.exports = class MonoplasmaWatcher {
             this.log(`De-activated ${removedMembers.length} member(s) at block ${blockNumber}`)
             this.store.saveEvents(blockNumber, {
                 blockNumber,
+                transactionIndex: this.eventTxIndex++,
                 event: "Part",
                 addressList: removedMembers,
             })
@@ -99,30 +101,7 @@ module.exports = class MonoplasmaWatcher {
         const ethereumEvents = mergeEventLists(blockCreateEvents, transferEvents)
         const allEvents = mergeEventLists(ethereumEvents, joinPartEvents)
         for (const event of allEvents) {
-            switch (event.event) {
-                // event Transfer(address indexed from, address indexed to, uint256 value);
-                case "Transfer": {
-                    const { value } = event.returnValues
-                    this.log(`Playback: ${value} tokens received @ block ${event.blockNumber}`)
-                    this.plasma.addRevenue(value)
-                } break
-                // event BlockCreated(uint blockNumber, bytes32 rootHash, string ipfsHash);
-                case "BlockCreated": {
-                    const { blockNumber } = event.returnValues
-                    await this.plasma.storeBlock(blockNumber)
-                } break
-                case "Join": {
-                    const { addressList } = event
-                    this.plasma.addMembers(addressList)
-                } break
-                case "Part": {
-                    const { addressList } = event
-                    this.plasma.removeMembers(addressList)
-                } break
-                default: {
-                    this.error(`Unexpected event: ${JSON.stringify(event)}`)
-                }
-            }
+            await replayEvent(this.plasma, event)
         }
     }
 

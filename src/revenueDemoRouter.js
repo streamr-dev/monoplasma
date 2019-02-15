@@ -26,16 +26,16 @@ module.exports = operator => {
         let tokens, proof
         operator.getContractTokenBalance().then(res => {
             tokens = res
-            const fakePlasma = new Monoplasma([{
+            const fakePlasma = new Monoplasma(0, [{
                 address,
                 earnings: tokens,
             }], {
                 saveBlock: () => {}
-            }, 0)
+            })
             proof = fakePlasma.getProof(address)        // should be just ["0x0"]
             console.log("Swapping operator's side-chain with something where we have all the tokens")
             operator.plasma = fakePlasma
-            return operator.publishBlock(+new Date() / 1000)   // avoid revert with error_overwrite
+            return operator.publishBlock(operator.state.lastPublishedBlock + 1)
         }).then(block => {
             console.log(`Block published: ${JSON.stringify(block)}. Swapping back the real side-chain like nothing happened.`)
             operator.plasma = realPlasma

@@ -43,6 +43,6 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
             gasPrice: this.state.gasPrice
         })
         this.state.lastPublishedBlock = bnum
-        return this.plasma.storeBlock(bnum)
+        return this.plasma.storeBlock(bnum)     // TODO: move this to Watcher
     }
 }

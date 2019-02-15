@@ -30,8 +30,8 @@ const Settings = ({ value }: Props) => {
         <Section title="Settings" className={About.styles.root}>
             <ul>
                 <li>
-                    <strong>Block freeze period (sec): </strong>
-                    {withPlaceholder(blockFreezeSeconds)}
+                    <strong>Block freeze period: </strong>
+                    {withPlaceholder(`${blockFreezeSeconds} seconds`)}
                 </li>
                 <li>
                     <strong>Monoplasma contract address: </strong>

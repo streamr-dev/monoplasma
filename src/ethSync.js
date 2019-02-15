@@ -4,6 +4,34 @@ const {
 
 const log = QUIET ? () => {} : console.log
 
+async function replayEvent(plasma, event) {
+    switch (event.event) {
+        // event Transfer(address indexed from, address indexed to, uint256 value);
+        case "Transfer": {
+            const { value } = event.returnValues
+            log(`${value} tokens received @ block ${event.blockNumber}`)
+            plasma.addRevenue(value)
+        } break
+        // event BlockCreated(uint blockNumber, bytes32 rootHash, string ipfsHash);
+        case "BlockCreated": {
+            const { blockNumber } = event.returnValues
+            log(`Storing block ${blockNumber}`)
+            await plasma.storeBlock(blockNumber)
+        } break
+        case "Join": {
+            const { addressList } = event
+            plasma.addMembers(addressList)
+        } break
+        case "Part": {
+            const { addressList } = event
+            plasma.removeMembers(addressList)
+        } break
+        default: {
+            log(`WARNING: Unexpected event: ${JSON.stringify(event)}`)
+        }
+    }
+}
+
 /** "empty", for the purposes of event lists */
 function empty(x) {
     return !Array.isArray(x) || x.length < 1
@@ -42,31 +70,6 @@ function mergeEventLists(events1, events2) {
     }
 }
 
-function replayEvent(plasma, e) {
-    switch (e.event) {
-        case "RecipientAdded": {
-            log(` + ${e.returnValues.recipient} joined`)
-            plasma.addMember(e.returnValues.recipient)
-            break
-        }
-        case "RecipientRemoved": {
-            log(` - ${e.returnValues.recipient} left`)
-            plasma.removeMember(e.returnValues.recipient)
-            break
-        }
-        case "Transfer": {
-            log(`${e.returnValues.value} tokens received`)
-            const income = e.returnValues.value
-            plasma.addRevenue(income)
-            break
-        }
-    }
-}
-
-function replayEvents(plasma, events) {
-    events.forEach(replayEvent.bind(null, plasma))
-}
-
 const now = () => Math.floor(+new Date() / 1000)
 
 // network ids: 1 = mainnet, 2 = morden, 3 = ropsten, 4 = rinkeby (current testnet)
@@ -95,7 +98,6 @@ async function throwIfNotContract(web3, address, context) {
 module.exports = {
     mergeEventLists,
     replayEvent,
-    replayEvents,
     now,
     defaultServers,
     throwIfNotContract,

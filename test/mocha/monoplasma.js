@@ -13,10 +13,10 @@ const fileStore = require("../../src/fileStore")(tmpDir)
 
 describe("Monoplasma", () => {
     it("should return member passed to constructor and then remove it successfully", () => {
-        const plasmaAdmin = new Monoplasma([{
+        const plasmaAdmin = new Monoplasma(0, [{
             address: "0xff019d79c31114c811e68e68c9863966f22370ef",
             earnings: 10
-        }])
+        }], fileStore)
         assert.deepStrictEqual(plasmaAdmin.getMembers(), [{
             address: "0xff019d79c31114c811e68e68c9863966f22370ef",
             earnings: "10",
@@ -26,7 +26,7 @@ describe("Monoplasma", () => {
     })
 
     it("should return correct members and member count", () => {
-        const plasma = new Monoplasma([], fileStore)
+        const plasma = new Monoplasma(0, [], fileStore)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -51,12 +51,12 @@ describe("Monoplasma", () => {
                 earnings: 0,
             })
         }
-        const plasma = new Monoplasma(initialMembers, fileStore)
+        const plasma = new Monoplasma(0, initialMembers, fileStore)
         plasma.addRevenue(100)
     })
 
     it("should remember past blocks' earnings", async () => {
-        const plasma = new Monoplasma([], fileStore)
+        const plasma = new Monoplasma(0, [], fileStore)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -75,7 +75,7 @@ describe("Monoplasma", () => {
     })
 
     it("should remember past blocks' proofs", async () => {
-        const plasma = new Monoplasma([], fileStore)
+        const plasma = new Monoplasma(0, [], fileStore)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -95,7 +95,7 @@ describe("Monoplasma", () => {
     describe("getMemberApi", () => {
         let plasma
         beforeEach(() => {
-            const plasmaAdmin = new Monoplasma()
+            const plasmaAdmin = new Monoplasma(0, [], fileStore)
             plasmaAdmin.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
             plasmaAdmin.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
             plasmaAdmin.addRevenue(100)
