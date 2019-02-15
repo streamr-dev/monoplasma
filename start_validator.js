@@ -1,6 +1,8 @@
 const fs = require("mz/fs")
-const prettyjson = require("prettyjson")
+const fsEx = require("fs-extra")
+const path = require("path")
 
+const prettyjson = require("prettyjson")
 const Web3 = require("web3")
 
 const Validator = require("./src/monoplasmaValidator")
@@ -16,6 +18,7 @@ const {
     ETHEREUM_PRIVATE_KEY,
     WATCHED_ACCOUNTS,
     STORE_DIR,
+    PLAYBACK_EVENTS_DIR,
     QUIET,
 } = process.env
 
@@ -27,6 +30,11 @@ function error() {
 
 const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/temp"
 const fileStore = require("./src/fileStore")(storeDir)
+
+const eventsDir = path.join(storeDir, "events")
+const pastEventsDir = fs.existsSync(PLAYBACK_EVENTS_DIR) ? PLAYBACK_EVENTS_DIR : __dirname + "/demo/public/data/events"
+log(`Copying past events ${pastEventsDir} -> ${eventsDir}`)
+fsEx.copySync(pastEventsDir, eventsDir)
 
 async function start() {
     const config = CONFIG_JSON ? JSON.parse(CONFIG_JSON)

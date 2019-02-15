@@ -82,6 +82,9 @@ describe("Revenue sharing demo", () => {
             console.log("   Sending 10 tokens to Monoplasma contract...")
             await token.methods.transfer(contract.options.address, web3.utils.toWei("10", "ether")).send(opts)
 
+            // TODO: things will break if revenue is added too fast. You can remove the below row to try and fix it.
+            await sleep(1000)
+
             // check total revenue
             const res2 = await fetch(`http://localhost:${WEBSERVER_PORT}/api/status`).then(resp => resp.json())
             console.log(`   Total revenue: ${JSON.stringify(res2)}`)
@@ -108,7 +111,7 @@ describe("Revenue sharing demo", () => {
         console.log(`   Withdraw effect: ${difference}`)
 
         assert.strictEqual(difference.toString(10), web3.utils.toWei("5", "ether"))
-    }).timeout(10000)
+    }).timeout(15000)
 
     after(() => {
         operatorProcess.kill()

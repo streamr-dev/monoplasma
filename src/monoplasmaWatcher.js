@@ -92,6 +92,10 @@ module.exports = class MonoplasmaWatcher {
     }
 
     async playback(fromBlock, toBlock) {
+        await this.playbackOn(this.plasma, fromBlock, toBlock)
+    }
+
+    async playbackOn(plasma, fromBlock, toBlock) {
         // TODO: include joinPartHistory in playback
         // TODO interim solution: take members from a recent block
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
@@ -101,7 +105,7 @@ module.exports = class MonoplasmaWatcher {
         const ethereumEvents = mergeEventLists(blockCreateEvents, transferEvents)
         const allEvents = mergeEventLists(ethereumEvents, joinPartEvents)
         for (const event of allEvents) {
-            await replayEvent(this.plasma, event)
+            await replayEvent(plasma, event)
         }
     }
 
