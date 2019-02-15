@@ -4,6 +4,7 @@ const fs = require("mz/fs")
 const util = require("util")
 const exec = util.promisify(require("child_process").exec)
 const { spawn } = require("child_process")
+const Timeout = require("await-timeout")
 
 const Web3 = require("web3")
 
@@ -22,18 +23,46 @@ const fetch = require("node-fetch")
 const STORE_DIR = __dirname + `/test-store-${+new Date()}`
 const GANACHE_PORT = 8586
 const WEBSERVER_PORT = 3030
+const BLOCK_FREEZE_SECONDS = 5
 
-const from = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
+const fromAddress = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
+const toAddress = "0x4178baBE9E5148c6D5fd431cD72884B07Ad855a0"
 
 const { loadState } = require("../../src/fileStore")(STORE_DIR)
 
+function getStatus() {
+    return fetch(`http://localhost:${WEBSERVER_PORT}/api/status`).then(resp => resp.json())
+}
+
+function getMemberStatus(address) {
+    return fetch(`http://localhost:${WEBSERVER_PORT}/api/members/${address}`).then(resp => resp.json())
+}
+
+function addMembers(listOfAddresses) {
+    return fetch(`http://localhost:${WEBSERVER_PORT}/admin/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(listOfAddresses),
+    }).then(resp => resp.json())
+}
+
 describe("Revenue sharing demo", () => {
+
+    let operatorProcess
+
+    afterEach(() => {
+        if (operatorProcess) {
+            operatorProcess.kill()
+        }
+    })
+
     it("should run the happy path demo", async () => {
         console.log("--- Running start_operator.js ---")
-        const operatorProcess = spawn(process.execPath, ["start_operator.js"], { env: {
+        operatorProcess = spawn(process.execPath, ["start_operator.js"], { env: {
             STORE_DIR,
             GANACHE_PORT,
             WEBSERVER_PORT,
+            BLOCK_FREEZE_SECONDS,
             RESET: "yesplease"
         }})
         operatorProcess.stdout.on("data", data => { console.log(`<op> ${data.toString().trim()}`) })
@@ -51,13 +80,17 @@ describe("Revenue sharing demo", () => {
         const token = new web3.eth.Contract(TokenJson.abi, state.tokenAddress)
 
         const opts = {
-            from,
+            from: fromAddress,
             gas: 4000000,
             gasPrice: 4000000000,
         }
 
+        // Check that our to address doesn't have tokens in the beginning
+        const balanceBefore = await token.methods.balanceOf(toAddress).call()
+        assert.equal(balanceBefore, 0)
+
         console.log("1) click 'Add users' button")
-        const userList = [from,
+        const userList = [toAddress,
             "0xeabe498c90fb31f6932ab9da9c4997a6d9f18639",
             "0x4f623c9ef67b1d9a067a8043344fb80ae990c734",
             "0xbb0965a38fcd97b6f34b4428c4bb32875323e012",
@@ -68,38 +101,49 @@ describe("Revenue sharing demo", () => {
             "0x3ea97ad9b624acd8784011c3ebd0e07557804e45",
             "0x4d4bb0980c214b8f4e24d7d58ccf5f8a92f70d76",
         ]
-        const res1 = await fetch(`http://localhost:${WEBSERVER_PORT}/admin/members`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(userList),
-        }).then(resp => resp.json())
+        const res1 = await addMembers(userList)
         console.log(`   Server response: ${JSON.stringify(res1)}`)
 
         console.log("   check that there are new users in community")
-        const res1b = await fetch(`http://localhost:${WEBSERVER_PORT}/api/status`).then(resp => resp.json())
+        const res1b = await getStatus()
         console.log(`      Status: ${JSON.stringify(res1b)}`)
+        assert.equal(res1b.memberCount.total, userList.length)
 
         console.log("2) click 'Add revenue' button a couple times")
         for (let i = 0; i < 5; i++) {
             console.log("   Sending 10 tokens to Monoplasma contract...")
             await token.methods.transfer(contract.options.address, web3.utils.toWei("10", "ether")).send(opts)
 
-            // check total revenue
-            const res2 = await fetch(`http://localhost:${WEBSERVER_PORT}/api/status`).then(resp => resp.json())
-            console.log(`   Total revenue: ${JSON.stringify(res2)}`)
+            // TODO: things will break if revenue is added too fast. You can remove the below row to try and fix it.
+            await Timeout.set(2000)
         }
 
+        // check total revenue
+        const res2 = await getStatus()
+        console.log(`   Total revenue: ${JSON.stringify(res2)}`)
+        assert.equal(res2.totalEarnings, "50000000000000000000")
+
         console.log("3) click 'View' button")
-        const res3 = await fetch(`http://localhost:${WEBSERVER_PORT}/api/members/${from}`).then(resp => resp.json())
+        const res3 = await getMemberStatus(fromAddress)
         console.log(res3)
-        /*
+
+        // Wait for the revenue to unfreeze before attempting to withdraw
+        let res4
+        while (!res4 || !res4.withdrawableBlockNumber || res4.frozenEarnings !== "0") {
+            res4 = await getMemberStatus(toAddress)
+            console.log(`Waiting for earnings to be unfrozen. Frozen: : ${res4.frozenEarnings}`)
+            await Timeout.set(1000)
+        }
+
         // 4) click "Withdraw button"
-        await contract.methods.withdrawAll(res3.blockNumber, res3.earnings, res3.proof).send(opts)
+        await contract.methods.withdrawAll(res4.withdrawableBlockNumber, res4.withdrawableEarnings, res4.proof).send(Object.assign(opts, {
+            from: toAddress
+        }))
+        await Timeout.set(2000)
 
         // check that we got the tokens
-        const balanceAfter = await token.methods.balanceOf(from).call()
-        console.log(balanceAfter)
-        */
-        operatorProcess.kill()
-    })//.timeout(5000)
+        const balanceAfter = await token.methods.balanceOf(toAddress).call()
+        assert.equal(balanceAfter, "5000000000000000000")
+
+    }).timeout(60 * 1000)
 })

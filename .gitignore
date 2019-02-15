@@ -2,3 +2,4 @@ node_modules
 .idea/workspace.xml
 build/contracts
 static_web/airdrop/0x*
+test/e2e/test-store-*

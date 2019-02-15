@@ -11,11 +11,12 @@
     "test-e2e": "./node_modules/.bin/mocha test/e2e  --exit",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
-    "clean": "rm -f build/contracts/* && rm -rf demo/public/data/* && rm -rf static_web/airdrop/0x*"
+    "clean": "rm -f build/contracts/* && rm -rf demo/public/data/*"
   },
   "author": "",
   "license": "AGPL-3.0",
   "devDependencies": {
+    "await-timeout": "^0.3.0",
     "eslint": "^4.19.1",
     "jq-cli-wrapper": "^1.0.2",
     "mocha": "^5.2.0",
