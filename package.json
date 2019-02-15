@@ -7,8 +7,8 @@
     "lint": "./node_modules/.bin/eslint src static_web/js",
     "build": "npm run clean && truffle compile && ./flatten && ./copy-abi-to-ui.js",
     "build-demo": "cd demo && npm i && npm run build",
-    "test-js": "./node_modules/.bin/mocha test/mocha test/utils-test --exit",
-    "test-e2e": "./node_modules/.bin/mocha test/e2e  --exit",
+    "test-js": "./node_modules/.bin/mocha test/mocha --exit",
+    "test-e2e": "./node_modules/.bin/mocha test/e2e --exit",
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -rf demo/public/data/*"
