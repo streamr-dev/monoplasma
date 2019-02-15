@@ -105,6 +105,7 @@ async function start() {
     config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, opts, log)
     config.ethereumServer = ethereumServer
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
+    config.channelPort = JOIN_PART_CHANNEL_PORT
     config.operatorAddress = account.address
 
     log("Starting the joinPartChannel and Operator")

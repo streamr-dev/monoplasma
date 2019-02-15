@@ -23,8 +23,9 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         await super.start()
 
         this.log("Starting validator's listeners")
-        this.contract.events.BlockCreated({}, (error, event) => this.checkBlock(event.returnValues))
         const self = this
+        const blockFilter = this.contract.events.BlockCreated({})
+        blockFilter.on("data", event => self.checkBlock(event.returnValues).catch(this.error))
         this.token.events.Transfer({ filter: { to: this.state.contractAddress } },
             (error, event) => self.eventQueue.push(event)
         )
@@ -50,7 +51,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
             this.lastValidatedBlock = blockNumber
             this.lastValidatedMembers = this.watchedAccounts.map(address => this.validatedPlasma.getMember(address))
         } else {
-            this.log(`Discrepancy detected @ ${blockNumber}!`)
+            this.log(`WARNING: Discrepancy detected @ ${blockNumber}!`)
             // TODO: recovery attempt logic before gtfo and blowing up everything?
             // TODO: needs more research into possible and probable failure modes
             await this.exit(this.lastValidatedBlock, this.lastValidatedMembers)
@@ -78,7 +79,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
 
     // TODO: validate also during playback? That would happen automagically if replayEvents would be hooked somehow
     async playback(...args) {
-        super.playback(args)
+        await super.playback(...args)
         this.validatedPlasma = new Monoplasma(0, this.plasma.getMembers(), this.validatedPlasma.store)
     }
 }

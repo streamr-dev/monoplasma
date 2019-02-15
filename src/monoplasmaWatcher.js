@@ -69,7 +69,7 @@ module.exports = class MonoplasmaWatcher {
                 transactionIndex: this.eventTxIndex++,    // make sure join/part tx after real Ethereum tx but still is internally ordered
                 event: "Join",
                 addressList: addedMembers,
-            })
+            }).catch(this.error)
         })
         this.channel.on("part", addressList => {
             const blockNumber = this.state.lastBlockNumber
@@ -80,7 +80,7 @@ module.exports = class MonoplasmaWatcher {
                 transactionIndex: this.eventTxIndex++,
                 event: "Part",
                 addressList: removedMembers,
-            })
+            }).catch(this.error)
         })
 
         await this.store.saveState(this.state)

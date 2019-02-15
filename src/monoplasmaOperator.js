@@ -13,7 +13,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
 
     async start() {
         await super.start()
-        this.tokenFilter.on("data", event => { this.onTokensReceived(event) })
+        this.tokenFilter.on("data", event => { this.onTokensReceived(event).catch(this.error) })
     }
 
     // TODO: block publishing should be based on value-at-risk, that is, publish after so-and-so many tokens received
