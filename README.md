@@ -100,7 +100,7 @@ The demo creates a demo unicorn token (🦄). Let's configure that to Metamask a
 - Copy paste Bob's address `0x4178baBE9E5148c6D5fd431cD72884B07Ad855a0` to the textbox under "Management", and click the "Add users" button.
 - You should see the "Members" number under "Revenue pool" is now 1.
 
-Now Bob is alone in the pool, and all revenue would be attributed to him. Let's add him some company! You can add whatever addresses you want, or just paste in [these 99,999 addresses](https://github.com/streamr-dev/monoplasma/blob/master/99999_addresses.txt).
+Now Bob is alone in the pool, and all revenue would be attributed to him. Let's add him some company! You can add whatever addresses you want, or just paste in [these 99,999 addresses](https://raw.githubusercontent.com/streamr-dev/monoplasma/master/99999_addresses.txt).
 
 **Now you should have a bunch of people in the pool, with everything else zero. Let's add some revenue!**
 
