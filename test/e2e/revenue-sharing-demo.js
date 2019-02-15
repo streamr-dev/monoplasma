@@ -1,8 +1,6 @@
 /*global describe it */
 
-const fs = require("mz/fs")
-const util = require("util")
-const exec = util.promisify(require("child_process").exec)
+const fs = require("fs-extra")
 const { spawn } = require("child_process")
 const Timeout = require("await-timeout")
 
@@ -10,13 +8,10 @@ const Web3 = require("web3")
 
 const assert = require("assert")
 
-const sleep = require("../utils/sleep-promise")
 const { untilStreamContains } = require("../utils/await-until")
 
 const TokenJson = require("../../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../../build/contracts/Monoplasma.json")
-
-const projectRoot = __dirname.split("/test/e2e")[0]
 
 const fetch = require("node-fetch")
 
@@ -54,6 +49,7 @@ describe("Revenue sharing demo", () => {
         if (operatorProcess) {
             operatorProcess.kill()
         }
+        fs.removeSync(STORE_DIR)
     })
 
     it("should run the happy path demo", async () => {
