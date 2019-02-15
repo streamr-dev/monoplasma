@@ -6,7 +6,7 @@
 
 ## Background
 
-Monoplasma is a unidirectional token distribution channel. It was originally created to enable the **Community Products** feature on the [Streamr Marketplace](https://marketplace.streamr.com).
+Monoplasma is a unidirectional token distribution channel. It was originally created to enable the [Community Products](https://medium.com/streamrblog/community-products-crowdselling-big-data-iot-blockchain-streamr-fbaa794c7bc9) feature on the [Streamr Marketplace](https://marketplace.streamr.com).
 
 ## Use cases
 
