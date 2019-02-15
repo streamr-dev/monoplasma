@@ -18,8 +18,8 @@ export default (value: BN | number | string): string => {
         .join('')
         .replace(/^,/, '') || '0'
     const fraction = num.slice(18, 30 - int.length).replace(/0*$/, '')
-        .replace(/\d{3}/g, '$&,')
-        .replace(/,$/, '')
+    // .replace(/\d{3}/g, '$&,')
+    // .replace(/,$/, '')
 
     return fraction ? `${int}.${fraction}` : `${int}`
 }
