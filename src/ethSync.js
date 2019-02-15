@@ -14,7 +14,7 @@ async function replayEvent(plasma, event) {
         } break
         // event BlockCreated(uint blockNumber, bytes32 rootHash, string ipfsHash);
         case "BlockCreated": {
-            const { blockNumber } = event.returnValues
+            const blockNumber = +event.returnValues.blockNumber
             log(`Storing block ${blockNumber}`)
             await plasma.storeBlock(blockNumber)
         } break

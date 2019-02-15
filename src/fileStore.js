@@ -122,7 +122,7 @@ module.exports = (storeDir) => {
             const path = getEventPath(blockNumber)
             const rawOld = await fs.readFile(path).catch(() => "[]")
             const oldEvents = JSON.parse(rawOld)
-            log(`Saving ${events.length} event(s like) ${sanitize(JSON.stringify(events[0]))} to ${path} (adding to ${oldEvents.length} events)`)
+            log(`Saving ${events.length} event(s like) ${sanitize(JSON.stringify(events[0]))} to ${path} (appending after ${oldEvents.length} old events in this block)`)
             const newEvents = oldEvents.concat(events)
             const raw = JSON.stringify(newEvents)
             return fs.writeFile(path, raw)

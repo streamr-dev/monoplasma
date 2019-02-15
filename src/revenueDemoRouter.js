@@ -1,5 +1,5 @@
 const express = require("express")
-const Monoplasma = require("./monoplasma")
+const MonoplasmaMember = require("./monoplasmaMember")
 
 module.exports = operator => {
     const router = express.Router()
@@ -22,25 +22,26 @@ module.exports = operator => {
 
     router.get("/stealAllTokens", (req, res) => {
         const address = req.query.targetAddress || operator.address
-        const realPlasma = operator.plasma
-        let tokens, proof
+        const realMemberList = operator.plasma.members
+        let tokens
         operator.getContractTokenBalance().then(res => {
             tokens = res
-            const fakePlasma = new Monoplasma(0, [{
-                address,
-                earnings: tokens,
-            }], operator.store)
-            proof = fakePlasma.getProof(address)        // should be just ["0x0"]
+            const fakeMemberList = [new MonoplasmaMember("thief", address, tokens)]
             console.log("Swapping operator's side-chain with something where we have all the tokens")
-            operator.plasma = fakePlasma
+            operator.plasma.members = fakeMemberList
+            operator.plasma.tree.update(fakeMemberList)
             return operator.publishBlock(operator.state.lastPublishedBlock + 1)
         }).then(block => {
-            console.log(`Block published: ${JSON.stringify(block)}. Swapping back the real side-chain like nothing happened.`)
-            operator.plasma = realPlasma
+            console.log(`Block published: ${JSON.stringify(block)}`)
+            console.log("Swapping back the real side-chain like nothing happened.")
+            operator.plasma.members = realMemberList
+            operator.plasma.tree.update(realMemberList)
             const blockNumber = block.blockNumber
+            const proof = ["0x0000000000000000000000000000000000000000000000000000000000000000"]
             res.send({ blockNumber, tokens, proof })
         }).catch(error => {
-            operator.plasma = realPlasma
+            operator.plasma = realMemberList
+            operator.plasma.tree.update(realMemberList)
             res.status(400).send({ error: error.message })
         })
     })
