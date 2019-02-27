@@ -11,7 +11,10 @@ module.exports = {
         "indent": [
             "error",
             4,
-            {"SwitchCase": 1}
+            {
+                "SwitchCase": 1,
+                "flatTernaryExpressions": true
+            },
         ],
         "linebreak-style": [
             "error",

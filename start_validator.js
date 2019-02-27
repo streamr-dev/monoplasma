@@ -28,6 +28,7 @@ function error() {
     process.exit(1)
 }
 
+const defaultConfigPath = __dirname + "/demo/public/data/state.json"
 const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/temp"
 const fileStore = require("./src/fileStore")(storeDir)
 
@@ -40,8 +41,9 @@ fsEx.copySync(pastEventsDir, eventsDir)
 async function start() {
     const config = CONFIG_JSON ? JSON.parse(CONFIG_JSON)
         : CONFIG_FILE ? await loadStateFromFile(CONFIG_FILE)
-            : CONFIG_URL ? await loadStateFromUrl(CONFIG_URL)
-                : {}
+        : CONFIG_URL ? await loadStateFromUrl(CONFIG_URL)
+        : fs.existsSync(defaultConfigPath) ? await loadStateFromFile(defaultConfigPath)
+        : {}
     log("Received config:")
     log(prettyjson.render(config))
 
@@ -59,12 +61,20 @@ async function start() {
     if (accountList.length > 0) {
         // TODO: guess private key if missing?
         // with ganache, operator uses account 0: 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1
-        // const privateKey = ETHEREUM_PRIVATE_KEY || "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
-        if (!ETHEREUM_PRIVATE_KEY) { throw new Error("Environment variable ETHEREUM_PRIVATE_KEY is needed to send exit transaction for the WATCHED_ACCOUNTS!") }
-        const key = ETHEREUM_PRIVATE_KEY.startsWith("0x") ? ETHEREUM_PRIVATE_KEY : "0x" + ETHEREUM_PRIVATE_KEY
-        if (key.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
+        let key = "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0"
+        if (ETHEREUM_PRIVATE_KEY) {
+            key = ETHEREUM_PRIVATE_KEY.startsWith("0x") ? ETHEREUM_PRIVATE_KEY : "0x" + ETHEREUM_PRIVATE_KEY
+            if (key.length !== 66) { throw new Error("Malformed private key, must be 64 hex digits long (optionally prefixed with '0x')") }
+        } else {
+            log("Environment variable ETHEREUM_PRIVATE_KEY not found, using key for address 0xa3d1f77acff0060f7213d7bf3c7fec78df847de1")
+        }
         const account = web3.eth.accounts.wallet.add(key)
         address = account.address
+        const balance = await web3.eth.getBalance(address)
+        if (+balance === 0) {
+            log(`Address ${address} has no ether, it is needed to send exit transaction for the WATCHED_ACCOUNTS!`)
+            //throw new Error("Ether is needed to send exit transaction for the WATCHED_ACCOUNTS!") }
+        }
     }
 
     await throwIfNotContract(web3, config.tokenAddress, "Config variable tokenAddress")

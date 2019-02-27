@@ -65,11 +65,7 @@
             "type": "node",
             "request": "launch",
             "name": "operator (Ganache)",
-            "program": "${workspaceFolder}/start_operator.js",
-            "env": {
-                "GANACHE_PORT": "3010",
-                "RESET": "1"
-            }
+            "program": "${workspaceFolder}/start_operator.js"
         }, {
             "type": "node",
             "request": "launch",
@@ -98,8 +94,6 @@
             "name": "Start Monoplasma validator",
             "program": "${workspaceFolder}/start_validator.js",
             "env": {
-                "CONFIG_FILE": "${workspaceFolder}/demo/public/data/state.json",
-                "ETHEREUM_PRIVATE_KEY": "0x5e98cce00cff5dea6b454889f359a4ec06b9fa6b88e9d69b86de8e1c81887da0",
                 "WATCHED_ACCOUNTS": "0x41ad2327e5910dcca156dc17d0908b690e2f1f7c,0x0e7a1cf7cf69299c20af39056af232fde05b5204,0x297f393328243147e5fd08bd4b8b3786150635cd,0x1612801262e358bdc6031136c0c2104e7d3bd78e,0x2526401999f6502058d57dee734d2277d8669ce7"
             }
         }

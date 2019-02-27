@@ -97,9 +97,9 @@ async function start() {
         gasPrice: GAS_PRICE_GWEI || 4000000000,
     }
 
-    // ignore the saved config / saved state if using ganache
+    // ignore the saved config / saved state if not using a fresh ganache instance
     // augment the config / saved state with variables that may be useful for the validators
-    const config = RESET || !ethereumServer ? {} : await fileStore.loadState()
+    const config = RESET || ganache ? {} : await fileStore.loadState()
     config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
     config.blockFreezeSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezeSeconds || 20
     config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, opts, log)
