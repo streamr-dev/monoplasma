@@ -1,6 +1,7 @@
 const MonoplasmaMember = require("./monoplasmaMember")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
+const {utils: { isAddress }} = require("web3")
 
 /** Timestamp is seconds, just like Ethereum block.timestamp */
 function now() {
@@ -14,9 +15,12 @@ function now() {
  */
 class Monoplasma {
     /**
+     * @param {number} blockFreezeSeconds
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
+     * @param {Object} store offering persistance for blocks
+     * @param {string} defaultReceiverAddress where revenues go if there are no members
      */
-    constructor(blockFreezeSeconds, initialMembers, store) {
+    constructor(blockFreezeSeconds, initialMembers, store, defaultReceiverAddress) {
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
@@ -37,6 +41,17 @@ class Monoplasma {
 
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
+
+        // add default address in case revenue is received with no members
+        const defaultAddress = isAddress(defaultReceiverAddress) ? defaultReceiverAddress : "0x0000000000000000000000000000000000000000"
+        const wasNew = this.addMember(defaultAddress, "default")
+        const i = this.indexOf[defaultAddress]
+        this.defaultMember = this.members[i]
+
+        // don't enable defaultMember to participate into profit-sharing (unless it was also in initialMembers)
+        if (wasNew) {
+            this.defaultMember.setActive(false)
+        }
     }
 
     // ///////////////////////////////////
@@ -50,7 +65,8 @@ class Monoplasma {
     }
 
     getMemberCount() {
-        const total = this.members.length
+        // "default member" shouldn't show up in member count unless separately added
+        const total = this.members.length - (this.defaultMember.isActive() ? 0 : 1)
         const active = this.members.filter(m => m.isActive()).length
         return {
             total,
@@ -174,15 +190,15 @@ class Monoplasma {
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = activeMembers.length
         if (activeCount === 0) {
-            console.error("No active members in community!")
-            return
+            console.warn(`No active members in community! Allocating ${amount} to default account ${this.defaultMember.address}`)
+            this.defaultMember.addRevenue(amount)
+        } else {
+            const amountBN = new BN(amount)
+            const share = amountBN.divn(activeCount)
+            activeMembers.forEach(m => m.addRevenue(share))
+            this.totalEarnings.iadd(amountBN)
         }
-
-        const amountBN = new BN(amount)
-        const share = amountBN.divn(activeCount)
-        activeMembers.forEach(m => m.addRevenue(share))
         this.tree.update(this.members)
-        this.totalEarnings.iadd(amountBN)
     }
 
     /**
@@ -193,8 +209,8 @@ class Monoplasma {
      */
     addMember(address, name) {
         const i = this.indexOf[address]
-        const newAddress = i === undefined
-        if (newAddress) {
+        const isNewAddress = i === undefined
+        if (isNewAddress) {
             const m = new MonoplasmaMember(name, address)
             const newI = this.members.push(m) - 1
             this.indexOf[address] = newI
@@ -204,7 +220,7 @@ class Monoplasma {
             m.setActive(true)
         }
         // tree.update(members)     // no need for update since no revenue allocated
-        return newAddress
+        return isNewAddress
     }
 
     /**

@@ -97,6 +97,7 @@ async function start() {
         gasPrice: GAS_PRICE_GWEI || 4000000000,
     }
 
+    // TODO: set up monoplasma defaultAccount
     // ignore the saved config / saved state if not using a fresh ganache instance
     // augment the config / saved state with variables that may be useful for the validators
     const config = RESET || ganache ? {} : await fileStore.loadState()

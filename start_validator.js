@@ -84,6 +84,7 @@ async function start() {
     config.lastBlockNumber = 0
     config.lastPublishedBlock = 0
 
+    // TODO: set up monoplasma defaultAccount from config
     log("Starting the joinPartChannel and Validator")
     const channel = new Channel(config.channelPort)
     const validator = new Validator(accountList, address, web3, channel, config, fileStore, log, error)
