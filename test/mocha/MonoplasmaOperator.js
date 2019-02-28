@@ -119,6 +119,7 @@ describe("monoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "30" },
+            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
             { address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299", earnings: "10" },
         ]
         assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
@@ -140,6 +141,7 @@ describe("monoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
+            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
         ]
         assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
     })
@@ -156,6 +158,7 @@ describe("monoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "100" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" },
+            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
         ]
         assert.deepStrictEqual(operator.plasma.members.map(m => m.toObject()), newBalances)
     })
