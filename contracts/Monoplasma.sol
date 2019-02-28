@@ -3,14 +3,14 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-import "./AbstractRootChain.sol";
+import "./BalanceVerifier.sol";
 import "./Ownable.sol";
 
 /**
  * Monoplasma that is managed by an owner, likely the side-chain operator
  * Owner can add and remove recipients.
  */
-contract Monoplasma is AbstractRootChain, Ownable {
+contract Monoplasma is BalanceVerifier, Ownable {
     using SafeMath for uint256;
 
     /**
@@ -36,7 +36,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
     uint public totalWithdrawn;
-    uint public totalVerified;
+    uint public totalProven;
 
     IERC20 public token;
 
@@ -48,23 +48,22 @@ contract Monoplasma is AbstractRootChain, Ownable {
     /**
      * Owner creates the side-chain blocks
      */
-    function onRecordBlock(uint blockNumber, bytes32, string) internal {
+    function onCommit(uint blockNumber, bytes32, string) internal {
         require(msg.sender == owner, "error_notPermitted");
         blockTimestamp[blockNumber] = now;
     }
 
     /**
-     * Called from AbstractRootChain.proveSidechainBalance
-     * ProveSidechainBalance can be called directly to withdraw less than the whole share,
+     * Called from BalanceVerifier.prove
+     * Prove can be called directly to withdraw less than the whole share,
      *   or just "cement" the earnings so far into root chain even without withdrawing
-     *   (though it's probably a lot more expensive than withdrawing itself...)
      */
     function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
         uint blockFreezeStart = blockTimestamp[blockNumber];
         require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(earnings[account] < newEarnings, "error_oldEarnings");
-        totalVerified = totalVerified.add(newEarnings).sub(earnings[account]);
-        require(totalVerified <= token.balanceOf(this), "error_missingBalance");
+        totalProven = totalProven.add(newEarnings).sub(earnings[account]);
+        require(totalProven <= token.balanceOf(this), "error_missingBalance");
         earnings[account] = newEarnings;
     }
 
@@ -75,7 +74,7 @@ contract Monoplasma is AbstractRootChain, Ownable {
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
-        proveSidechainBalance(blockNumber, msg.sender, totalEarnings, proof);
+        prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
         withdraw(withdrawable);
     }

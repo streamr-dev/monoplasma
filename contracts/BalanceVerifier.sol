@@ -1,15 +1,14 @@
 pragma solidity ^0.4.24;
 
 /**
- * Monoplasma root chain contract
- * It verifies Merkle-tree inclusion proofs that show that certain address has
+ * Abstract contract, requires implementation to specify who can commit blocks and what
+ *   happens when a successful proof is presented
+ * Verifies Merkle-tree inclusion proofs that show that certain address has
  *   certain earnings balance, according to hash published ("signed") by a
  *   sidechain operator or similar authority
- * TODO: plasma nomenclature to all interfaces!
- * TODO: rename this to EarningsVerifier
  * TODO: see if it could be turned into a library, so many contracts could use it
  */
-contract AbstractRootChain {
+contract BalanceVerifier {
     event BlockCreated(uint blockNumber, bytes32 rootHash, string ipfsHash);
 
     /**
@@ -29,32 +28,33 @@ contract AbstractRootChain {
     function onVerifySuccess(uint blockNumber, address account, uint balance) internal;
 
     /**
-     * Implementing contract should should do access checks for recordBlock
+     * Implementing contract should should do access checks for committing
      */
-    function onRecordBlock(uint blockNumber, bytes32 rootHash, string ipfsHash) internal;
+    function onCommit(uint blockNumber, bytes32 rootHash, string ipfsHash) internal;
 
     /**
+     * Side-chain operator submits commitments to main chain. These
      * For convenience, also publish the ipfsHash of the balance book JSON object
      * @param blockNumber the block after which the balances were recorded
      * @param rootHash root of the balances merkle-tree
      * @param ipfsHash where the whole balances object can be retrieved in JSON format
      */
-    function recordBlock(uint blockNumber, bytes32 rootHash, string ipfsHash) external {
+    function commit(uint blockNumber, bytes32 rootHash, string ipfsHash) external {
         require(blockHash[blockNumber] == 0, "error_overwrite");
         string memory _hash = ipfsHash;
-        onRecordBlock(blockNumber, rootHash, _hash);
+        onCommit(blockNumber, rootHash, _hash);
         blockHash[blockNumber] = rootHash;
         emit BlockCreated(blockNumber, rootHash, _hash);
     }
 
     /**
-     * proveSidechainBalance can be used to record the sidechain balances into root chain
+     * Proving can be used to record the sidechain balances permanently into root chain
      * @param blockNumber the block after which the balances were recorded
      * @param account whose balances will be verified
      * @param balance side-chain account balance
      * @param proof list of hashes to prove the totalEarnings
      */
-    function proveSidechainBalance(uint blockNumber, address account, uint balance, bytes32[] memory proof) public {
+    function prove(uint blockNumber, address account, uint balance, bytes32[] memory proof) public {
         require(proofIsCorrect(blockNumber, account, balance, proof), "error_proof");
         onVerifySuccess(blockNumber, account, balance);
     }

@@ -37,7 +37,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         this.log(`Publishing block ${bnum}`)
         const hash = this.plasma.getRootHash()
         const ipfsHash = ""
-        await this.contract.methods.recordBlock(bnum, hash, ipfsHash).send({
+        await this.contract.methods.commit(bnum, hash, ipfsHash).send({
             from: this.address,
             gas: 4000000,
             gasPrice: this.state.gasPrice

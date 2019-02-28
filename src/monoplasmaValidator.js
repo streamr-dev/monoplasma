@@ -69,7 +69,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         //return Promise.all(members.map(m => contract.methods.withdrawAll(blockNumber, m.earnings, m.proof).send(opts)))
         for (const m of members) {
             this.log(`Recording the earnings for ${m.address}: ${m.earnings}`)
-            await this.contract.methods.proveSidechainBalance(blockNumber, m.address, m.earnings, m.proof).send(opts).catch(console.error)
+            await this.contract.methods.prove(blockNumber, m.address, m.earnings, m.proof).send(opts).catch(console.error)
         }
     }
 

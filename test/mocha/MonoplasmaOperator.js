@@ -26,7 +26,7 @@ function getMockWeb3(blockNumber, events) {
     web3.eth.Contract.prototype.methods = {
         token: () => ({ call: () => "tokenAddress" }),
         blockFreezeSeconds: () => ({ call: () => 1000 }),
-        recordBlock: () => ({ send: async () => {} })
+        commit: () => ({ send: async () => {} })
     }
     web3.eth.Contract.prototype.getPastEvents = event => events && events[event] || []
     web3.eth.Contract.prototype.events = {

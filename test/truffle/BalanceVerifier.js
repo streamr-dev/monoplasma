@@ -1,6 +1,6 @@
 /*global contract artifacts assert before describe it web3 */
 
-// AbstractRootChain cannot be instantiated so "minimal viable implementation" Airdrop is used instead
+// BalanceVerifier cannot be instantiated so "minimal viable implementation" Airdrop is used instead
 const Airdrop = artifacts.require("./Airdrop.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
@@ -14,7 +14,7 @@ const MerkleTree = require("../../src/merkletree")
 
 let token
 let airdrop
-contract("AbstractRootChain", accounts => {
+contract("BalanceVerifier", accounts => {
     const recipient = accounts[1]
     const anotherRecipient = accounts[2]
     const admin = accounts[9]
@@ -32,27 +32,27 @@ contract("AbstractRootChain", accounts => {
     async function publishBlock(rootHash) {
         const root = rootHash || plasma.getRootHash()
         const blockNumber = await web3.eth.getBlockNumber()
-        const resp = await airdrop.recordBlock(blockNumber, root, "ipfs lol", {from: admin})
+        const resp = await airdrop.commit(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
-    describe("recordBlock & blockHash", () => {
+    describe("commit & blockHash", () => {
         it("correctly publishes and retrieves a block hash", async () => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
-            const resp = await airdrop.recordBlock(123, root, "ipfs lol", {from: admin})
+            const resp = await airdrop.commit(123, root, "ipfs lol", {from: admin})
             const block = resp.logs.find(L => L.event === "BlockCreated").args
             assertEqual(block.blockNumber, 123)
             assertEqual(block.rootHash, root)
             assertEqual(await airdrop.blockHash(123), root)
         })
         it("won't let operator overwrite a root hash (with same block number)", async () => {
-            await airdrop.recordBlock(124, "0x1234", "ipfs lol", {from: admin})
-            await airdrop.recordBlock(125, "0x2345", "ipfs lol", {from: admin})
-            assertFails(airdrop.recordBlock(125, "0x3456", "ipfs lol", {from: admin}))
+            await airdrop.commit(124, "0x1234", "ipfs lol", {from: admin})
+            await airdrop.commit(125, "0x2345", "ipfs lol", {from: admin})
+            assertFails(airdrop.commit(125, "0x3456", "ipfs lol", {from: admin}))
         })
     })
 
-    describe("proveSidechainBalance & proofIsCorrect & calculateRootHash", () => {
+    describe("prove & proofIsCorrect & calculateRootHash", () => {
         // see test/merklepath.js
         it("correctly validate a proof", async () => {
             plasma.addRevenue(1000)
@@ -70,7 +70,7 @@ contract("AbstractRootChain", accounts => {
             assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof))
             // check that contract proves earnings correctly (freeze period)
             assertEqual(await token.balanceOf(member.address), 0)
-            await airdrop.proveSidechainBalance(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
+            await airdrop.prove(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
             assertEqual(await token.balanceOf(member.address), member.earnings)
         })
     })
