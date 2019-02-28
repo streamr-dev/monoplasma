@@ -34,7 +34,7 @@ module.exports = class MonoplasmaWatcher {
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
-        this.plasma = new Monoplasma(this.state.blockFreezeSeconds, savedMembers, this.store)
+        this.plasma = new Monoplasma(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
