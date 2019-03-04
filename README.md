@@ -57,7 +57,7 @@ But in case the operator simply doesn't provide the fudged accounts book (operat
 
 Build Monoplasma and the Revenue sharing demo:
 ```
-git clone git@github.com:streamr-dev/monoplasma.git
+git clone https://github.com/streamr-dev/monoplasma.git
 cd monoplasma
 npm run build && npm run build-demo
 ```
