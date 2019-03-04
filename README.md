@@ -31,6 +31,8 @@ Operator's job is to allocate tokens to community members, and publish "side-cha
 
 The name was so chosen because we wanted a sidechain to handle the token distribution calculation, and chose Plasma as the inspiration. Of course Plasma is not a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).
 
+For more information, also check out [this blog post](https://medium.com/streamrblog/monoplasma-revenue-share-dapps-off-chain-6cb7ee8b42fa).
+
 ## Attacks
 
 Main threat scenario: plasma side-chain operator creates a sock-puppet account, assigns it infinity tokens, publishes the hash, and drains the root chain contract by withdrawing. To combat this, there's a freeze period after the side chain block hash is published. In case of faulty or missing (withheld) side chain block contents, everyone can exit using old unfrozen root hashes.
