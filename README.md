@@ -71,7 +71,9 @@ npm run build && npm run build-demo
 ## Start a validator
 
 In another terminal tab:
-`CONFIG_FILE=demo/public/data/state.json ETHEREUM_PRIVATE_KEY=0x4059de411f15511a85ce332e7a428f36492ab4e87c7830099dadbf130f1896ae WATCHED_ACCOUNTS=0x41ad2327e5910dcca156dc17d0908b690e2f1f7c,0x0e7a1cf7cf69299c20af39056af232fde05b5204 node start_validator.js`
+```
+CONFIG_FILE=demo/public/data/state.json ETHEREUM_PRIVATE_KEY=0x4059de411f15511a85ce332e7a428f36492ab4e87c7830099dadbf130f1896ae WATCHED_ACCOUNTS=0x41ad2327e5910dcca156dc17d0908b690e2f1f7c,0x0e7a1cf7cf69299c20af39056af232fde05b5204 node start_validator.js
+```
 
 In `WATCHED_ACCOUNTS`, give a comma separated list of accounts you'd like the validator to exit if an operator fraud is detected.
 
