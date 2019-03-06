@@ -35,19 +35,19 @@ const Settings = ({ value }: Props) => {
                 </li>
                 <li>
                     <strong>Monoplasma contract address: </strong>
-                    {withPlaceholder(contractAddress)}
+                    {withPlaceholder(contractAddress && contractAddress.toLowerCase())}
                 </li>
                 <li>
                     <strong>Token address: </strong>
-                    {withPlaceholder(tokenAddress)}
+                    {withPlaceholder(tokenAddress && tokenAddress.toLowerCase())}
                 </li>
                 <li>
                     <strong>Ethereum node: </strong>
-                    {withPlaceholder(ethereumServer ? ethereumServer.replace('ws://', 'http://') : ethereumServer)}
+                    {withPlaceholder(ethereumServer && ethereumServer.replace('ws://', 'http://'))}
                 </li>
                 <li>
                     <strong>Operator address: </strong>
-                    {withPlaceholder(operatorAddress)}
+                    {withPlaceholder(operatorAddress && operatorAddress.toLowerCase())}
                 </li>
             </ul>
         </Section>
