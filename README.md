@@ -61,36 +61,30 @@ Build Monoplasma and the Revenue sharing demo:
 ```
 git clone https://github.com/streamr-dev/monoplasma.git
 cd monoplasma
-npm run build && npm run build-demo
+npm run build
 ```
 
 ## Start the operator
 
-`node ./start_operator.js`
+`npm start`
+
+The demo UI will be started at http://0.0.0.0:8000/
 
 ## Start a validator
 
 In another terminal tab:
-```
-CONFIG_FILE=demo/public/data/state.json ETHEREUM_PRIVATE_KEY=0x4059de411f15511a85ce332e7a428f36492ab4e87c7830099dadbf130f1896ae WATCHED_ACCOUNTS=0x41ad2327e5910dcca156dc17d0908b690e2f1f7c,0x0e7a1cf7cf69299c20af39056af232fde05b5204 node start_validator.js
-```
+`./start_validator.js`
 
+Or alternatively:
+`WATCHED_ACCOUNTS=0x41ad2327e5910dcca156dc17d0908b690e2f1f7c,0x0e7a1cf7cf69299c20af39056af232fde05b5204 ./start_validator.js`
 In `WATCHED_ACCOUNTS`, give a comma separated list of accounts you'd like the validator to exit if an operator fraud is detected.
-
-## Start the control panel UI
-
-In a third terminal tab:
-```
-cd demo
-npm start
-```
 
 ## Setting up the browser and Metamask
 
 - Point your browser to http://0.0.0.0:8000/
 - Metamask might pop up, asking you to unlock and/or give permissions to the page use it. Accept.
 - In your Metamask, select the "Localhost 8545" network if it's listed. If it isn't, add a custom network with RPC URL http://127.0.0.1:8545.
-- You should see the control panel with everything empty and zero. 
+- You should see the control panel with everything empty and zero.
 
 By default the demo runs on `ganache`, with a mnemonic that creates a certain set of accounts. We'll use two of them. Import to your Metamask the following private keys (do not use these accounts on real networks):
 
@@ -99,9 +93,9 @@ By default the demo runs on `ganache`, with a mnemonic that creates a certain se
 
 The demo creates a demo unicorn token (🦄). Let's configure that to Metamask as well.
 
-- In Metamask, select Alice's account. 
+- In Metamask, select Alice's account.
 - Under the Menu icon, where you see your balances, you should see some ETH as well as (scroll down) a link to "ADD TOKEN". Click that.
-- Open the Custom Token tab and paste the token's address `0xbAA81A0179015bE47Ad439566374F2Bae098686F`. The token name 🦄 and its settings should be filled automatically. Click Next, then Add Tokens.
+- Open the Custom Token tab and paste the token's address `0xbaa81a0179015be47ad439566374f2bae098686f`. The token name 🦄 and its settings should be filled automatically. Click Next, then Add Tokens.
 - Repeat the previous step for Bob, if you don't see the token listed on Bob's account.
 
 ## Demo Walkthrough
@@ -119,7 +113,7 @@ Now Bob is alone in the pool, and all revenue would be attributed to him. Let's 
 - Metamask should pop up and ask you to confirm the transaction.
 - In the text field beside the "Add revenue" button, enter a number of tokens, for example 100000, and click the "Add revenue" button. This just transfers a number of 🦄 to the Monoplasma smart contract.
 
-**You should see the revenue pool numbers increase by the amount of tokens, and a block published by the Operator become visible in the table.** 
+**You should see the revenue pool numbers increase by the amount of tokens, and a block published by the Operator become visible in the table.**
 
 In the demo there's a 20 second freeze period for the funds, during which they can't be withdrawn. In real life this could be a few days, enough time for validators to exit people in case the Operator commits fraud.
 
@@ -143,3 +137,13 @@ On-chain, all the tokens are in the Monoplasma smart contract. But off-chain, Bo
 
 - If you stop the operator and your `ganache` was running implicitly within it, you can restart from scratch by doing a `npm run build && node start_operator.js`.
 - If you wipe the blockchain state by doing the above, Metamask will get thrown off if it's currently connected to the localhost network, because the blockchain state just vanished. It will recover if you temporarily select another network (such as mainnet) and then re-select the local network.
+
+## Development
+
+To start the control panel UI so that it's easier to debug e.g. in web developer tools:
+
+Open in a terminal tab:
+```
+cd demo
+npm start
+```
