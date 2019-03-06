@@ -96,8 +96,8 @@ module.exports = plasma => {
         }
 
         plasma.getBlock(blockNumber).then(block => {
-            // todo: blockToApiObject?
-            res.send(block)
+            const apiResult = blockToApiObject(block)
+            res.send(apiResult)
         }).catch(error => {
             res.status(404).send(error)
         })
