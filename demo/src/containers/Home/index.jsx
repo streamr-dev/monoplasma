@@ -170,6 +170,9 @@ class Home extends Component<Props, State> {
 
         this.updateUser(address).then((member) => {
             const { withdrawableBlockNumber, withdrawableEarnings, proof } = member
+            if (!withdrawableBlockNumber) {
+                throw new Error('No blocks to withdraw from!')
+            }
             return monoplasma.withdrawAllFor(address, withdrawableBlockNumber, withdrawableEarnings, proof, opts)
         }).then((txHash) => {
             console.log(`withdrawAll transaction pending: ${etherscanUrl}/tx/${txHash}`)

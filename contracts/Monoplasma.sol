@@ -74,7 +74,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+    function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
         withdrawFor(recipient, withdrawable);
@@ -87,7 +87,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
-        this.withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
+        withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
     }
 
     /**
