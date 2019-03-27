@@ -5,7 +5,7 @@ const path = require("path")
 const prettyjson = require("prettyjson")
 const Web3 = require("web3")
 
-const Validator = require("./src/monoplasmaValidator")
+const Validator = require("./src/validator")
 const { defaultServers, throwIfNotContract } = require("./src/ethSync")
 const Channel = require("./src/joinPartChannel")
 

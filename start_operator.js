@@ -9,13 +9,14 @@ const onProcessExit = require("exit-hook")
 
 const Web3 = require("web3")
 
-const Operator = require("./src/monoplasmaOperator")
-const { defaultServers, throwIfSetButNotContract } = require("./src/ethSync")
-const deployDemoToken = require("./src/deployDemoToken")
+const Operator = require("./src/operator")
+const { throwIfSetButNotContract } = require("./src/utils/checkArguments")
+const defaultServers = require("./defaultServers.json")
+const deployDemoToken = require("./src/utils/deployDemoToken")
 
-const operatorRouter = require("./src/monoplasmaRouter")
-const adminRouter = require("./src/adminRouter")
-const revenueDemoRouter = require("./src/revenueDemoRouter")
+const operatorRouter = require("./src/routers/member")
+const adminRouter = require("./src/routers/admin")
+const revenueDemoRouter = require("./src/routers/revenueDemo")
 const Channel = require("./src/joinPartChannel")
 
 const MonoplasmaJson = require("./build/contracts/Monoplasma.json")
@@ -80,7 +81,7 @@ async function start() {
         log("Starting Ethereum simulator...")
         const ganachePort = GANACHE_PORT || 8545
         const ganacheLog = msg => { log(" <Ganache> " + msg) }
-        ganache = await require("./src/startGanache")(ganachePort, ganacheLog, error)
+        ganache = await require("./src/utils/startGanache")(ganachePort, ganacheLog, error)
         ethereumServer = ganache.url
     }
 

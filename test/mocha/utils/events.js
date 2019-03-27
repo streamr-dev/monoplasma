@@ -1,7 +1,5 @@
-/*global describe it */
-
 const assert = require("assert")
-const { mergeEventLists } = require("../../src/ethSync")
+const { mergeEventLists } = require("../../../src/utils/events")
 
 describe("mergeEventLists", () => {
     it("merges event lists correctly", () => {

@@ -1,7 +1,7 @@
 const BN = require("bn.js")
 const {utils: { isAddress }} = require("web3")
 
-class MonoplasmaMember {
+module.exports = class MonoplasmaMember {
     constructor(name, address, earnings) {
         this.name = name || ""
         this.address = MonoplasmaMember.validateAddress(address)
@@ -71,5 +71,3 @@ class MonoplasmaMember {
         return extended
     }
 }
-
-module.exports = MonoplasmaMember

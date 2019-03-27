@@ -1,21 +1,20 @@
-/*global contract artifacts before describe it web3 */
 
 const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
 const { assertEqual, assertFails } = require("../utils/web3Assert")
-const { increaseTime } = require("../utils/fakeTime")
+const { increaseTime } = require("../utils/increaseTime")
 
-const Monoplasma = require("../../src/monoplasma")
+const MonoplasmaState = require("../../src/state")
 
-contract("Monoplasma", accounts => {
+contract("MonoplasmaState", accounts => {
     let token
     let rootchain
     const producer = accounts[1]
     const anotherProducer = accounts[2]
     const admin = accounts[9]
     const blockFreezePeriodSeconds = 1000
-    const plasma = new Monoplasma(0, [], { saveBlock: () => {} })
+    const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} })
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
         rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})

@@ -1,5 +1,5 @@
-const Monoplasma = require("./monoplasma")
-const MonoplasmaWatcher = require("./monoplasmaWatcher")
+const MonoplasmaState = require("./state")
+const MonoplasmaWatcher = require("./watcher")
 
 module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
     constructor(watchedAccounts, myAddress, ...args) {
@@ -9,7 +9,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         this.address = myAddress
         this.eventQueue = []
         this.lastSavedBlock = null
-        this.validatedPlasma = new Monoplasma(0, [], {
+        this.validatedPlasma = new MonoplasmaState(0, [], {
             saveBlock: async block => {
                 this.lastSavedBlock = block
             }
@@ -78,7 +78,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         await super.playback(from, to)
         //await super.playbackOn(this.validatedPlasma, from, to)
         this.lastCheckedBlock = to
-        this.validatedPlasma = new Monoplasma(0, this.plasma.getMembers(), this.validatedPlasma.store)
+        this.validatedPlasma = new MonoplasmaState(0, this.plasma.getMembers(), this.validatedPlasma.store)
         this.lastValidatedBlock = to
         this.lastValidatedMembers = this.watchedAccounts.map(address => this.validatedPlasma.getMember(address))
     }

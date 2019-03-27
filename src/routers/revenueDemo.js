@@ -1,5 +1,5 @@
 const express = require("express")
-const MonoplasmaMember = require("./monoplasmaMember")
+const MonoplasmaMember = require("../member")
 
 module.exports = operator => {
     const router = express.Router()

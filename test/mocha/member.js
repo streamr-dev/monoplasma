@@ -1,10 +1,9 @@
-/*global describe it */
 
-const MonoplasmaMember = require("../../src/monoplasmaMember")
+const MonoplasmaMember = require("../../src/member")
 const assert = require("assert")
 const sinon = require("sinon")
 
-describe("monoplasmaMember", () => {
+describe("MonoplasmaMember", () => {
     it("should add revenue to initially undefined balance", () => {
         const m = new MonoplasmaMember("tester1", "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2")
         m.addRevenue(100)

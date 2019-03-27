@@ -1,5 +1,6 @@
-const Monoplasma = require("./monoplasma")
-const { replayEvent, throwIfSetButNotContract, mergeEventLists } = require("./ethSync")
+const MonoplasmaState = require("./state")
+const { replayEvent, mergeEventLists } = require("./utils/events")
+const { throwIfSetButNotContract } = require("./utils/checkArguments")
 
 const TokenJson = require("../build/contracts/ERC20Mintable.json")
 const MonoplasmaJson = require("../build/contracts/Monoplasma.json")
@@ -13,7 +14,7 @@ module.exports = class MonoplasmaWatcher {
     constructor(web3, joinPartChannel, startState, store, logFunc, errorFunc) {
         this.web3 = web3
         this.channel = joinPartChannel
-        this.state = startState
+        this.state = Object.assign({}, startState)
         this.store = store
         this.log = logFunc || (() => {})
         this.error = errorFunc || console.error
@@ -34,7 +35,7 @@ module.exports = class MonoplasmaWatcher {
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
-        this.plasma = new Monoplasma(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress)
+        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -53,7 +54,7 @@ module.exports = class MonoplasmaWatcher {
         this.tokenFilter.on("data", event => {
             this.state.lastBlockNumber = +event.blockNumber
             replayEvent(this.plasma, event).catch(this.error)
-            this.store.saveState(this.state).catch(this.error)
+            return this.store.saveState(this.state).catch(this.error)
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
@@ -64,7 +65,7 @@ module.exports = class MonoplasmaWatcher {
             const blockNumber = this.state.lastBlockNumber + 1
             const addedMembers = this.plasma.addMembers(addressList)
             this.log(`Added or activated ${addedMembers.length} new member(s) before block ${blockNumber}`)
-            this.store.saveEvents(blockNumber, {
+            return this.store.saveEvents(blockNumber, {
                 blockNumber,
                 transactionIndex: -1,              // make sure join/part happens BEFORE real Ethereum tx
                 logIndex: this.eventLogIndex++,    // ... but still is internally ordered
@@ -76,7 +77,7 @@ module.exports = class MonoplasmaWatcher {
             const blockNumber = this.state.lastBlockNumber + 1
             const removedMembers = this.plasma.removeMembers(addressList)
             this.log(`De-activated ${removedMembers.length} member(s) before block ${blockNumber}`)
-            this.store.saveEvents(blockNumber, {
+            return this.store.saveEvents(blockNumber, {
                 blockNumber,
                 transactionIndex: -1,              // make sure join/part happens BEFORE real Ethereum tx
                 logIndex: this.eventLogIndex++,    // ... but still is internally ordered

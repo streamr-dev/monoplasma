@@ -1,7 +1,6 @@
-/*global describe it */
 
 const assert = require("assert")
-const MonoplasmaMember = require("../../src/monoplasmaMember")
+const MonoplasmaMember = require("../../src/member")
 const MerkleTree = require("../../src/merkletree")
 const { hash, hashCombined } = MerkleTree
 

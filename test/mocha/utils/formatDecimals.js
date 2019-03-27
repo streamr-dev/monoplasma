@@ -1,7 +1,6 @@
-/*global describe it */
 /*eslint-disable quotes */
 const assert = require("assert")
-const formatDecimals = require("../../src/formatDecimals")
+const formatDecimals = require("../../../src/utils/formatDecimals")
 
 describe("formatDecimals", () => {
     it('formatDecimals("10000", 3) === "10"', () => {

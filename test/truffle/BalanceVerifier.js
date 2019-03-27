@@ -1,4 +1,3 @@
-/*global contract artifacts assert before describe it web3 */
 
 // BalanceVerifier cannot be instantiated so "minimal viable implementation" Airdrop is used instead
 const Airdrop = artifacts.require("./Airdrop.sol")
@@ -6,9 +5,9 @@ const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/E
 
 const { assertEqual, assertFails } = require("../utils/web3Assert")
 
-const MonoplasmaMember = require("../../src/monoplasmaMember")
-const Monoplasma = require("../../src/monoplasma")
-const plasma = new Monoplasma(0, [], { saveBlock: () => {} })
+const MonoplasmaMember = require("../../src/member")
+const MonoplasmaState = require("../../src/state")
+const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} })
 
 const MerkleTree = require("../../src/merkletree")
 

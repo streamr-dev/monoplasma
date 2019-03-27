@@ -1,4 +1,3 @@
-/*global describe it assert */
 
 const {
     assertEqual,
@@ -6,11 +5,6 @@ const {
     assertEventBySignature,
     assertFails,
 } = require("../utils/web3Assert")
-
-const {
-    now,
-//  increaseTime,  // tested separately in test/truffle/increaseTime.js, requires a running ganache
-} = require("../utils/fakeTime")
 
 const {
     until,
@@ -117,12 +111,6 @@ describe("Test help utilities", () => {
             } catch (e) {
             // all good
             }
-        })
-    })
-
-    describe("now", () => {
-        it("returns something that could be a block timestamp", () => {
-            assert(!Number.isNaN(+now()))
         })
     })
 

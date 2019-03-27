@@ -1,4 +1,3 @@
-/*global describe it */
 const os = require("os")
 const path = require("path")
 const assert = require("assert")

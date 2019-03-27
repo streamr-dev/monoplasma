@@ -1,4 +1,3 @@
-/*global describe it after */
 const { spawn } = require("child_process")
 const fetch = require("node-fetch")
 const Web3 = require("web3")
@@ -115,5 +114,6 @@ describe("Revenue sharing demo", () => {
 
     after(() => {
         operatorProcess.kill()
+        spawn("rm", ["-rf", STORE_DIR])
     })
 })

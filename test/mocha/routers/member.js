@@ -1,4 +1,3 @@
-/*global before after describe it */
 
 const express = require("express")
 const bodyParser = require("body-parser")
@@ -6,14 +5,14 @@ const bodyParser = require("body-parser")
 const assert = require("assert")
 const http = require("http")
 
-const Monoplasma = require("../../src/monoplasma")
-const plasma = new Monoplasma(0, [], { saveBlock: () => {} })
-const router = require("../../src/monoplasmaRouter")(plasma)
+const MonoplasmaState = require("../../../src/state")
+const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} })
+const router = require("../../../src/routers/member")(plasma)
 
-describe("Express app / monoplasma server", () => {
+describe("Express app / Monoplasma router", () => {
     const port = 3030
     const serverURL = `http://localhost:${port}`
-    const { fetchMember } = require("../utils/operatorApi")(serverURL)
+    const { fetchMember } = require("../../utils/operatorApi")(serverURL)
 
     let server
     before(() => {

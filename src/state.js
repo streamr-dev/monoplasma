@@ -1,19 +1,15 @@
-const MonoplasmaMember = require("./monoplasmaMember")
+const MonoplasmaMember = require("./member")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
 const {utils: { isAddress }} = require("web3")
-
-/** Timestamp is seconds, just like Ethereum block.timestamp */
-function now() {
-    return Math.round(new Date() / 1000)
-}
+const now = require("./utils/now")
 
 /**
  * Monoplasma state object
  *
  * Contains the logic of revenue distribution as well as current balances of/and participants
  */
-class Monoplasma {
+module.exports = class MonoplasmaState {
     /**
      * @param {number} blockFreezeSeconds
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
@@ -314,5 +310,3 @@ class Monoplasma {
         }
     }
 }
-
-module.exports = Monoplasma

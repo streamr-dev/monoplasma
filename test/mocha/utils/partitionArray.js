@@ -1,7 +1,6 @@
-/*global describe it */
 
 const assert = require("assert")
-const partition = require("../../src/partitionArray")
+const partition = require("../../../src/utils/partitionArray")
 
 describe("Partition array util", () => {
     it("works in small case, with stable order", () => {
