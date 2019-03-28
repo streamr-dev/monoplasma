@@ -28,9 +28,8 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         token: () => ({ call: () => "tokenAddress" }),
         blockFreezeSeconds: () => ({ call: () => 1000 }),
         commit: (...args) => ({ send: async () => {
-            console.log(`Got ${args}, sleeping...`)
             // simulate tx lag
-            sleep(1000).then(() => {
+            sleep(100).then(() => {
                 web3.mockCommit(...args)
             })
         } })

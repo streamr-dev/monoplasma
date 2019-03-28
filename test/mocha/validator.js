@@ -15,7 +15,6 @@ class TestLogger {
         this.logs = []
     }
     log(...args) {
-        console.log(...args)
         this.logs.splice(this.logs.length, 0, ...args)
     }
     grep(regex) {
@@ -63,7 +62,7 @@ describe("MonoplasmaValidator", () => {
         await validator.start()
         channel.publish("join", ["0x5ffe8050112448ed2e4409be47e1a50ebac0b299"])
         await web3.mockTransfer(30)
-        await sleep(2000)
+        await sleep(200)
         assert(logger.seen("validated"))
         assert(!logger.seen("WARNING"))
     })
