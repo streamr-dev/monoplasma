@@ -1,3 +1,5 @@
+const assert = require("assert")
+
 const now = require("../../../src/utils/now")
 
 describe("now", () => {

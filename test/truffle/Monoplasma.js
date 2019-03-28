@@ -3,11 +3,11 @@ const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
 const { assertEqual, assertFails } = require("../utils/web3Assert")
-const { increaseTime } = require("../utils/increaseTime")
+const increaseTime = require("../utils/increaseTime")
 
 const MonoplasmaState = require("../../src/state")
 
-contract("MonoplasmaState", accounts => {
+contract("Monoplasma", accounts => {
     let token
     let rootchain
     const producer = accounts[1]

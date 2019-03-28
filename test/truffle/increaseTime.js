@@ -1,4 +1,4 @@
-const { increaseTime } = require("../utils/increaseTime")
+const increaseTime = require("../utils/increaseTime")
 
 describe("increaseTime", () => {
     it("actually increases the time!", async () => {

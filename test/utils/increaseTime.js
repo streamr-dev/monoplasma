@@ -1,3 +1,4 @@
+/*global web3 */
 
 /**
  * Skips ahead a specified number of seconds by increasing EVM/ganache block timestamp
