@@ -1,4 +1,4 @@
-const TokenJson = require("../build/contracts/DemoToken.json")
+const TokenJson = require("../../build/contracts/DemoToken.json")
 
 module.exports = async function deployDemoToken(web3, tokenName, tokenSymbol, sendOptions, log) {
     log("Deploying a dummy token contract...")
