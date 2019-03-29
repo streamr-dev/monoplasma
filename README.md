@@ -1,6 +1,7 @@
 # Monoplasma
 
 [![Build Status](https://travis-ci.com/streamr-dev/monoplasma.svg?token=9unddqKugX2cPcyhtVxp&branch=master)](https://travis-ci.com/streamr-dev/monoplasma)
+[![npm package](https://badge.fury.io/js/monoplasma.svg)](https://badge.fury.io/js/monoplasma)
 ![web3 1.0.0](https://img.shields.io/badge/web3-1.0.0-green.svg?longCache=true "web3 1.0.0")
 ![truffle 5.0.0](https://img.shields.io/badge/truffle-5.0.0-green.svg?longCache=true "truffle 5.0.0")
 
