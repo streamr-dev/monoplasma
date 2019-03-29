@@ -61,6 +61,13 @@ Build Monoplasma and the Revenue sharing demo:
 ```
 git clone https://github.com/streamr-dev/monoplasma.git
 cd monoplasma
+npm install
+npm run build
+```
+
+To build the demo as well:
+```
+cd demo
 npm run build
 ```
 
@@ -68,7 +75,7 @@ npm run build
 
 `npm start`
 
-The demo UI will be started at http://0.0.0.0:8000/
+The demo UI will be started at http://0.0.0.0:8080/
 
 ## Start a validator
 
@@ -140,10 +147,12 @@ On-chain, all the tokens are in the Monoplasma smart contract. But off-chain, Bo
 
 ## Development
 
-To start the control panel UI so that it's easier to debug e.g. in web developer tools:
+To start the demo UI so that it's easier to debug e.g. in web developer tools:
 
 Open in a terminal tab:
 ```
 cd demo
 npm start
 ```
+
+The demo UI will be started at http://0.0.0.0:8000/
