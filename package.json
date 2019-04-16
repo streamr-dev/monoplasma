@@ -13,8 +13,8 @@
     "test-contracts": "./node_modules/.bin/truffle test test/truffle/*",
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -f build/flattened/*",
-    "clean-demo": "rm -rf demo/public/data/*"
-  },
+    "clean-demo": "rm -rf demo/public/data/* && rm -rf demo/public/data"
+    },
   "author": "",
   "license": "AGPL-3.0",
   "devDependencies": {
