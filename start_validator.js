@@ -6,7 +6,8 @@ const prettyjson = require("prettyjson")
 const Web3 = require("web3")
 
 const Validator = require("./src/validator")
-const { defaultServers, throwIfNotContract } = require("./src/ethSync")
+const { throwIfNotContract } = require("./src/utils/checkArguments")
+const defaultServers = require("./defaultServers.json")
 const Channel = require("./src/joinPartChannel")
 
 const {
