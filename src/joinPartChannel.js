@@ -1,4 +1,4 @@
-const zmq = require("zeromq")
+const zeromq = require("zeromq")
 
 /**
  * @typedef {string} State
@@ -22,7 +22,7 @@ function reset(channel) {
  * @property {function} publish
  * @property {function} on
  */
-class Channel {
+module.exports = class ZeroMqChannel {
     constructor(joinPartChannelPort) {
         this.channelUrl = "tcp://127.0.0.1:" + (joinPartChannelPort || 4568)
         reset(this)
@@ -32,7 +32,7 @@ class Channel {
     startServer() {
         if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
-        this.sock = zmq.socket("pub")
+        this.sock = zeromq.socket("pub")
         this.sock.bindSync(this.channelUrl)
         this.publish = (topic, addresses) => {
             this.sock.send([topic, JSON.stringify(addresses)])
@@ -44,7 +44,7 @@ class Channel {
     listen() {
         if (this.mode) { throw new Error(`Already started as ${this.mode}`)}
 
-        this.sock = zmq.socket("sub")
+        this.sock = zeromq.socket("sub")
         this.sock.connect(this.channelUrl)
         this.sock.subscribe("join")
         this.sock.subscribe("part")
@@ -66,5 +66,3 @@ class Channel {
         reset(this)
     }
 }
-
-module.exports = Channel

@@ -1,11 +1,14 @@
 {
   "name": "monoplasma",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Unidirectional payment sidechain with monotonically increasing balances (no in-chain transfers)",
+  "author": "Streamr Network AG",
+  "license": "AGPL-3.0",
+  "repository": "streamr-dev/monoplasma",
   "main": "deploy.js",
   "scripts": {
     "start": "npm run clean-demo && ./start_operator.js",
-    "lint": "./node_modules/.bin/eslint src static_web/js",
+    "lint": "./node_modules/.bin/eslint src test",
     "build": "npm run clean && truffle compile && ./flatten && ./copy-abi-to-ui.js && npm run build-demo",
     "build-demo": "cd demo && npm i && npm run build",
     "test-js": "./node_modules/.bin/mocha test/mocha --exit",
@@ -15,8 +18,6 @@
     "clean": "rm -f build/contracts/* && rm -f build/flattened/*",
     "clean-demo": "rm -rf demo/public/data/*"
   },
-  "author": "",
-  "license": "AGPL-3.0",
   "devDependencies": {
     "eslint": "^4.19.1",
     "mocha": "^5.2.0",
@@ -24,10 +25,6 @@
     "sinon": "^7.2.2",
     "truffle": "5.0.0-next.26",
     "truffle-flattener": "^1.2.10"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/streamr-dev/monoplasma.git"
   },
   "dependencies": {
     "bn.js": "4.11.8",
@@ -48,5 +45,10 @@
     "web3": "1.0.0-beta.37",
     "websocket": "^1.0.28",
     "zeromq": "^5.1.0"
-  }
+  },
+  "files": [
+    "src",
+    "contracts",
+    "strings"
+  ]
 }
