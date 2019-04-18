@@ -2,10 +2,12 @@
 const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
 
-const { assertEqual, assertFails } = require("../utils/web3Assert")
+const { assertEqual, assertFails, assertEvent } = require("../utils/web3Assert")
 const increaseTime = require("../utils/increaseTime")
 
 const MonoplasmaState = require("../../src/state")
+
+let currentBlockNumber = 1
 
 contract("Monoplasma", accounts => {
     let token
@@ -26,10 +28,10 @@ contract("Monoplasma", accounts => {
         plasma.addRevenue(1000)
     })
 
-    async function publishBlock(rootHash) {
+    async function publishBlock(rootHash, operator) {
         const root = rootHash || plasma.getRootHash()
-        const blockNumber = await web3.eth.getBlockNumber()
-        const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: admin})
+        const blockNumber = currentBlockNumber++
+        const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: operator || admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
@@ -51,40 +53,68 @@ contract("Monoplasma", accounts => {
             const block = await publishBlock()
             assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)
         })
+
+        it("can change the operator", async () => {
+            const operator = accounts[3]
+            assertEvent(await rootchain.setOperator(operator, {from: admin}), "OperatorChanged", [operator])
+            const root = plasma.getRootHash()
+            const blockNumber = currentBlockNumber++
+            await assertFails(rootchain.commit(blockNumber, root, "fail", {from: admin}), "error_notPermitted")
+            const block = await publishBlock(root, operator)
+            assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)
+        })
+
+        // for the lack of per-testcase cleanup in mocha, made another testcase for cleanup...
+        it("changes the operator back", async () => {
+            const operator = await rootchain.operator()
+            if (operator !== admin) {
+                assertEvent(await rootchain.setOperator(admin, {from: admin}), "OperatorChanged", [admin])
+            }
+            const root = plasma.getRootHash()
+            const blockNumber = currentBlockNumber++
+            await assertFails(rootchain.commit(blockNumber, root, "fail", {from: accounts[3]}), "error_notPermitted")
+        })
     })
 
     describe("Member", () => {
         it("can withdraw earnings", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             assertEqual(await token.balanceOf(producer), 0)
+            await increaseTime(blockFreezePeriodSeconds + 1)
             await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
         })
+
         it("can not withdraw earnings before freeze period is over", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
             const proof = plasma.getProof(producer)
-            await assertFails(rootchain.withdrawAll(block.blockNumber, 500, proof, {from: producer}))
+            const { earnings } = plasma.getMember(producer)
+            await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_frozen")
         })
+
         it("can not withdraw wrong amount", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
             const proof = plasma.getProof(producer)
-            await assertFails(rootchain.withdrawAll(block.blockNumber, 50000, proof))
+            const { earnings } = { earnings: 50000 }
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
+
         it("can not withdraw with bad proof", async () => {
             plasma.addRevenue(1000)
             const block = await publishBlock()
-            await increaseTime(blockFreezePeriodSeconds + 1)
-            await assertFails(rootchain.withdrawAll(block.blockNumber, 500, [
+            const proof = [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",
-            ], {from: producer}))
+            ]
+            const { earnings } = plasma.getMember(producer)
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
     })
 })

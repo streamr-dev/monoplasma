@@ -13,6 +13,8 @@ import "./Ownable.sol";
 contract Monoplasma is BalanceVerifier, Ownable {
     using SafeMath for uint256;
 
+    event OperatorChanged(address indexed newOperator);
+
     /**
      * Freeze period during which all side-chain participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
@@ -33,6 +35,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
      */
     mapping (uint => uint) public blockTimestamp;
 
+    address public operator;
+
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
     uint public totalWithdrawn;
@@ -43,13 +47,19 @@ contract Monoplasma is BalanceVerifier, Ownable {
     constructor(address tokenAddress, uint blockFreezePeriodSeconds) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
         token = IERC20(tokenAddress);
+        operator = msg.sender;
+    }
+
+    function setOperator(address newOperator) public onlyOwner {
+        operator = newOperator;
+        emit OperatorChanged(newOperator);
     }
 
     /**
      * Owner creates the side-chain blocks
      */
     function onCommit(uint blockNumber, bytes32, string) internal {
-        require(msg.sender == owner, "error_notPermitted");
+        require(msg.sender == operator, "error_notPermitted");
         blockTimestamp[blockNumber] = now;
     }
 
@@ -68,6 +78,16 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
+     * Prove and withdraw the whole revenue share from sidechain in one transaction
+     * @param blockNumber of the leaf to verify
+     * @param totalEarnings in the side-chain
+     * @param proof list of hashes to prove the totalEarnings
+     */
+    function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+        withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
+    }
+
+    /**
      * Prove and withdraw the whole revenue share for a given address from sidechain in one transaction
      * @param recipient the address we're proving and withdrawing
      * @param blockNumber of the leaf to verify
@@ -81,13 +101,11 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and withdraw the whole revenue share from sidechain in one transaction
-     * @param blockNumber of the leaf to verify
-     * @param totalEarnings in the side-chain
-     * @param proof list of hashes to prove the totalEarnings
+     * @dev It is up to the sidechain implementation to make sure
+     * @dev  always token balance >= sum of earnings - sum of withdrawn
      */
-    function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
-        withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
+    function withdraw(uint amount) public {
+        withdrawFor(msg.sender, amount);
     }
 
     /**
@@ -102,13 +120,4 @@ contract Monoplasma is BalanceVerifier, Ownable {
         totalWithdrawn = totalWithdrawn.add(amount);
         require(token.transfer(recipient, amount), "error_transfer");
     }
-
-    /**
-     * @dev It is up to the sidechain implementation to make sure
-     * @dev  always token balance >= sum of earnings - sum of withdrawn
-     */
-    function withdraw(uint amount) public {
-        withdrawFor(msg.sender, amount);
-    }
-
 }
