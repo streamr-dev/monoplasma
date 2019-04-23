@@ -20,12 +20,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
     async onTokensReceived(event) {
         this.state.lastBlockNumber = +event.blockNumber    // update here too, because there's no guarantee MonoplasmaWatcher's listener gets called first
         if (this.state.lastBlockNumber >= this.state.lastPublishedBlock + this.minIntervalBlocks) {
-            const ee = await this.publishBlock()
-            if (this.explorerUrl) {
-                ee.on("transactionHash", hash => {
-                    this.log(`Sent tx to ${this.explorerUrl}${hash}`)
-                })
-            }
+            await this.publishBlock()
         }
     }
 
