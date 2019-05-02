@@ -28,7 +28,9 @@ async function untilStreamContains(stream, target) {
     return new Promise(done => {
         function handler(data) {
             if (data.indexOf(target) > -1) {
-                stream.off("data", handler)
+                if (stream.off) {       // older versions of node.js don't support .off
+                    stream.off("data", handler)
+                }
                 done(data.toString())
             }
         }

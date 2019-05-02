@@ -12,7 +12,9 @@ module.exports = async function startGanache(port, log, error, timeoutMs) {
     function onClose(code) { error(new Error("Ganache ethereum simulator exited with code " + code)) }
     ganache.on("close", onClose)
     function shutdown() {
-        ganache.off("close", onClose)
+        if (ganache.off) {
+            ganache.off("close", onClose)
+        }
         ganache.kill()
     }
     ganache.stderr.on("data", line => {
