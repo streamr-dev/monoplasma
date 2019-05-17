@@ -3,6 +3,9 @@ module.exports = class MockChannel {
         this.listeners = {
             join: [],
             part: [],
+            message: [],
+            error: [],
+            close: [],
         }
     }
     startServer() {}
