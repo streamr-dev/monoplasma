@@ -19,7 +19,7 @@ function blockToApiObject(block) {
     }
 }
 
-/** @type {(plasma: Monoplasma) => Function} */
+/** @type {(plasma: MonoplasmaState) => Function} */
 module.exports = plasma => {
     const router = express.Router()
 
