@@ -47,8 +47,9 @@ module.exports = async function startGanache(port, log, error, timeoutMs) {
                 if (match) {
                     launching = false
                     clearTimeout(timeoutHandle)
-                    const url = "http://" + match[1]        // "127.0.0.1:8545"
-                    done({ url, privateKeys, process: ganache, shutdown })
+                    const url = "ws://" + match[1]        // "127.0.0.1:8545"
+                    const httpUrl = "http://" + match[1]
+                    done({ url, httpUrl, privateKeys, process: ganache, shutdown })
                 }
             }
         })
