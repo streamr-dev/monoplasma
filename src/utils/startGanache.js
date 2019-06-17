@@ -15,14 +15,34 @@ const privateKeys = [
 ]
 
 /**
- * Start Ganache Ethereum simulator through CLI
- * @returns Promise<string> HTTP endpoint that the simulator is listening
+ * @typedef {Object} GanacheInfo
+ * @property {String} url websocket URL for Ganache RPC
+ * @property {String} httpUrl HTTP URL for Ganache RPC
+ * @property {Array<String>} privateKeys inside the Ganache chain that have initial 100 ETH
+ * @property {ChildProcess} process
+ * @property {Function} shutdown call this to kill the Ganache process
  */
-module.exports = async function startGanache(port, log, error, timeoutMs) {
-    log = log || console.log
+
+/**
+ * Start Ganache Ethereum simulator through CLI
+ * @param {Number} port
+ * @param {Function<String>} log
+ * @param {Function<Error} error
+ * @param {Number} blockDelaySeconds 0 for immediate blocks after each tx; otherwise publish a new block every so many seconds
+ * @param {Number} timeoutMs when promise fails with
+ * @returns {Promise<GanacheInfo>}
+ */
+module.exports = async function startGanache(port, log, error, blockDelaySeconds, timeoutMs) {
     error = error || log || console.error
+    log = log || console.log
     port = port || 8545
-    const ganache = spawn(process.execPath, ["./node_modules/.bin/ganache-cli", "-m", "testrpc", "-p", port]) // "-b", "1"  // to generate blocks every second instead of after each tx
+    const delay = blockDelaySeconds || 0
+    const ganache = spawn(process.execPath, [
+        "./node_modules/.bin/ganache-cli",
+        "-m", "testrpc",
+        "-p", port,
+        "-b", `${delay}`
+    ])
     function onClose(code) { error(new Error("Ganache ethereum simulator exited with code " + code)) }
     ganache.on("close", onClose)
     function shutdown() {

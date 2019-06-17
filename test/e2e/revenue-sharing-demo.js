@@ -43,7 +43,7 @@ describe("Revenue sharing demo", () => {
         console.log("--- Operator started, getting the init state ---")
         const state = await loadState()
 
-        const web3 = new Web3(`ws://localhost:${GANACHE_PORT}`)
+        const web3 = new Web3(`http://localhost:${GANACHE_PORT}`)
         const contract = new web3.eth.Contract(MonoplasmaJson.abi, state.contractAddress)
         const token = new web3.eth.Contract(TokenJson.abi, state.tokenAddress)
 
