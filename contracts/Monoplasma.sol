@@ -73,7 +73,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
         require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(earnings[account] < newEarnings, "error_oldEarnings");
         totalProven = totalProven.add(newEarnings).sub(earnings[account]);
-        require(totalProven <= token.balanceOf(this), "error_missingBalance");
+        require(totalProven.sub(totalWithdrawn) <= token.balanceOf(this), "error_missingBalance");
         earnings[account] = newEarnings;
     }
 

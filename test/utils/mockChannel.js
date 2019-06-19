@@ -1,5 +1,6 @@
 module.exports = class MockChannel {
     constructor() {
+        this.mode = ""
         this.listeners = {
             join: [],
             part: [],
@@ -8,9 +9,9 @@ module.exports = class MockChannel {
             close: [],
         }
     }
-    startServer() {}
-    listen() {}
-    close() {}
+    startServer() { this.mode = "server" }
+    listen() { this.mode = "client" }
+    close() { this.mode = "" }
     publish(topic, ...args) {
         for (const func of this.listeners[topic]) {
             func(...args)

@@ -57,7 +57,7 @@ module.exports = async function startGanache(port, log, error, blockDelaySeconds
 
     // Ganache is ready to use when it says "Listening on 127.0.0.1:8545"
     return new Promise((done, fail) => {
-        const timeoutHandle = setTimeout(fail, timeoutMs || 10000)
+        const timeoutHandle = setTimeout(() => fail(new Error("timeout")), timeoutMs || 20000)
         let launching = true
         ganache.stdout.on("data", data => {
             const str = data.toString()

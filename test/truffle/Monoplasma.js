@@ -20,14 +20,20 @@ contract("Monoplasma", accounts => {
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
         rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})
-        await token.mint(rootchain.address, 1000000, {from: admin})
 
-        // these would be performed by the MonoplasmaWatcher
+        // simulate added members, would be performed by the MonoplasmaWatcher
         plasma.addMember(producer)
         plasma.addMember(anotherProducer)
-        plasma.addRevenue(1000)
     })
 
+    // simulate added revenue: tokens appear in the contract, MonoplasmaWatcher updates the MonoplasmaState
+    async function addRevenue(tokens) {
+        await token.mint(rootchain.address, tokens, {from: admin})
+        plasma.addRevenue(tokens)
+        return publishBlock()
+    }
+
+    // simulate a block being published by the MonoplasmaOperator
     async function publishBlock(rootHash, operator) {
         const root = rootHash || plasma.getRootHash()
         const blockNumber = currentBlockNumber++
@@ -77,9 +83,9 @@ contract("Monoplasma", accounts => {
     })
 
     describe("Member", () => {
+        let block
         it("can withdraw earnings", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
+            block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             assertEqual(await token.balanceOf(producer), 0)
@@ -88,17 +94,32 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(producer), earnings)
         })
 
+        it("can withdraw earnings for another", async () => {
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            assertEqual(await token.balanceOf(anotherProducer), 0)
+            await rootchain.withdrawAllFor(anotherProducer, block.blockNumber, earnings, proof, {from: producer})
+            assertEqual(await token.balanceOf(anotherProducer), earnings)
+        })
+
+        it("can withdraw earnings a second time", async () => {
+            const block = await addRevenue(1000)
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
+            assertEqual(await token.balanceOf(producer), earnings)
+        })
+
         it("can not withdraw earnings before freeze period is over", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
+            const block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_frozen")
         })
 
         it("can not withdraw wrong amount", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
+            const block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = { earnings: 50000 }
             await increaseTime(blockFreezePeriodSeconds + 1)
@@ -106,8 +127,7 @@ contract("Monoplasma", accounts => {
         })
 
         it("can not withdraw with bad proof", async () => {
-            plasma.addRevenue(1000)
-            const block = await publishBlock()
+            const block = await addRevenue(1000)
             const proof = [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
                 "0x3f2ed4f13f5c1f5274cf624eb1d079a15c3666c97c5403e6e8cf9cea146a8608",

@@ -67,7 +67,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
             }
         }
         web3.pastEvents.BlockCreated.push(event)
-        for (const func of web3.blockListeners.data) {
+        for (const func of web3.blockListeners.data || []) {
             await func(event)
         }
     }
