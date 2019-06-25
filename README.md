@@ -141,6 +141,13 @@ On-chain, all the tokens are in the Monoplasma smart contract. But off-chain, Bo
 
 **Whoa, you just sprayed tokens to 100,000 addresses as Alice with a few clicks, and withdrew some of them from the side channel to your on-chain wallet as Bob!**
 
+**What's that "steal all tokens" button?**
+That's the main threat scenario in a Monoplasma implementation: operator going rogue and trying to allocate all tokens in the contract to itself. You can try what happens; in this case, the operator should get away with stealing all tokens. Not good. That's why there are validators: if even one validator is live and watching, they'll get a chance to withdraw tokens before the operator does, and the operator's plot will fail.
+
+To demonstrate this, restart the whole thing. If you're using Ganache, you'll need to change the network in Metamask to something else (like Mainnet) and back to your localhost. Metamask doesn't like the chain being swapped away from under its feet.
+
+This time, before the stealing attempt, start a validator, let it sync, then try the stealing routine again. This time the operator is able to commit the corrupt block, but since the validator reacts in time, the withdraw transaction will fail.
+
 ## Troubleshooting
 
 - If you stop the operator and your `ganache` was running implicitly within it, you can restart from scratch by doing a `npm run build && node start_operator.js`.
