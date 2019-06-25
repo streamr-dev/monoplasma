@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require("mz/fs")
 const fsEx = require("fs-extra")
 const path = require("path")
