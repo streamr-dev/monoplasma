@@ -6,6 +6,19 @@ pragma solidity ^0.4.24;
  * Verifies Merkle-tree inclusion proofs that show that certain address has
  *   certain earnings balance, according to hash published ("signed") by a
  *   sidechain operator or similar authority
+ *
+ * ABOUT Merkle-tree inclusion proof: Merkle-tree inclusion proof is an algorithm to prove memebership
+ * in a set using minimal [ie log(N)] inputs. The hashes of the items are arranged by hash value in a binary Merkle tree where 
+ * each node contains a hash of the hashes of nodes below. The root node (ie "root hash") contains hash information 
+ * about the entire set, and that is the data that BalanceVerifier posts to the blockchain. To prove membership, you walk up the 
+ * tree from the node in question, and use the supplied hashes (the "proof") to fill in the hashes from the adjacent nodes. The proof  
+ * succeeds iff you end up with the known root hash when you get to the top of the tree. 
+ * See https://medium.com/crypto-0-nite/merkle-proofs-explained-6dd429623dc5
+ *
+ * Merkle-tree inclusion proof is a RELATED concept to the blockchain Merkle tree, but a somewhat DIFFERENT application. 
+ * BalanceVerifier posts the root hash of the CURRENT ledger only, and this does NOT depend on the hash of previous ledgers.
+ * This is different from the blockchain, where each block contains the hash of the previous block. 
+ *
  * TODO: see if it could be turned into a library, so many contracts could use it
  */
 contract BalanceVerifier {
