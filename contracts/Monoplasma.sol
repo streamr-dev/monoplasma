@@ -14,7 +14,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     using SafeMath for uint256;
 
     event OperatorChanged(address indexed newOperator);
-
+    event AdminFeeChanged(uint adminFee);
     /**
      * Freeze period during which all side-chain participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
@@ -37,6 +37,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     address public operator;
 
+    //fee fraction = admingFee/1000000
+    uint public adminFee;
+
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
     uint public totalWithdrawn;
@@ -53,6 +56,10 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function setOperator(address newOperator) public onlyOwner {
         operator = newOperator;
         emit OperatorChanged(newOperator);
+    }
+    function setAdminFee(uint _adminFee) public onlyOwner {
+        adminFee = _adminFee;
+        emit AdminFeeChanged(_adminFee);
     }
 
     /**

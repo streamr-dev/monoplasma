@@ -7,6 +7,11 @@ const log = QUIET ? () => {} : console.log
 async function replayEvent(plasma, event) {
     switch (event.event) {
         // event Transfer(address indexed from, address indexed to, uint256 value);
+        case "AdminFeeChanged": {
+            const { adminFee } = event.returnValues
+            log(`Admin fee changed to ${adminFee} @ block ${event.blockNumber}`)
+            plasma.setAdminFeeFraction(adminFee);
+        } break
         case "Transfer": {
             const { value } = event.returnValues
             log(`${value} tokens received @ block ${event.blockNumber}`)

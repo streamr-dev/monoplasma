@@ -14,9 +14,10 @@ module.exports = class MonoplasmaState {
      * @param {number} blockFreezeSeconds
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      * @param {Object} store offering persistance for blocks
-     * @param {string} defaultReceiverAddress where revenues go if there are no members
+     * @param {string} adminAddress where revenues go if there are no members
+     * @param {number} adminFeeFraction fraction of revenue that goes to admin. a uint whose double value is uintVal/2^18
      */
-    constructor(blockFreezeSeconds, initialMembers, store, defaultReceiverAddress) {
+    constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
@@ -34,12 +35,16 @@ module.exports = class MonoplasmaState {
         this.members = initialMembers.map(m => new MonoplasmaMember(undefined, m.address, m.earnings))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
-
+        /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
+        this.adminAddress  = adminAddress
+        /** @property {number}  adminFeeFraction fraction of revenue that goes to admin */
+        this.setAdminFeeFraction(adminFeeFraction)
+        
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
 
         // add default address in case revenue is received with no members
-        const defaultAddress = isAddress(defaultReceiverAddress) ? defaultReceiverAddress : "0x0000000000000000000000000000000000000000"
+        const defaultAddress = isAddress(adminAddress) ? adminAddress : "0x0000000000000000000000000000000000000000"
         const wasNew = this.addMember(defaultAddress, "default")
         const i = this.indexOf[defaultAddress]
         this.defaultMember = this.members[i]
@@ -178,6 +183,14 @@ module.exports = class MonoplasmaState {
     // ///////////////////////////////////
     //      ADMIN API
     // ///////////////////////////////////
+    
+    /**
+     * @param {number} adminFeeFraction fraction of revenue that goes to admin
+     */
+    setAdminFeeFraction(adminFeeFraction){
+        console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
+        this.adminFeeFraction = adminFeeFraction
+    }
 
     /**
      * @param {number} amount of tokens that was added to the Community revenues
@@ -190,7 +203,10 @@ module.exports = class MonoplasmaState {
             this.defaultMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
-            const share = amountBN.divn(activeCount)
+            const adminFeeBN = amountBN.mul(new BN(this.adminFeeFraction)).div(new BN(1000000))
+            console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction*1000000: "+this.adminFeeFraction)
+            this.defaultMember.addRevenue(adminFeeBN)
+            const share = amountBN.sub(adminFeeBN).divn(activeCount)
             activeMembers.forEach(m => m.addRevenue(share))
             this.totalEarnings.iadd(amountBN)
         }

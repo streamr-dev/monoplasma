@@ -30,12 +30,15 @@ module.exports = class MonoplasmaWatcher {
         // double-check state from contracts as a sanity check (TODO: alert if there were wrong in startState?)
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         this.state.tokenAddress = await this.contract.methods.token().call()
+        this.state.adminFeeFraction = await this.contract.methods.adminFee().call()
+        console.log("fee : "+ this.state.adminFeeFraction)
+        this.state.admin = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
-        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress)
+        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress, this.state.adminFeeFraction)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -58,6 +61,16 @@ module.exports = class MonoplasmaWatcher {
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
+
+        this.adminCutChangeFilter = this.contract.events.AdminFeeChanged({ filter: { to: this.state.contractAddress } })
+        this.adminCutChangeFilter.on("data", event => {
+            this.state.lastBlockNumber = +event.blockNumber
+            replayEvent(this.plasma, event).catch(this.error)
+            return this.store.saveState(this.state).catch(this.error)
+        })
+        this.adminCutChangeFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
+        this.adminCutChangeFilter.on("error", this.error)
+
 
         this.log("Listening to joins/parts from the Channel...")
         this.channel.listen()
@@ -104,9 +117,14 @@ module.exports = class MonoplasmaWatcher {
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const joinPartEvents = await this.store.loadEvents(fromBlock, toBlock + 1)       // +1 to catch events after the very latest block, see join/part listening above
         const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
+        const adminFeeChangeEvents = await this.contract.getPastEvents("AdminFeeChanged", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
-        const ethereumEvents = mergeEventLists(blockCreateEvents, transferEvents)
-        const allEvents = mergeEventLists(ethereumEvents, joinPartEvents)
+
+        const m1 = mergeEventLists(blockCreateEvents, transferEvents)
+        const m2  = mergeEventLists(m1, joinPartEvents)
+        const m3  = mergeEventLists(m2, adminFeeChangeEvents)
+
+        const allEvents = mergeEventLists(m3, joinPartEvents)
         for (const event of allEvents) {
             await replayEvent(plasma, event)
         }
