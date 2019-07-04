@@ -1,7 +1,7 @@
 const MonoplasmaMember = require("./member")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
-const {utils: { isAddress }} = require("web3")
+const {utils: { isAddress, toWei }} = require("web3")
 const now = require("./utils/now")
 
 /**
@@ -18,6 +18,9 @@ module.exports = class MonoplasmaState {
      * @param {number} adminFeeFraction fraction of revenue that goes to admin. a uint whose double value is uintVal/2^18
      */
     constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
+        if(!isAddress(adminAddress)){
+            throw new Error("badly formed adminAddress: " + adminAddress)
+        }
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
@@ -43,18 +46,15 @@ module.exports = class MonoplasmaState {
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
 
-        // add default address in case revenue is received with no members
-        const defaultAddress = isAddress(adminAddress) ? adminAddress : "0x0000000000000000000000000000000000000000"
-        const wasNew = this.addMember(defaultAddress, "default")
-        const i = this.indexOf[defaultAddress]
-        this.defaultMember = this.members[i]
+        const wasNew = this.addMember(adminAddress, "admin")
+        const i = this.indexOf[adminAddress]
+        this.adminMember = this.members[i]
 
-        // don't enable defaultMember to participate into profit-sharing (unless it was also in initialMembers)
+        // don't enable adminMember to participate into profit-sharing (unless it was also in initialMembers)
         if (wasNew) {
-            this.defaultMember.setActive(false)
+            this.adminMember.setActive(false)
         }
     }
-
     // ///////////////////////////////////
     //      MEMBER API
     // ///////////////////////////////////
@@ -66,8 +66,8 @@ module.exports = class MonoplasmaState {
     }
 
     getMemberCount() {
-        // "default member" shouldn't show up in member count unless separately added
-        const total = this.members.length - (this.defaultMember.isActive() ? 0 : 1)
+        // "admin member" shouldn't show up in member count unless separately added
+        const total = this.members.length - (this.adminMember.isActive() ? 0 : 1)
         const active = this.members.filter(m => m.isActive()).length
         return {
             total,
@@ -199,13 +199,13 @@ module.exports = class MonoplasmaState {
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = activeMembers.length
         if (activeCount === 0) {
-            console.warn(`No active members in community! Allocating ${amount} to default account ${this.defaultMember.address}`)
-            this.defaultMember.addRevenue(amount)
+            console.warn(`No active members in community! Allocating ${amount} to admin account ${this.adminMember.address}`)
+            this.adminMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
-            const adminFeeBN = amountBN.mul(new BN(this.adminFeeFraction)).div(new BN(1000000))
-            console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction*1000000: "+this.adminFeeFraction)
-            this.defaultMember.addRevenue(adminFeeBN)
+            const adminFeeBN = amountBN.mul(new BN(this.adminFeeFraction)).div(new BN(toWei("1","ether")))
+            console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
+            this.adminMember.addRevenue(adminFeeBN)
             const share = amountBN.sub(adminFeeBN).divn(activeCount)
             activeMembers.forEach(m => m.addRevenue(share))
             this.totalEarnings.iadd(amountBN)

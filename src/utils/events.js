@@ -10,7 +10,7 @@ async function replayEvent(plasma, event) {
         case "AdminFeeChanged": {
             const { adminFee } = event.returnValues
             log(`Admin fee changed to ${adminFee} @ block ${event.blockNumber}`)
-            plasma.setAdminFeeFraction(adminFee);
+            plasma.setAdminFeeFraction(adminFee)
         } break
         case "Transfer": {
             const { value } = event.returnValues
