@@ -9,8 +9,7 @@ const MonoplasmaState = require("../../src/state")
 //   since we DO check that the correct values actually come out of it. Mock would be almost as complex as the real thing.
 const tmpDir = path.join(os.tmpdir(), `monoplasma-test-${+new Date()}`)
 const fileStore = require("../../src/fileStore")(tmpDir)
-//const admin = '0xa3d1f77acff0060f7213d7bf3c7fec78df847de1'
-const admin = '0x0000000000000000000000000000000000000000'
+const admin = "0x0000000000000000000000000000000000000000"
 describe("MonoplasmaState", () => {
     it("should return member passed to constructor and then remove it successfully", () => {
         const plasmaAdmin = new MonoplasmaState(0, [{
