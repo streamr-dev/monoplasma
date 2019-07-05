@@ -46,6 +46,7 @@ const startState = {
     lastBlockNumber: 5,
     lastPublishedBlock: 3,
     contractAddress: "contractAddress",
+    operatorAddress: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 }
 
 describe("MonoplasmaValidator", () => {

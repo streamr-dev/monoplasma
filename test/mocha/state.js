@@ -9,13 +9,14 @@ const MonoplasmaState = require("../../src/state")
 //   since we DO check that the correct values actually come out of it. Mock would be almost as complex as the real thing.
 const tmpDir = path.join(os.tmpdir(), `monoplasma-test-${+new Date()}`)
 const fileStore = require("../../src/fileStore")(tmpDir)
-
+//const admin = '0xa3d1f77acff0060f7213d7bf3c7fec78df847de1'
+const admin = '0x0000000000000000000000000000000000000000'
 describe("MonoplasmaState", () => {
     it("should return member passed to constructor and then remove it successfully", () => {
         const plasmaAdmin = new MonoplasmaState(0, [{
             address: "0xff019d79c31114c811e68e68c9863966f22370ef",
             earnings: 10
-        }], fileStore)
+        }], fileStore, admin, 0)
         assert.deepStrictEqual(plasmaAdmin.getMembers(), [{
             address: "0xff019d79c31114c811e68e68c9863966f22370ef",
             earnings: "10",
@@ -25,7 +26,7 @@ describe("MonoplasmaState", () => {
     })
 
     it("should return correct members and member count", () => {
-        const plasma = new MonoplasmaState(0, [], fileStore)
+        const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -50,12 +51,12 @@ describe("MonoplasmaState", () => {
                 earnings: 0,
             })
         }
-        const plasma = new MonoplasmaState(0, initialMembers, fileStore)
+        const plasma = new MonoplasmaState(0, initialMembers, fileStore, admin, 0)
         plasma.addRevenue(100)
     })
 
     it("should remember past blocks' earnings", async () => {
-        const plasma = new MonoplasmaState(0, [], fileStore)
+        const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -74,7 +75,7 @@ describe("MonoplasmaState", () => {
     })
 
     it("should remember past blocks' proofs", async () => {
-        const plasma = new MonoplasmaState(0, [], fileStore)
+        const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
@@ -91,13 +92,13 @@ describe("MonoplasmaState", () => {
         assert.deepStrictEqual(plasma.getProof("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"), ["0xa86d54e9aab41ae5e520ff0062ff1b4cbd0b2192bb01080a058bb170d84e6457", "0x91360deed2f511a8503790083c6de21efbb1006b460d5024863ead9de5448927"])
     })
 
-    it("should give revenue to defaultAccount if no members present", async () => {
-        const plasma = new MonoplasmaState(0, [], fileStore, "0x1234567890123456789012345678901234567890")
+    it("should give revenue to adminAccount if no members present", async () => {
+        const plasma = new MonoplasmaState(0, [], fileStore, "0x1234567890123456789012345678901234567890", 0)
         plasma.addRevenue(100)
         assert.strictEqual(plasma.getMember("0x1234567890123456789012345678901234567890").earnings, "100")
     })
-    it("should give no revenue to defaultAccount if members present", async () => {
-        const plasma = new MonoplasmaState(0, [], fileStore, "0x1234567890123456789012345678901234567890")
+    it("should give no revenue to adminAccount if members present", async () => {
+        const plasma = new MonoplasmaState(0, [], fileStore, "0x1234567890123456789012345678901234567890", 0)
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addRevenue(100)
         assert.strictEqual(plasma.getMember("0x1234567890123456789012345678901234567890").earnings, "0")
@@ -106,7 +107,7 @@ describe("MonoplasmaState", () => {
     describe("getMemberApi", () => {
         let plasma
         beforeEach(() => {
-            const plasmaAdmin = new MonoplasmaState(0, [], fileStore)
+            const plasmaAdmin = new MonoplasmaState(0, [], fileStore, admin, 0)
             plasmaAdmin.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
             plasmaAdmin.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
             plasmaAdmin.addRevenue(100)

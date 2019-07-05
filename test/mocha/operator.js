@@ -24,7 +24,8 @@ const initialBlock = {
 const startState = {
     lastBlockNumber: 5,
     lastPublishedBlock: 3,
-    contractAddress: "contractAddress",
+    contractAddress: "0x0000000000000000000000000000000000000001",
+    operatorAddress: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 }
 
 describe("MonoplasmaOperator", () => {
@@ -50,7 +51,7 @@ describe("MonoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "30" },
-            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
+            { address: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1", earnings: "0", name: "admin" },
             { address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299", earnings: "10" },
         ]
         assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
@@ -68,7 +69,7 @@ describe("MonoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
-            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
+            { address: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1", earnings: "0", name: "admin" },
         ]
         assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
     })
@@ -85,7 +86,7 @@ describe("MonoplasmaOperator", () => {
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "100" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" },
-            { address: "0x0000000000000000000000000000000000000000", earnings: "0", name: "default" },
+            { address: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1", earnings: "0", name: "admin" },
         ]
         assert.deepStrictEqual(operator.plasma.members.map(m => m.toObject()), newBalances)
     })

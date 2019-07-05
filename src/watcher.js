@@ -29,6 +29,7 @@ module.exports = class MonoplasmaWatcher {
         this.log("Initializing Monoplasma state...")
         // double-check state from contracts as a sanity check (TODO: alert if there were wrong in startState?)
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
+        //console.log("contract: "+JSON.stringify(this.contract))
         this.state.tokenAddress = await this.contract.methods.token().call()
         this.state.adminFeeFraction = await this.contract.methods.adminFee().call()
         console.log("fee : "+ this.state.adminFeeFraction)

@@ -6,6 +6,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         utils: {},
         transferListeners: {},
         blockListeners: {},
+        adminFeeListeners: {},
         pastEvents: Object.assign({
             Transfer: [],
             BlockCreated: [],
@@ -25,6 +26,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         }
     }
     web3.eth.Contract.prototype.methods = {
+        adminFee: () => ({ call: () => 0 }),
         token: () => ({ call: () => "tokenAddress" }),
         blockFreezeSeconds: () => ({ call: () => 1000 }),
         commit: (...args) => ({ send: async () => {
@@ -42,7 +44,12 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         BlockCreated: () => ({ on: (eventCode, func) => {
             if (!web3.blockListeners[eventCode]) { web3.blockListeners[eventCode] = [] }
             web3.blockListeners[eventCode].push(func)
+        }}),
+        AdminFeeChanged: () => ({ on: (eventCode, func) => {
+            if (!web3.adminFeeListeners[eventCode]) { web3.adminFeeListeners[eventCode] = [] }
+            web3.adminFeeListeners[eventCode].push(func)
         }})
+        
     }
 
     web3.mockTransfer = async (value=1, blockNumber=11, from="from", to="contract") => {

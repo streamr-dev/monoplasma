@@ -16,7 +16,7 @@ contract("Monoplasma", accounts => {
     const anotherProducer = accounts[2]
     const admin = accounts[9]
     const blockFreezePeriodSeconds = 1000
-    const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} })
+    const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} },admin,0)
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
         rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})

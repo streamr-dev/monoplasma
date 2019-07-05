@@ -13,7 +13,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
             saveBlock: async block => {
                 this.lastSavedBlock = block
             }
-        })
+        },this.state.operatorAddress, this.state.adminFeeFraction)
     }
 
     async start() {
@@ -78,7 +78,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         await super.playback(from, to)
         //await super.playbackOn(this.validatedPlasma, from, to)
         this.lastCheckedBlock = to
-        this.validatedPlasma = new MonoplasmaState(0, this.plasma.getMembers(), this.validatedPlasma.store)
+        this.validatedPlasma = new MonoplasmaState(0, this.plasma.getMembers(), this.validatedPlasma.store,  this.state.operatorAddress, this.state.adminFeeFraction)
         this.lastValidatedBlock = to
         this.lastValidatedMembers = this.watchedAccounts.map(address => this.validatedPlasma.getMember(address))
     }
