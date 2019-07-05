@@ -31,7 +31,6 @@ module.exports = class MonoplasmaWatcher {
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
         //console.log("contract: "+JSON.stringify(this.contract))
         this.state.tokenAddress = await this.contract.methods.token().call()
-        this.state.adminFeeFraction = await this.contract.methods.adminFee().call()
         console.log("fee : "+ this.state.adminFeeFraction)
         this.state.admin = await this.contract.methods.token().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
@@ -39,7 +38,8 @@ module.exports = class MonoplasmaWatcher {
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
-        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress, this.state.adminFeeFraction)
+        const adminFeeFraction = lastBlock ? lastBlock.adminFeeFraction : 0
+        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress, adminFeeFraction)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -122,8 +122,8 @@ module.exports = class MonoplasmaWatcher {
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
 
         const m1 = mergeEventLists(blockCreateEvents, transferEvents)
-        const m2  = mergeEventLists(m1, joinPartEvents)
-        const m3  = mergeEventLists(m2, adminFeeChangeEvents)
+        const m2 = mergeEventLists(m1, joinPartEvents)
+        const m3 = mergeEventLists(m2, adminFeeChangeEvents)
 
         const allEvents = mergeEventLists(m3, joinPartEvents)
         for (const event of allEvents) {

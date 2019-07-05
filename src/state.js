@@ -183,13 +183,13 @@ module.exports = class MonoplasmaState {
     // ///////////////////////////////////
     //      ADMIN API
     // ///////////////////////////////////
-    
+
     /**
      * @param {number} adminFeeFraction fraction of revenue that goes to admin
      */
-    setAdminFeeFraction(adminFeeFraction){
+    setAdminFeeFraction(adminFeeFraction) {
         console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
-        this.adminFeeFraction = adminFeeFraction
+        this.adminFeeFraction = new BN(adminFeeFraction.toString(10))
     }
 
     /**
@@ -203,7 +203,7 @@ module.exports = class MonoplasmaState {
             this.adminMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
-            const adminFeeBN = amountBN.mul(new BN(this.adminFeeFraction)).div(new BN(toWei("1","ether")))
+            const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1","ether")))
             console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
             this.adminMember.addRevenue(adminFeeBN)
             const share = amountBN.sub(adminFeeBN).divn(activeCount)
@@ -296,11 +296,13 @@ module.exports = class MonoplasmaState {
         const members = this.members.map(m => m.toObject())
         const timestamp = now()
         const totalEarnings = this.getTotalRevenue()
+        const adminFee = this.adminFeeFraction.toString(10)
         const latestBlock = {
             blockNumber,
             members,
             timestamp,
             totalEarnings,
+            adminFee,
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
         await this.store.saveBlock(latestBlock)

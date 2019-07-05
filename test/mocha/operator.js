@@ -91,5 +91,9 @@ describe("MonoplasmaOperator", () => {
         assert.deepStrictEqual(operator.plasma.members.map(m => m.toObject()), newBalances)
     })
 
+    it("Admin fee changes are replayed correctly", () => {
+
+    })
+
     // TODO: test channel (Join/Part events) playback, too
 })
