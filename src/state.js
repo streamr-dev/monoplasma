@@ -15,7 +15,7 @@ module.exports = class MonoplasmaState {
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      * @param {Object} store offering persistance for blocks
      * @param {string} adminAddress where revenues go if there are no members
-     * @param {number} adminFeeFraction fraction of revenue that goes to admin. a uint whose double value is uintVal/2^18
+     * @param {Object} adminFeeFraction fraction of revenue that goes to admin. Can be expressed as: number between 0 and 1, string of wei, BN of Wei (1 = 10^18)
      */
     constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
         if(!isAddress(adminAddress)){
@@ -40,7 +40,10 @@ module.exports = class MonoplasmaState {
         this.tree = new MerkleTree(this.members)
         /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
         this.adminAddress  = adminAddress
-        /** @property {number}  adminFeeFraction fraction of revenue that goes to admin */
+        /** @property {BN}  adminFeeFraction fraction of revenue that goes to admin */
+        if(typeof adminFeeFraction === 'undefined'){
+            adminFeeFraction = new BN(0);
+        }
         this.setAdminFeeFraction(adminFeeFraction)
         
         this.indexOf = {}
@@ -185,11 +188,19 @@ module.exports = class MonoplasmaState {
     // ///////////////////////////////////
 
     /**
-     * @param {number} adminFeeFraction fraction of revenue that goes to admin
+     * @param {Object} adminFeeFraction fraction of revenue that goes to admin
      */
     setAdminFeeFraction(adminFeeFraction) {
+        if(typeof adminFeeFraction === 'number'){
+            if(adminFeeFraction < 0 || adminFeeFraction > 1){
+                throw Error("if specified as a number, adminFeeFraction must be between 0 and 1")
+            }
+            adminFeeFraction = new BN(toWei(adminFeeFraction.toString(10),"ether"))
+        } else if(typeof adminFeeFraction === 'string'){
+            adminFeeFraction = new BN(adminFeeFraction)
+        }
         console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
-        this.adminFeeFraction = new BN(adminFeeFraction.toString(10))
+        this.adminFeeFraction = adminFeeFraction
     }
 
     /**
@@ -296,13 +307,15 @@ module.exports = class MonoplasmaState {
         const members = this.members.map(m => m.toObject())
         const timestamp = now()
         const totalEarnings = this.getTotalRevenue()
-        const adminFee = this.adminFeeFraction.toString(10)
+        const owner = this.adminAddress
+        const adminFeeFractionWeiString = this.adminFeeFraction.toString(10)
         const latestBlock = {
             blockNumber,
             members,
             timestamp,
             totalEarnings,
-            adminFee,
+            owner,
+            adminFeeFractionWeiString
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
         await this.store.saveBlock(latestBlock)

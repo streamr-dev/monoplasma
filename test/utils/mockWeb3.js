@@ -7,6 +7,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         transferListeners: {},
         blockListeners: {},
         adminFeeListeners: {},
+        ownershipListeners: {},
         pastEvents: Object.assign({
             Transfer: [],
             BlockCreated: [],
@@ -27,6 +28,8 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
     }
     web3.eth.Contract.prototype.methods = {
         adminFee: () => ({ call: () => 0 }),
+        owner: () => ({ call: () => "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1" }),
+        operator: () => ({ call: () => "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1" }),
         token: () => ({ call: () => "tokenAddress" }),
         blockFreezeSeconds: () => ({ call: () => 1000 }),
         commit: (...args) => ({ send: async () => {
@@ -40,6 +43,10 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         Transfer: () => ({ on: (eventCode, func) => {
             if (!web3.transferListeners[eventCode]) { web3.transferListeners[eventCode] = [] }
             web3.transferListeners[eventCode].push(func)
+        }}),
+        OwnershipTransferred: () => ({ on: (eventCode, func) => {
+            if (!web3.ownershipListeners[eventCode]) { web3.ownershipListeners[eventCode] = [] }
+            web3.ownershipListeners[eventCode].push(func)
         }}),
         BlockCreated: () => ({ on: (eventCode, func) => {
             if (!web3.blockListeners[eventCode]) { web3.blockListeners[eventCode] = [] }

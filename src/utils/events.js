@@ -7,6 +7,14 @@ const log = QUIET ? () => {} : console.log
 async function replayEvent(plasma, event) {
     switch (event.event) {
         // event Transfer(address indexed from, address indexed to, uint256 value);
+        case "OwnershipTransferred": {
+            const { previousOwner, newOwner } = event.returnValues
+            log(`Owner (admin) address changed to ${newOwner} from ${previousOwner} @ block ${event.blockNumber}`)
+            if(plasma.admin != previousOwner){
+                throw Error(`plasma admin stored in state ${plasma.admin} != previousOwner reported by OwnershipTransferred event ${previousOwner}`)
+            }
+            plasma.admin = newOwner
+        } break
         case "AdminFeeChanged": {
             const { adminFee } = event.returnValues
             log(`Admin fee changed to ${adminFee} @ block ${event.blockNumber}`)

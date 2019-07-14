@@ -29,17 +29,20 @@ module.exports = class MonoplasmaWatcher {
         this.log("Initializing Monoplasma state...")
         // double-check state from contracts as a sanity check (TODO: alert if there were wrong in startState?)
         this.contract = new this.web3.eth.Contract(MonoplasmaJson.abi, this.state.contractAddress)
-        //console.log("contract: "+JSON.stringify(this.contract))
+        //console.log("abi: "+JSON.stringify(MonoplasmaJson.abi))
         this.state.tokenAddress = await this.contract.methods.token().call()
-        console.log("fee : "+ this.state.adminFeeFraction)
-        this.state.admin = await this.contract.methods.token().call()
+        //console.log("fee : "+ this.state.adminFeeFraction)
+        //this.state.operatorAddress = await this.contract.methods.operator().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
         this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
         const adminFeeFraction = lastBlock ? lastBlock.adminFeeFraction : 0
-        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, this.state.operatorAddress, adminFeeFraction)
+        const owner = lastBlock && lastBlock.owner ? lastBlock.owner : await this.contract.methods.owner().call()
+        //console.log("owner: "+ owner+ " lastBlock: "+ JSON.stringify(lastBlock))
+
+        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, owner, adminFeeFraction)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)
@@ -54,24 +57,34 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to Ethereum events...")
+        console.log("state: "+ JSON.stringify(this.state))
+        function handleEvent(event, watcher){
+            console.log("seen event: "+JSON.stringify(event))
+            watcher.state.lastBlockNumber = +event.blockNumber
+            replayEvent(watcher.plasma, event).catch(watcher.error)
+            return watcher.store.saveState(watcher.state).catch(watcher.error)
+        }
+
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
         this.tokenFilter.on("data", event => {
-            this.state.lastBlockNumber = +event.blockNumber
-            replayEvent(this.plasma, event).catch(this.error)
-            return this.store.saveState(this.state).catch(this.error)
+            handleEvent(event, this)
         })
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
 
         this.adminCutChangeFilter = this.contract.events.AdminFeeChanged({ filter: { to: this.state.contractAddress } })
         this.adminCutChangeFilter.on("data", event => {
-            this.state.lastBlockNumber = +event.blockNumber
-            replayEvent(this.plasma, event).catch(this.error)
-            return this.store.saveState(this.state).catch(this.error)
+            handleEvent(event, this)
         })
         this.adminCutChangeFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.adminCutChangeFilter.on("error", this.error)
 
+        this.ownershipChangeFilter = this.contract.events.OwnershipTransferred({ filter: { to: this.state.contractAddress } })
+        this.ownershipChangeFilter.on("data", event => {
+            handleEvent(event, this)
+        })
+        this.ownershipChangeFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
+        this.ownershipChangeFilter.on("error", this.error)
 
         this.log("Listening to joins/parts from the Channel...")
         this.channel.listen()
