@@ -18,7 +18,8 @@ const BLOCK_FREEZE_SECONDS = 1
 
 const from = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 
-const { loadState } = require("../../src/fileStore")(STORE_DIR)
+const FileStore = require("../../src/fileStore")
+const { loadState } = new FileStore(STORE_DIR, log)
 
 describe("Revenue sharing demo", () => {
     let operatorProcess
