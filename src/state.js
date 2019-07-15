@@ -41,11 +41,11 @@ module.exports = class MonoplasmaState {
         /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
         this.adminAddress  = adminAddress
         /** @property {BN}  adminFeeFraction fraction of revenue that goes to admin */
-        if(typeof adminFeeFraction === 'undefined'){
-            adminFeeFraction = new BN(0);
+        if(typeof adminFeeFraction === "undefined"){
+            adminFeeFraction = new BN(0)
         }
         this.setAdminFeeFraction(adminFeeFraction)
-        
+
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
 
@@ -191,12 +191,12 @@ module.exports = class MonoplasmaState {
      * @param {Object} adminFeeFraction fraction of revenue that goes to admin
      */
     setAdminFeeFraction(adminFeeFraction) {
-        if(typeof adminFeeFraction === 'number'){
+        if(typeof adminFeeFraction === "number"){
             if(adminFeeFraction < 0 || adminFeeFraction > 1){
                 throw Error("if specified as a number, adminFeeFraction must be between 0 and 1")
             }
             adminFeeFraction = new BN(toWei(adminFeeFraction.toString(10),"ether"))
-        } else if(typeof adminFeeFraction === 'string'){
+        } else if(typeof adminFeeFraction === "string"){
             adminFeeFraction = new BN(adminFeeFraction)
         }
         console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
