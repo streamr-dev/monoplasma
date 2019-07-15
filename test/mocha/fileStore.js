@@ -2,8 +2,11 @@ const os = require("os")
 const path = require("path")
 const assert = require("assert")
 
+const log = console.log //() => {}
+
 const tmpDir = path.join(os.tmpdir(), `fileStore-test-${+new Date()}`)
-const fileStore = require("../../src/fileStore")(tmpDir)
+const FileStore = require("../../src/fileStore")
+const fileStore = new FileStore(tmpDir, log)
 
 describe("File system implementation of Monoplasma storage", () => {
     it("Correctly loads and saves state", async () => {

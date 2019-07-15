@@ -56,7 +56,8 @@ const error = (e, ...args) => {
 }
 
 const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/demo/public/data"
-const fileStore = require("./src/fileStore")(storeDir)
+const FileStore = require("./src/fileStore")
+const fileStore = new FileStore(storeDir, log)
 
 let ganache = null
 function stopGanache() {

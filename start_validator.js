@@ -33,7 +33,8 @@ function error() {
 
 const defaultConfigPath = __dirname + "/demo/public/data/state.json"
 const storeDir = fs.existsSync(STORE_DIR) ? STORE_DIR : __dirname + "/temp"
-const fileStore = require("./src/fileStore")(storeDir)
+const FileStore = require("./src/fileStore")
+const fileStore = new FileStore(storeDir, log)
 
 // TODO: get rid of this copy hack; past events sync should happen through the monoplasmaRouter and HTTP
 const eventsDir = path.join(storeDir, "events")

@@ -18,7 +18,8 @@ const BLOCK_FREEZE_SECONDS = 1
 
 const from = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 
-const { loadState } = require("../../src/fileStore")(STORE_DIR)
+const FileStore = require("../../src/fileStore")
+const fileStore = new FileStore(STORE_DIR, console.log)
 
 describe("Revenue sharing demo", () => {
     let operatorProcess
@@ -41,7 +42,7 @@ describe("Revenue sharing demo", () => {
         await untilStreamContains(operatorProcess.stdout, "[DONE]")
 
         console.log("--- Operator started, getting the init state ---")
-        const state = await loadState()
+        const state = await fileStore.loadState()
 
         const web3 = new Web3(`ws://localhost:${GANACHE_PORT}`)
         const contract = new web3.eth.Contract(MonoplasmaJson.abi, state.contractAddress)

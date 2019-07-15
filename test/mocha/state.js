@@ -8,8 +8,10 @@ const MonoplasmaState = require("../../src/state")
 
 // this is a unit test, but still it's better to use the "real" file store and not mock it,
 //   since we DO check that the correct values actually come out of it. Mock would be almost as complex as the real thing.
+const log = console.log //() => {}
 const tmpDir = path.join(os.tmpdir(), `monoplasma-test-${+new Date()}`)
-const fileStore = require("../../src/fileStore")(tmpDir)
+const FileStore = require("../../src/fileStore")
+const fileStore = new FileStore(tmpDir, log)
 const admin = "0x0000000000000000000000000000000000123564"
 describe("MonoplasmaState", () => {
     it("should return member passed to constructor and then remove it successfully", () => {

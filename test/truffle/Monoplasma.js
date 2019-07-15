@@ -9,7 +9,8 @@ const {utils: { toWei }} = require("web3")
 const MonoplasmaState = require("../../src/state")
 const MonoplasmaWatcher = require("../../src/watcher")
 const JoinPartChannel = require("../../src/joinPartChannel")
-const fileStore = require("../../src/fileStore")("/tmp/mono")
+const FileStore = require("../../src/fileStore")
+const fileStore = new FileStore("/tmp/mono", console.log)
 let currentBlockNumber = 1
 
 
