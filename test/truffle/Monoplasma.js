@@ -31,8 +31,8 @@ contract("Monoplasma", accounts => {
             tokenAddress: token.address,
             blockFreezeSeconds: 1
         }
-       // watcher = new MonoplasmaWatcher(web3,joinPartChannel,startState,fileStore)
-       // watcher.start()
+        watcher = new MonoplasmaWatcher(web3,joinPartChannel,startState,fileStore)
+        watcher.start()
 
         // simulate added members, would be performed by the MonoplasmaWatcher
         plasma.addMember(producer)
