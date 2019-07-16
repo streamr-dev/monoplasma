@@ -134,13 +134,14 @@ describe("MonoplasmaWatcher", function () {
         await token.methods.transfer(monoplasma.options.address, 10).send(sendOptions)
         assert(store.lastSavedState)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "20" },
-            { address: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1", earnings: "0", name: "admin" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "75" }
         ]
-        assert.deepStrictEqual(store.lastSavedBlock.members, newBalances)
+        //50 + 15 (from 30 transferred in last test) + 10 = 75
+        assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
     })
 
+    /*
+    // I don't think this tests anything now that web3 isnt mocked
     it("Tokens are shared between members and the state is updated during playback", async () => {
         const channel = new MockChannel()
         const startState = {
@@ -160,9 +161,27 @@ describe("MonoplasmaWatcher", function () {
         ]
         assert.deepStrictEqual(watcher.plasma.members.map(m => m.toObject()), newBalances)
     })
+    */
 
-    it("Admin fee changes are replayed correctly", () => {
-
+    it("Admin fee changes are replayed correctly", async () => {
+        const channel = new MockChannel()
+        const startState = {
+            lastBlockNumber: 5,
+            lastPublishedBlock: 3,
+            contractAddress: monoplasma.options.address,
+            operatorAddress: admin
+        }
+        const store = getMockStore(startState, initialBlock, log)
+        const watcher = new MonoplasmaWatcher(web3, channel, startState, store, log, error)
+        await watcher.start()
+        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.5","ether")).send(sendOptions)
+        await token.methods.transfer(monoplasma.options.address, 20).send(sendOptions)
+        //startBalance + 20 (previous tests) + 5 (10 for admin)
+        const newBalances = [
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "75" },
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "45" },
+        ]
+        assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
     })
 
     // TODO: test channel (Join/Part events) playback, too
