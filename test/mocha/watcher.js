@@ -176,12 +176,22 @@ describe("MonoplasmaWatcher", function () {
         await watcher.start()
         await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.5","ether")).send(sendOptions)
         await token.methods.transfer(monoplasma.options.address, 20).send(sendOptions)
-        //startBalance + 20 (previous tests) + 5 (10 for admin)
+        //startBalance + 20 (previous tests) + 5 (10/2, 10 for admin)
         const newBalances = [
             { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "75" },
             { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "45" },
         ]
         assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
+
+        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.25","ether")).send(sendOptions)
+        await token.methods.transfer(monoplasma.options.address, 40).send(sendOptions)
+        //startBalance + 20 (previous tests) + 5 (10/2, 10 for admin) + 15 (30/2, 10 for admin)
+        const newBalances2 = [
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "90" },
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
+        ]
+        assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances2)
+        
     })
 
     // TODO: test channel (Join/Part events) playback, too
