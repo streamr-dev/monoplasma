@@ -1,6 +1,7 @@
 const MonoplasmaMember = require("./member")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
+const toBN = require("number-to-bn")
 const {utils: { isAddress, toWei }} = require("web3")
 const now = require("./utils/now")
 
@@ -188,16 +189,18 @@ module.exports = class MonoplasmaState {
     // ///////////////////////////////////
 
     /**
-     * @param {Object} adminFeeFraction fraction of revenue that goes to admin
+     * @param {Number|String|BN} adminFeeFraction fraction of revenue that goes to admin (string should be scaled by 10**18, like ether)
      */
     setAdminFeeFraction(adminFeeFraction) {
-        if(typeof adminFeeFraction === "number"){
-            if(adminFeeFraction < 0 || adminFeeFraction > 1){
-                throw Error("if specified as a number, adminFeeFraction must be between 0 and 1")
-            }
-            adminFeeFraction = new BN(toWei(adminFeeFraction.toString(10), "ether"))
-        } else if(typeof adminFeeFraction === "string"){
-            adminFeeFraction = new BN(adminFeeFraction)
+        if (typeof adminFeeFraction === "number") {
+            adminFeeFraction = toBN(toWei(adminFeeFraction.toString(10)))
+        } else if (typeof adminFeeFraction === "string" && adminFeeFraction.length > 0) {
+            adminFeeFraction = toBN(adminFeeFraction)
+        } else if (!adminFeeFraction || adminFeeFraction.constructor.name !== "BN") {
+            throw new Error("setAdminFeeFraction: expecting a number, a string, or a bn.js bignumber, got " + JSON.stringify(adminFeeFraction))
+        }
+        if (adminFeeFraction.ltn(0) || adminFeeFraction.gt(toBN(toWei("1")))) {
+            throw Error("setAdminFeeFraction: adminFeeFraction must be between 0 and 1")
         }
         console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
         this.adminFeeFraction = adminFeeFraction

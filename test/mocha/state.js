@@ -1,7 +1,8 @@
 const os = require("os")
 const path = require("path")
 const assert = require("assert")
-var crypto = require("crypto")
+const crypto = require("crypto")
+const BN = require("bn.js")
 
 const MonoplasmaState = require("../../src/state")
 
@@ -101,6 +102,35 @@ describe("MonoplasmaState", () => {
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addRevenue(100)
         assert.strictEqual(plasma.getMember("0x1234567890123456789012345678901234567890").earnings, "0")
+    })
+
+    describe("changing the admin fee", () => {
+        it("should accept valid values", () => {
+            const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
+            plasma.setAdminFeeFraction(0.3)
+            assert.strictEqual(plasma.adminFeeFraction.toString(), "300000000000000000")
+            plasma.setAdminFeeFraction("400000000000000000")
+            assert.strictEqual(plasma.adminFeeFraction.toString(), "400000000000000000")
+            plasma.setAdminFeeFraction(new BN("500000000000000000"))
+            assert.strictEqual(plasma.adminFeeFraction.toString(), "500000000000000000")
+        })
+        it("should not accept numbers from wrong range", () => {
+            const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
+            assert.throws(() => plasma.setAdminFeeFraction(-0.3))
+            assert.throws(() => plasma.setAdminFeeFraction("-400000000000000000"))
+            assert.throws(() => plasma.setAdminFeeFraction(new BN("-500000000000000000")))
+            assert.throws(() => plasma.setAdminFeeFraction(1.3))
+            assert.throws(() => plasma.setAdminFeeFraction("1400000000000000000"))
+            assert.throws(() => plasma.setAdminFeeFraction(new BN("1500000000000000000")))
+        })
+        it("should not accept bad values", () => {
+            const plasma = new MonoplasmaState(0, [], fileStore, admin, 0)
+            assert.throws(() => plasma.setAdminFeeFraction("bad hex"))
+            assert.throws(() => plasma.setAdminFeeFraction(""))
+            assert.throws(() => plasma.setAdminFeeFraction({}))
+            assert.throws(() => plasma.setAdminFeeFraction(plasma))
+            assert.throws(() => plasma.setAdminFeeFraction())
+        })
     })
 
     describe("getMemberApi", () => {
