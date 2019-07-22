@@ -28,6 +28,7 @@ module.exports = {
             "error",
             "never"
         ],
-        "no-console": "warn"
+        "no-console": "warn",
+        "comma-spacing": ["error", { "before": false, "after": true }]
     }
 }

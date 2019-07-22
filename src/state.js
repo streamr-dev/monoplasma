@@ -1,7 +1,8 @@
 const MonoplasmaMember = require("./member")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
-const {utils: { isAddress }} = require("web3")
+const toBN = require("number-to-bn")
+const {utils: { isAddress, toWei }} = require("web3")
 const now = require("./utils/now")
 
 /**
@@ -14,9 +15,13 @@ module.exports = class MonoplasmaState {
      * @param {number} blockFreezeSeconds
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      * @param {Object} store offering persistance for blocks
-     * @param {string} defaultReceiverAddress where revenues go if there are no members
+     * @param {string} adminAddress where revenues go if there are no members
+     * @param {Object} adminFeeFraction fraction of revenue that goes to admin. Can be expressed as: number between 0 and 1, string of wei, BN of Wei (1 = 10^18)
      */
-    constructor(blockFreezeSeconds, initialMembers, store, defaultReceiverAddress) {
+    constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
+        if(!isAddress(adminAddress)){
+            throw new Error("badly formed adminAddress: " + adminAddress)
+        }
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
@@ -34,22 +39,26 @@ module.exports = class MonoplasmaState {
         this.members = initialMembers.map(m => new MonoplasmaMember(undefined, m.address, m.earnings))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
+        /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
+        this.adminAddress  = adminAddress
+        /** @property {BN}  adminFeeFraction fraction of revenue that goes to admin */
+        if(typeof adminFeeFraction === "undefined"){
+            adminFeeFraction = new BN(0)
+        }
+        this.setAdminFeeFraction(adminFeeFraction)
 
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
 
-        // add default address in case revenue is received with no members
-        const defaultAddress = isAddress(defaultReceiverAddress) ? defaultReceiverAddress : "0x0000000000000000000000000000000000000000"
-        const wasNew = this.addMember(defaultAddress, "default")
-        const i = this.indexOf[defaultAddress]
-        this.defaultMember = this.members[i]
+        const wasNew = this.addMember(adminAddress, "admin")
+        const i = this.indexOf[adminAddress]
+        this.adminMember = this.members[i]
 
-        // don't enable defaultMember to participate into profit-sharing (unless it was also in initialMembers)
+        // don't enable adminMember to participate into profit-sharing (unless it was also in initialMembers)
         if (wasNew) {
-            this.defaultMember.setActive(false)
+            this.adminMember.setActive(false)
         }
     }
-
     // ///////////////////////////////////
     //      MEMBER API
     // ///////////////////////////////////
@@ -61,8 +70,8 @@ module.exports = class MonoplasmaState {
     }
 
     getMemberCount() {
-        // "default member" shouldn't show up in member count unless separately added
-        const total = this.members.length - (this.defaultMember.isActive() ? 0 : 1)
+        // "admin member" shouldn't show up in member count unless separately added
+        const total = this.members.length - (this.adminMember.isActive() ? 0 : 1)
         const active = this.members.filter(m => m.isActive()).length
         return {
             total,
@@ -180,17 +189,38 @@ module.exports = class MonoplasmaState {
     // ///////////////////////////////////
 
     /**
+     * @param {Number|String|BN} adminFeeFraction fraction of revenue that goes to admin (string should be scaled by 10**18, like ether)
+     */
+    setAdminFeeFraction(adminFeeFraction) {
+        if (typeof adminFeeFraction === "number") {
+            adminFeeFraction = toBN(toWei(adminFeeFraction.toString(10)))
+        } else if (typeof adminFeeFraction === "string" && adminFeeFraction.length > 0) {
+            adminFeeFraction = toBN(adminFeeFraction)
+        } else if (!adminFeeFraction || adminFeeFraction.constructor.name !== "BN") {
+            throw new Error("setAdminFeeFraction: expecting a number, a string, or a bn.js bignumber, got " + JSON.stringify(adminFeeFraction))
+        }
+        if (adminFeeFraction.ltn(0) || adminFeeFraction.gt(toBN(toWei("1")))) {
+            throw Error("setAdminFeeFraction: adminFeeFraction must be between 0 and 1")
+        }
+        console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
+        this.adminFeeFraction = adminFeeFraction
+    }
+
+    /**
      * @param {number} amount of tokens that was added to the Community revenues
      */
     addRevenue(amount) {
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = activeMembers.length
         if (activeCount === 0) {
-            console.warn(`No active members in community! Allocating ${amount} to default account ${this.defaultMember.address}`)
-            this.defaultMember.addRevenue(amount)
+            console.warn(`No active members in community! Allocating ${amount} to admin account ${this.adminMember.address}`)
+            this.adminMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
-            const share = amountBN.divn(activeCount)
+            const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1", "ether")))
+            console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
+            this.adminMember.addRevenue(adminFeeBN)
+            const share = amountBN.sub(adminFeeBN).divn(activeCount)
             activeMembers.forEach(m => m.addRevenue(share))
             this.totalEarnings.iadd(amountBN)
         }
@@ -280,11 +310,15 @@ module.exports = class MonoplasmaState {
         const members = this.members.map(m => m.toObject())
         const timestamp = now()
         const totalEarnings = this.getTotalRevenue()
+        const owner = this.adminAddress
+        const adminFeeFractionWeiString = this.adminFeeFraction.toString(10)
         const latestBlock = {
             blockNumber,
             members,
             timestamp,
             totalEarnings,
+            owner,
+            adminFeeFractionWeiString
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
         await this.store.saveBlock(latestBlock)

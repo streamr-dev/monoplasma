@@ -5,5 +5,6 @@ module.exports = {
         before: "readonly",
         beforeEach: "readonly",
         after: "readonly",
+        afterEach: "readonly",
     }
 }
