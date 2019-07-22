@@ -31,6 +31,23 @@ describe("MonoplasmaWatcher", function () {
     let monoplasma
     let sendOptions
     let admin
+    let snapshotId
+
+    // send a (custom) command to ganache
+    async function send(method, ...params) {
+        return new Promise ((done, fail) => {
+            web3.currentProvider.sendAsync({
+                jsonrpc: "2.0",
+                method,
+                params,
+                id: new Date().getMilliseconds()
+            }, (err, ret) => {
+                if (err) { fail(err) }
+                done(ret.result)
+            })
+        })
+    }
+
     before(async () => {
         const secretKey = "0x1234567812345678123456781234567812345678123456781234567812345678"
         web3 = new Web3(ganache.provider({
@@ -58,19 +75,16 @@ describe("MonoplasmaWatcher", function () {
 
         // "start from" block 10
         for (let i = 0; i < 10; i++) {
-            await new Promise (done => {
-                web3.currentProvider.sendAsync({
-                    jsonrpc: "2.0",
-                    method: "evm_mine",
-                    params: [],
-                    id: new Date().getMilliseconds()
-                }, done)
-            })
+            await send("evm_mine")
         }
     })
 
-    after(() => {
+    beforeEach(async () => {
+        snapshotId = await send("evm_snapshot")
+    })
 
+    afterEach(async () => {
+        await send("evm_revert", snapshotId)
     })
 
     it("start() calls playback() with correct block numbers", async () => {
@@ -103,18 +117,9 @@ describe("MonoplasmaWatcher", function () {
         channel.publish("join", ["0x5ffe8050112448ed2e4409be47e1a50ebac0b299"])
         await token.methods.transfer(monoplasma.options.address, 30).send(sendOptions)
         const newBalances = [
-            {
-                address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2",
-                earnings: "60"
-            },
-            {
-                address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2",
-                earnings: "30"
-            },
-            {
-                address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299",
-                earnings: "10"
-            }
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "30" },
+            { address: "0x5ffe8050112448ed2e4409be47e1a50ebac0b299", earnings: "10" },
         ]
         assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
     })
@@ -134,15 +139,16 @@ describe("MonoplasmaWatcher", function () {
         await token.methods.transfer(monoplasma.options.address, 10).send(sendOptions)
         assert(store.lastSavedState)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "75" }
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" } // 50 start balance + 10 revenue
         ]
-        //50 + 15 (from 30 transferred in last test) + 10 = 75
         assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
     })
 
-    /*
-    // I don't think this tests anything now that web3 isnt mocked
     it("Tokens are shared between members and the state is updated during playback", async () => {
+        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.5", "ether")).send(sendOptions)
+        await token.methods.transfer(monoplasma.options.address, 40).send(sendOptions)
+        await token.methods.transfer(monoplasma.options.address, 40).send(sendOptions)
+
         const channel = new MockChannel()
         const startState = {
             lastBlockNumber: 5,
@@ -155,13 +161,11 @@ describe("MonoplasmaWatcher", function () {
         await watcher.start()
         assert(store.lastSavedState)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "100" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" },
-            { address: "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1", earnings: "0", name: "admin" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" }, // 50 startBalance + 10 + 10 (40/2, 20 for admin)
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "40" }, // 20 startBalance + 10 + 10 (40/2, 20 for admin)
         ]
-        assert.deepStrictEqual(watcher.plasma.members.map(m => m.toObject()), newBalances)
+        assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
     })
-    */
 
     it("Admin fee changes are replayed correctly", async () => {
         const channel = new MockChannel()
@@ -174,24 +178,22 @@ describe("MonoplasmaWatcher", function () {
         const store = getMockStore(startState, initialBlock, log)
         const watcher = new MonoplasmaWatcher(web3, channel, startState, store, log, error)
         await watcher.start()
-        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.5","ether")).send(sendOptions)
+        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.5", "ether")).send(sendOptions)
         await token.methods.transfer(monoplasma.options.address, 20).send(sendOptions)
-        //startBalance + 20 (previous tests) + 5 (10/2, 10 for admin)
         const newBalances = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "75" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "45" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "55" }, // 50 startBalance + 5 (10/2, 10 for admin)
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "25" }, // 20 startBalance + 5
         ]
         assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances)
 
-        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.25","ether")).send(sendOptions)
+        await monoplasma.methods.setAdminFee(Web3.utils.toWei("0.25", "ether")).send(sendOptions)
         await token.methods.transfer(monoplasma.options.address, 40).send(sendOptions)
-        //startBalance + 20 (previous tests) + 5 (10/2, 10 for admin) + 15 (30/2, 10 for admin)
         const newBalances2 = [
-            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "90" },
-            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "60" },
+            { address: "0x2f428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "70" }, // 50 startBalance + 5 above + 15 (30/2, 10 for admin)
+            { address: "0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", earnings: "40" }, // 20 startBalance + 5 above + 15 (30/2, 10 for admin)
         ]
         assert.deepStrictEqual(watcher.plasma.getMembers(), newBalances2)
-        
+
     })
 
     // TODO: test channel (Join/Part events) playback, too
