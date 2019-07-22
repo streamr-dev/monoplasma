@@ -20,7 +20,7 @@ contract("Monoplasma", accounts => {
     const anotherProducer = accounts[2]
     const admin = accounts[9]
     const blockFreezePeriodSeconds = 1000
-    const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} },admin,0)
+    const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} }, admin, 0)
     const joinPartChannel = new JoinPartChannel()
     let watcher
     before(async () => {
@@ -31,7 +31,7 @@ contract("Monoplasma", accounts => {
             tokenAddress: token.address,
             blockFreezeSeconds: 1
         }
-        watcher = new MonoplasmaWatcher(web3,joinPartChannel,startState,fileStore)
+        watcher = new MonoplasmaWatcher(web3, joinPartChannel, startState, fileStore)
         watcher.start()
 
         // simulate added members, would be performed by the MonoplasmaWatcher
@@ -70,12 +70,12 @@ contract("Monoplasma", accounts => {
 
     describe("Admin", () => {
         it("admin can set fee and receives correct fee", async () => {
-            const adminFee = toWei(".5","ether")
+            const adminFee = toWei(".5", "ether")
             assertEvent(await rootchain.setAdminFee(adminFee, {from: admin}), "AdminFeeChanged", [adminFee])
             assertEqual(await rootchain.adminFee(), adminFee)
-            assertEvent(await rootchain.setAdminFee(0, {from: admin}), "AdminFeeChanged", [0])            
+            assertEvent(await rootchain.setAdminFee(0, {from: admin}), "AdminFeeChanged", [0])
         })
-        
+
         it("non-admin can't set fee", async () => {
             await assertFails(rootchain.setAdminFee(123, {from: producer}))
         })

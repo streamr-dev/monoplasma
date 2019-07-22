@@ -13,7 +13,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
             saveBlock: async block => {
                 this.lastSavedBlock = block
             }
-        },this.state.operatorAddress, this.state.adminFeeFraction)
+        }, this.state.operatorAddress, this.state.adminFeeFraction)
     }
 
     async start() {

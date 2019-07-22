@@ -195,7 +195,7 @@ module.exports = class MonoplasmaState {
             if(adminFeeFraction < 0 || adminFeeFraction > 1){
                 throw Error("if specified as a number, adminFeeFraction must be between 0 and 1")
             }
-            adminFeeFraction = new BN(toWei(adminFeeFraction.toString(10),"ether"))
+            adminFeeFraction = new BN(toWei(adminFeeFraction.toString(10), "ether"))
         } else if(typeof adminFeeFraction === "string"){
             adminFeeFraction = new BN(adminFeeFraction)
         }
@@ -214,7 +214,7 @@ module.exports = class MonoplasmaState {
             this.adminMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
-            const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1","ether")))
+            const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1", "ether")))
             console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
             this.adminMember.addRevenue(adminFeeBN)
             const share = amountBN.sub(adminFeeBN).divn(activeCount)

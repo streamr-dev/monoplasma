@@ -10,7 +10,7 @@ const MonoplasmaState = require("../../src/state")
 
 const admin = "0x0000000000000000000000000000000000000000"
 
-const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} },admin,0)
+const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} }, admin, 0)
 
 const MerkleTree = require("../../src/merkletree")
 
