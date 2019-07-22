@@ -58,31 +58,26 @@ module.exports = class MonoplasmaWatcher {
 
         this.log("Listening to Ethereum events...")
         console.log("state: "+ JSON.stringify(this.state))
-        function handleEvent(event, watcher){
-            console.log("seen event: "+JSON.stringify(event))
-            watcher.state.lastBlockNumber = +event.blockNumber
-            replayEvent(watcher.plasma, event).catch(watcher.error)
-            return watcher.store.saveState(watcher.state).catch(watcher.error)
+        const self = this
+        function handleEvent(event) {
+            console.log("seen event: " + JSON.stringify(event))
+            self.state.lastBlockNumber = +event.blockNumber
+            replayEvent(self.plasma, event).catch(self.error)
+            return self.store.saveState(self.state).catch(self.error)
         }
 
         this.tokenFilter = this.token.events.Transfer({ filter: { to: this.state.contractAddress } })
-        this.tokenFilter.on("data", event => {
-            handleEvent(event, this)
-        })
+        this.tokenFilter.on("data", handleEvent)
         this.tokenFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.tokenFilter.on("error", this.error)
 
         this.adminCutChangeFilter = this.contract.events.AdminFeeChanged({ filter: { to: this.state.contractAddress } })
-        this.adminCutChangeFilter.on("data", event => {
-            handleEvent(event, this)
-        })
+        this.adminCutChangeFilter.on("data", handleEvent)
         this.adminCutChangeFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.adminCutChangeFilter.on("error", this.error)
 
         this.ownershipChangeFilter = this.contract.events.OwnershipTransferred({ filter: { to: this.state.contractAddress } })
-        this.ownershipChangeFilter.on("data", event => {
-            handleEvent(event, this)
-        })
+        this.ownershipChangeFilter.on("data", handleEvent)
         this.ownershipChangeFilter.on("changed", event => { this.error("Event removed in re-org!", event) })
         this.ownershipChangeFilter.on("error", this.error)
 
