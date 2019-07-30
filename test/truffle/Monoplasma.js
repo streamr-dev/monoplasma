@@ -81,6 +81,16 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.setAdminFee(123, {from: producer}))
         })
 
+        it("ownership can be transferred", async () => {
+            const newAdmin = accounts[8]
+            await rootchain.transferOwnership(newAdmin, {from: admin})
+            assertEvent(await rootchain.claimOwnership({from: newAdmin}), "OwnershipTransferred", [admin, newAdmin])
+
+            await rootchain.transferOwnership(admin, {from: newAdmin})
+            assertEvent(await rootchain.claimOwnership({from: admin}), "OwnershipTransferred", [newAdmin, admin])
+        })
+        
+
         it("can publish blocks", async () => {
             const block = await publishBlock()
             assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)

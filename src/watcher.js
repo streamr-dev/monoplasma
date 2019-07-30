@@ -57,7 +57,7 @@ module.exports = class MonoplasmaWatcher {
         }
 
         this.log("Listening to Ethereum events...")
-        console.log("state: "+ JSON.stringify(this.state))
+        //console.log("state: "+ JSON.stringify(this.state))
         const self = this
         function handleEvent(event) {
             console.log("seen event: " + JSON.stringify(event))

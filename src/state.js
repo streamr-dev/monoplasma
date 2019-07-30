@@ -218,7 +218,7 @@ module.exports = class MonoplasmaState {
         } else {
             const amountBN = new BN(amount)
             const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1", "ether")))
-            console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
+            //console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
             this.adminMember.addRevenue(adminFeeBN)
             const share = amountBN.sub(adminFeeBN).divn(activeCount)
             activeMembers.forEach(m => m.addRevenue(share))

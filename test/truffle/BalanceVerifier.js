@@ -8,7 +8,7 @@ const { assertEqual, assertFails } = require("../utils/web3Assert")
 const MonoplasmaMember = require("../../src/member")
 const MonoplasmaState = require("../../src/state")
 
-const admin = "0x0000000000000000000000000000000000000000"
+const admin = "0x0000000000000000000000000000000000000001"
 
 const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} }, admin, 0)
 
