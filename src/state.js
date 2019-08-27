@@ -19,7 +19,7 @@ module.exports = class MonoplasmaState {
      * @param {Object} adminFeeFraction fraction of revenue that goes to admin. Can be expressed as: number between 0 and 1, string of wei, BN of Wei (1 = 10^18)
      */
     constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
-        if(!isAddress(adminAddress)){
+        if (!isAddress(adminAddress)) {
             throw new Error("badly formed adminAddress: " + adminAddress)
         }
         if (!Array.isArray(initialMembers)) {
@@ -40,12 +40,9 @@ module.exports = class MonoplasmaState {
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
         this.tree = new MerkleTree(this.members)
         /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
-        this.adminAddress  = adminAddress
+        this.adminAddress = adminAddress
         /** @property {BN}  adminFeeFraction fraction of revenue that goes to admin */
-        if(typeof adminFeeFraction === "undefined"){
-            adminFeeFraction = new BN(0)
-        }
-        this.setAdminFeeFraction(adminFeeFraction)
+        this.setAdminFeeFraction(adminFeeFraction || 0)
 
         this.indexOf = {}
         this.members.forEach((m, i) => { this.indexOf[m.address] = i })
@@ -192,6 +189,7 @@ module.exports = class MonoplasmaState {
      * @param {Number|String|BN} adminFeeFraction fraction of revenue that goes to admin (string should be scaled by 10**18, like ether)
      */
     setAdminFeeFraction(adminFeeFraction) {
+        // convert to BN
         if (typeof adminFeeFraction === "number") {
             adminFeeFraction = toBN(toWei(adminFeeFraction.toString(10)))
         } else if (typeof adminFeeFraction === "string" && adminFeeFraction.length > 0) {
@@ -199,10 +197,11 @@ module.exports = class MonoplasmaState {
         } else if (!adminFeeFraction || adminFeeFraction.constructor.name !== "BN") {
             throw new Error("setAdminFeeFraction: expecting a number, a string, or a bn.js bignumber, got " + JSON.stringify(adminFeeFraction))
         }
+
         if (adminFeeFraction.ltn(0) || adminFeeFraction.gt(toBN(toWei("1")))) {
             throw Error("setAdminFeeFraction: adminFeeFraction must be between 0 and 1")
         }
-        console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
+        //console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
         this.adminFeeFraction = adminFeeFraction
     }
 
