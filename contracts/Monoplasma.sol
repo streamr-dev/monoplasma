@@ -40,12 +40,12 @@ contract Monoplasma is BalanceVerifier, Ownable {
     //fee fraction = adminFee/10^18
     uint public adminFee;
 
+    IERC20 public token;
+
     mapping (address => uint) public earnings;
     mapping (address => uint) public withdrawn;
     uint public totalWithdrawn;
     uint public totalProven;
-
-    IERC20 public token;
 
     constructor(address tokenAddress, uint blockFreezePeriodSeconds) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
@@ -57,14 +57,20 @@ contract Monoplasma is BalanceVerifier, Ownable {
         operator = newOperator;
         emit OperatorChanged(newOperator);
     }
+
+    /**
+     * Admin fee as a fraction of revenue
+     * Fixed-point decimal in the same way as ether: 50% === 0.5 ether
+     * Smart contract doesn't use it, it's here just for storing purposes
+     */
     function setAdminFee(uint _adminFee) public onlyOwner {
-        require(adminFee <= 1e18, "Admin fee cannot be greater than 1");
+        require(adminFee <= 1 ether, "Admin fee cannot be greater than 1");
         adminFee = _adminFee;
         emit AdminFeeChanged(_adminFee);
     }
 
     /**
-     * Owner creates the side-chain blocks
+     * Operator creates the side-chain blocks
      */
     function onCommit(uint blockNumber, bytes32, string) internal {
         require(msg.sender == operator, "error_notPermitted");
@@ -96,7 +102,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and withdraw the whole revenue share for a given address from sidechain in one transaction
+     * Prove and withdraw the whole revenue share for someone else
+     * Validator needs to exit those it's watching out for, in case
+     *   it detects Operator malfunctioning
      * @param recipient the address we're proving and withdrawing
      * @param blockNumber of the leaf to verify
      * @param totalEarnings in the side-chain
@@ -105,26 +113,49 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
-        withdrawFor(recipient, withdrawable);
+        withdrawTo(recipient, recipient, withdrawable);
     }
 
     /**
-     * @dev It is up to the sidechain implementation to make sure
-     * @dev  always token balance >= sum of earnings - sum of withdrawn
+     * "Donate withdraw" function that allows you to prove and transfer
+     *   your earnings to a another address in one transaction
+     * @param recipient the address the tokens will be sent to (instead of msg.sender)
+     * @param blockNumber of the leaf to verify
+     * @param totalEarnings in the side-chain
+     * @param proof list of hashes to prove the totalEarnings
+     */
+    function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+        prove(blockNumber, msg.sender, totalEarnings, proof);
+        uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
+        withdrawTo(recipient, msg.sender, withdrawable);
+    }
+
+    /**
+     * Withdraw a specified amount of your own proven earnings (see `function prove`)
      */
     function withdraw(uint amount) public {
-        withdrawFor(msg.sender, amount);
+        withdrawTo(msg.sender, msg.sender, amount);
     }
 
     /**
+     * Do the withdrawal on behalf of someone else
+     * Validator needs to exit those it's watching out for, in case
+     *   it detects Operator malfunctioning
+     */
+    function withdrawFor(address recipient, uint amount) public {
+        withdrawTo(recipient, recipient, amount);
+    }
+
+    /**
+     * Execute token withdrawal into specified recipient address from specified member account
      * @dev It is up to the sidechain implementation to make sure
      * @dev  always token balance >= sum of earnings - sum of withdrawn
      */
-    function withdrawFor(address recipient, uint amount) public {
+    function withdrawTo(address recipient, address account, uint amount) public {
         require(amount > 0, "error_zeroWithdraw");
-        uint w = withdrawn[recipient].add(amount);
-        require(w <= earnings[recipient], "error_overdraft");
-        withdrawn[recipient] = w;
+        uint w = withdrawn[account].add(amount);
+        require(w <= earnings[account], "error_overdraft");
+        withdrawn[account] = w;
         totalWithdrawn = totalWithdrawn.add(amount);
         require(token.transfer(recipient, amount), "error_transfer");
     }
