@@ -1,3 +1,4 @@
+const BN = require("bn.js")
 
 const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
@@ -130,7 +131,7 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(producer), earnings)
         })
 
-        it("can withdraw earnings for another", async () => {
+        it("can withdraw earnings on behalf of another", async () => {
             const proof = plasma.getProof(anotherProducer)
             const { earnings } = plasma.getMember(anotherProducer)
             assertEqual(await token.balanceOf(anotherProducer), 0)
@@ -139,12 +140,22 @@ contract("Monoplasma", accounts => {
         })
 
         it("can withdraw earnings a second time", async () => {
-            const block = await addRevenue(1000)
+            block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             await increaseTime(blockFreezePeriodSeconds + 1)
             await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
+        })
+
+        it("can donate earnings to another", async () => {
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+            const withdrawable = new BN(earnings).sub(withdrawn)
+            const balanceBefore = await token.balanceOf(producer)
+            await rootchain.withdrawAllTo(producer, block.blockNumber, earnings, proof, {from: anotherProducer})
+            assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
         })
 
         it("can not withdraw earnings before freeze period is over", async () => {
