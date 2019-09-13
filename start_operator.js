@@ -47,6 +47,7 @@ const {
     // don't launch web server in start_operator script
     //   by default start serving static files under demo/public. This is for dev where UI is launched with `npm start` under demo directory.
     //EXTERNAL_WEBSERVER,
+    ADMINFEE_WEI
 } = process.env
 
 const log = QUIET ? () => {} : console.log
@@ -104,7 +105,8 @@ async function start() {
     const config = RESET || ganache ? {} : await fileStore.loadState()
     config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
     config.blockFreezeSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezeSeconds || 20
-    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, opts, log)
+    const newContractAdminFee  = ADMINFEE_WEI || 0
+    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, newContractAdminFee,  opts, log)
     config.ethereumServer = ethereumServer
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.channelPort = JOIN_PART_CHANNEL_PORT
@@ -132,12 +134,12 @@ async function start() {
     log("[DONE]")
 }
 
-async function deployContract(web3, tokenAddress, blockFreezePeriodSeconds, sendOptions, log) {
+async function deployContract(web3, tokenAddress, blockFreezePeriodSeconds, adminFee, sendOptions, log) {
     log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
     const Monoplasma = new web3.eth.Contract(MonoplasmaJson.abi)
     const monoplasma = await Monoplasma.deploy({
         data: MonoplasmaJson.bytecode,
-        arguments: [tokenAddress, blockFreezePeriodSeconds]
+        arguments: [tokenAddress, blockFreezePeriodSeconds, adminFee]
     }).send(sendOptions)
     return monoplasma.options.address
 }

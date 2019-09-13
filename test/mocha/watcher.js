@@ -70,7 +70,7 @@ describe("MonoplasmaWatcher", function () {
         const Monoplasma = new web3.eth.Contract(MonoplasmaJson.abi)
         monoplasma = await Monoplasma.deploy({
             data: MonoplasmaJson.bytecode,
-            arguments: [token.options.address, "1"]
+            arguments: [token.options.address, "1", "0"],            
         }).send(sendOptions)
 
         // "start from" block 10

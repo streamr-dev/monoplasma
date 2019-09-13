@@ -47,10 +47,11 @@ contract Monoplasma is BalanceVerifier, Ownable {
     uint public totalWithdrawn;
     uint public totalProven;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds) public {
+    constructor(address tokenAddress, uint blockFreezePeriodSeconds, uint _adminFee) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
         token = IERC20(tokenAddress);
         operator = msg.sender;
+        setAdminFee(_adminFee);
     }
 
     function setOperator(address newOperator) public onlyOwner {

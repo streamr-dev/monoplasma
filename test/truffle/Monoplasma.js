@@ -27,7 +27,7 @@ contract("Monoplasma", accounts => {
     let watcher
     before(async () => {
         token = await ERC20Mintable.new({from: admin, gas: 4000000})
-        rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, {from: admin, gas: 4000000})
+        rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 4000000})
         const startState = {
             contractAddress: rootchain.address,
             tokenAddress: token.address,
