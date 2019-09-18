@@ -35,7 +35,7 @@ describe("MonoplasmaWatcher", function () {
 
     // send a (custom) command to ganache
     async function send(method, ...params) {
-        return new Promise ((done, fail) => {
+        return new Promise((done, fail) => {
             web3.currentProvider.sendAsync({
                 jsonrpc: "2.0",
                 method,
