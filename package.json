@@ -1,6 +1,6 @@
 {
   "name": "monoplasma",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Unidirectional payment sidechain with monotonically increasing balances (no in-chain transfers)",
   "author": "Streamr Network AG",
   "license": "AGPL-3.0",
