@@ -42,8 +42,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     IERC20 public token;
 
-    mapping (address => uint) public earnings;
-    mapping (address => uint) public withdrawn;
+    mapping (address => uint) public earnings;      // earnings for which proof has been submitted
+    mapping (address => uint) public withdrawn;     // earnings that have been sent out already
     uint public totalWithdrawn;
     uint public totalProven;
 
