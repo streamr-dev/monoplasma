@@ -138,6 +138,9 @@ module.exports = class MonoplasmaState {
     async getMemberAt(address, blockNumber) {
         const block = await this.getBlock(blockNumber)
         const member = block.members.find(m => m.address === address)   // TODO: DANGER: O(n^2) potential here! If members were sorted (or indexOF retained), this would be faster
+        if (!member) {
+            throw new Error(`Member ${address} not found in block ${blockNumber}`)
+        }
         const members = block.members.map(m => MonoplasmaMember.fromObject(m))
         const tree = new MerkleTree(members)
         member.proof = tree.getPath(address)
@@ -147,11 +150,10 @@ module.exports = class MonoplasmaState {
     /**
      * Get hypothetical proof of earnings from current status
      * @param {string} address with earnings to be verified
-     * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
+     * @returns {Array|null} of bytes32 hashes ["0x123...", "0xabc..."], or null if address not found
      */
     getProof(address) {
-        const path = this.tree.getPath(address)
-        return path
+        return this.tree.getMember(address) && this.tree.getPath(address)
     }
 
     /**
@@ -162,6 +164,10 @@ module.exports = class MonoplasmaState {
      */
     async getProofAt(address, blockNumber) {
         const block = await this.getBlock(blockNumber)
+        const member = block.members.find(m => m.address === address)   // TODO: DANGER: O(n^2) potential here! If members were sorted (or indexOF retained), this would be faster
+        if (!member) {
+            throw new Error(`Member ${address} not found in block ${blockNumber}`)
+        }
         const members = block.members.map(m => MonoplasmaMember.fromObject(m))
         const tree = new MerkleTree(members)
         const path = tree.getPath(address)
