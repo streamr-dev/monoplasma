@@ -141,4 +141,14 @@ describe("Merkle tree", () => {
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
+
+    it("includes", () => {
+        const members = testLarge(100)
+        const tree = new MerkleTree(members)
+        for (let i = 0; i < 100; i++) {
+            const a = buildValidAddress(i)
+            const m = tree.includes(a)
+            assert(m)
+        }
+    })
 })

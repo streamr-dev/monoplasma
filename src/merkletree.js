@@ -30,6 +30,19 @@ function roundUpToPowerOfTwo(x) {
     return i
 }
 
+/** @typedef {String} EthereumAddress */
+
+/**
+ * @typedef {Object} MerkleTree
+ * @property {Array<Buffer>} hashes
+ * @property {Map<EthereumAddress, Number>} indexOf the index of given address in the hashes array
+ */
+
+/**
+ * Calculate the Merkle tree hashes
+ * @param {Array<MonoplasmaMember>} leafContents
+ * @returns {MerkleTree} hashes in the tree
+ */
 // TODO: --omg-optimisation: tree contents could be one big Buffer too! Hash digests are constant 32 bytes in length.
 //          Currently the tree contents is Array<MonoplasmaMember>
 function buildMerkleTree(leafContents) {
@@ -98,10 +111,9 @@ class MerkleTree {
         return this.cached
     }
 
-    getMember(address) {
+    includes(address) {
         const { indexOf } = this.getContents()
-        const index = indexOf[address]
-        return index ? this.contents[index] : null
+        return indexOf.hasOwnProperty(address)
     }
 
     /**

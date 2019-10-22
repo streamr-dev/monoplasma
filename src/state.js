@@ -153,7 +153,7 @@ module.exports = class MonoplasmaState {
      * @returns {Array|null} of bytes32 hashes ["0x123...", "0xabc..."], or null if address not found
      */
     getProof(address) {
-        return this.tree.getMember(address) && this.tree.getPath(address)
+        return this.tree.includes(address) ? this.tree.getPath(address) : null
     }
 
     /**
