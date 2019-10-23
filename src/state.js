@@ -55,6 +55,17 @@ module.exports = class MonoplasmaState {
             this.adminMember.setActive(false)
         }
     }
+
+    clone(storeOverride) {
+        return new MonoplasmaState(
+            this.blockFreezeSeconds,
+            this.members,
+            storeOverride || this.store,
+            this.adminAddress,
+            this.adminFeeFraction,
+        )
+    }
+
     // ///////////////////////////////////
     //      MEMBER API
     // ///////////////////////////////////
