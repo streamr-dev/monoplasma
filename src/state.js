@@ -2,8 +2,9 @@ const MonoplasmaMember = require("./member")
 const MerkleTree = require("./merkletree")
 const BN = require("bn.js")
 const toBN = require("number-to-bn")
-const {utils: { isAddress, toWei }} = require("web3")
+const {utils: { toWei }} = require("web3")
 const now = require("./utils/now")
+const { throwIfBadAddress } = require("./utils/checkArguments")
 
 /**
  * Monoplasma state object
@@ -19,9 +20,7 @@ module.exports = class MonoplasmaState {
      * @param {Object} adminFeeFraction fraction of revenue that goes to admin. Can be expressed as: number between 0 and 1, string of wei, BN of Wei (1 = 10^18)
      */
     constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
-        if (!isAddress(adminAddress)) {
-            throw new Error("badly formed adminAddress: " + adminAddress)
-        }
+        throwIfBadAddress(adminAddress, "MonoplasmaState argument adminAddress")
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
