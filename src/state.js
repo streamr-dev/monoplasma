@@ -18,8 +18,10 @@ module.exports = class MonoplasmaState {
      * @param {Object} store offering persistance for blocks
      * @param {string} adminAddress where revenues go if there are no members
      * @param {Object} adminFeeFraction fraction of revenue that goes to admin. Can be expressed as: number between 0 and 1, string of wei, BN of Wei (1 = 10^18)
+     * @param {Number} initialBlockNumber after which the state is described by this object
+     * @param {Number} initialTimestamp after which the state is described by this object
      */
-    constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction) {
+    constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction, initialBlockNumber = 0, initialTimestamp = 0) {
         throwIfBadAddress(adminAddress, "MonoplasmaState argument adminAddress")
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
@@ -33,6 +35,11 @@ module.exports = class MonoplasmaState {
 
         /** @property {Array<Block>} latestBlocks that have been stored. Kept to figure out  */
         this.latestBlocks = []
+
+        /** @property {Number} currentBlock that was last processed. State described by this object is after that block and all its transactions. */
+        this.currentBlock = initialBlockNumber
+        /** @property {Number} currentTimestamp that was last processed. State described by this object is at or after that time. */
+        this.currentTimestamp = initialTimestamp
 
         /** @property {Array<MonoplasmaMember>} members */
         this.members = initialMembers.map(m => new MonoplasmaMember(undefined, m.address, m.earnings))
