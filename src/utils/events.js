@@ -29,7 +29,7 @@ async function replayEvent(plasma, event) {
         case "BlockCreated": {
             const blockNumber = +event.returnValues.blockNumber
             log(`Storing block ${blockNumber}`)
-            await plasma.storeBlock(blockNumber)
+            await plasma.storeBlock(blockNumber)    // TODO: add timestamp
         } break
         case "Join": {
             const { addressList } = event

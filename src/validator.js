@@ -29,7 +29,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
         // add the block to store; this won't be done by Watcher because Operator does it now
         // TODO: move this to Watcher
         const blockNumber = +block.blockNumber
-        this.plasma.storeBlock(blockNumber)
+        this.plasma.storeBlock(blockNumber, block.timestamp)
 
         // update the "validated" version to the block number whose hash was published
         await super.playbackOn(this.validatedPlasma, this.lastCheckedBlock + 1, blockNumber)
