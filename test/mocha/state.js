@@ -97,7 +97,9 @@ describe("MonoplasmaState", () => {
         assert.deepStrictEqual(plasma.getProof("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"), ["0x8620ab3c4df51cebd7ae1cd533c8824220db518d2a143e603e608eab62b169f7", "0x91360deed2f511a8503790083c6de21efbb1006b460d5024863ead9de5448927"])
     })
 
-    it("should perform fine with LOTS of members and queries of recent past blocks' proofs", async () => {
+    it("should perform fine with LOTS of members and queries of recent past blocks' proofs", async function() {
+        this.timeout(40000)
+
         const initialMembers = []
         while (initialMembers.length < 200000) {
             initialMembers.push({
