@@ -39,7 +39,7 @@ module.exports = class MonoplasmaOperator extends MonoplasmaWatcher {
         })
         this.state.lastPublishedBlock = bnum
 
-        const block = await this.eth.getBlock(bnum)
+        const block = await this.web3.eth.getBlock(bnum)
         return this.plasma.storeBlock(bnum, block.timestamp)     // TODO: move this to Watcher
     }
 }
