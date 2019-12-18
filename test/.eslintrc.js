@@ -1,3 +1,4 @@
+// ESLint settings for tests
 module.exports = {
     globals: {
         describe: "readonly",
@@ -6,5 +7,8 @@ module.exports = {
         beforeEach: "readonly",
         after: "readonly",
         afterEach: "readonly",
+    },
+    rules: {
+        "no-console": "off",
     }
 }
