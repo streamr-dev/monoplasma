@@ -240,7 +240,6 @@ module.exports = class MonoplasmaState {
 
     async getRootHashAt(blockNumber) {
         if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
-        const block = await this.store.loadBlock(blockNumber)
         const tree = await this.getTreeAt(blockNumber)
         const rootHash = tree.getRootHash()
         return rootHash
