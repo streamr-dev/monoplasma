@@ -328,19 +328,16 @@ module.exports = class MonoplasmaState {
      * Snapshot the Monoplasma state for later use (getMemberAt, getProofAt)
      * @param {number} blockNumber root-chain block number after which this block state is valid
      */
-    async storeBlock(blockNumber) {
-        const members = this.members.map(m => m.toObject())
-        const timestamp = now()
-        const totalEarnings = this.getTotalRevenue()
-        const owner = this.adminAddress
-        const adminFeeFractionWeiString = this.adminFeeFraction.toString(10)
+    async storeBlock(blockNumber, timestamp) {
+        if (!Number.isInteger(blockNumber) || !(blockNumber > 0)) { throw new Error("blockNumber must be a positive integer")}
         const latestBlock = {
             blockNumber,
-            members,
-            timestamp,
-            totalEarnings,
-            owner,
-            adminFeeFractionWeiString
+            members: this.members.map(m => m.toObject()),
+            timestamp: timestamp || "",
+            storeTimestamp: now(),
+            totalEarnings: this.getTotalRevenue(),
+            owner: this.adminAddress,
+            adminFeeFractionWeiString: this.adminFeeFraction.toString(10),
         }
         this.latestBlocks.unshift(latestBlock)  // = insert to beginning
         await this.store.saveBlock(latestBlock)

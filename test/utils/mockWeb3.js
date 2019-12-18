@@ -14,6 +14,11 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         }, pastEvents)
     }
     web3.eth.getBlockNumber = () => bnum
+    web3.eth.getBlock = () => ({
+        number: bnum,
+        timestamp: Date.now(),
+        transactions: [],
+    })
 
     web3.utils.isAddress = () => true
     web3.eth.getCode = () => Promise.resolve("")
@@ -56,7 +61,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
             if (!web3.adminFeeListeners[eventCode]) { web3.adminFeeListeners[eventCode] = [] }
             web3.adminFeeListeners[eventCode].push(func)
         }})
-        
+
     }
 
     web3.mockTransfer = async (value=1, blockNumber=11, from="from", to="contract") => {
