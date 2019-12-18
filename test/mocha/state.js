@@ -5,6 +5,9 @@ const crypto = require("crypto")
 const BN = require("bn.js")
 
 const MonoplasmaState = require("../../src/state")
+const now = require("../../src/utils/now")
+
+//const sleep = require("../utils/sleep-promise")
 
 // this is a unit test, but still it's better to use the "real" file store and not mock it,
 //   since we DO check that the correct values actually come out of it. Mock would be almost as complex as the real thing.
@@ -62,12 +65,12 @@ describe("MonoplasmaState", () => {
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
-        await plasma.storeBlock(3)
+        await plasma.storeBlock(3, now())
         plasma.addRevenue(100)
-        await plasma.storeBlock(5)
+        await plasma.storeBlock(5, now())
         plasma.addRevenue(100)
         plasma.addRevenue(100)
-        await plasma.storeBlock(7)
+        await plasma.storeBlock(7, now())
         plasma.addRevenue(100)
         const m = await plasma.getMemberAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 3)
         assert.strictEqual("50", m.earnings)
@@ -81,17 +84,51 @@ describe("MonoplasmaState", () => {
         plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "tester1")
         plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "tester2")
         plasma.addRevenue(100)
-        await plasma.storeBlock(10)
+        await plasma.storeBlock(10, now())
         plasma.addRevenue(100)
-        await plasma.storeBlock(12)
+        await plasma.storeBlock(12, now())
         plasma.addRevenue(100)
         plasma.addRevenue(100)
-        await plasma.storeBlock(15)
+        await plasma.storeBlock(15, now())
         plasma.addRevenue(100)
         assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 10), ["0x8620ab3c4df51cebd7ae1cd533c8824220db518d2a143e603e608eab62b169f7", "0x30b397c3eb0e07b7f1b8b39420c49f60c455a1a602f1a91486656870e3f8f74c"])
         assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 12), ["0x8620ab3c4df51cebd7ae1cd533c8824220db518d2a143e603e608eab62b169f7", "0x1c3d277e4a94f6fc647ae9ffc2176165d8b90bf954f64fa536b6beedb34301a3"])
         assert.deepStrictEqual(await plasma.getProofAt("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", 15), ["0x8620ab3c4df51cebd7ae1cd533c8824220db518d2a143e603e608eab62b169f7", "0xce54ad18b934665680ccc22f7db77ede2144519d5178736111611e745085dec6"])
         assert.deepStrictEqual(plasma.getProof("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2"), ["0x8620ab3c4df51cebd7ae1cd533c8824220db518d2a143e603e608eab62b169f7", "0x91360deed2f511a8503790083c6de21efbb1006b460d5024863ead9de5448927"])
+    })
+
+    it("should perform fine with LOTS of members and queries of recent past blocks' proofs", async () => {
+        const initialMembers = []
+        while (initialMembers.length < 200000) {
+            initialMembers.push({
+                address: `0x${crypto.randomBytes(20).toString("hex")}`,
+                earnings: 0,
+            })
+        }
+        const plasma = new MonoplasmaState(0, initialMembers, fileStore, admin, 0)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(100, now())
+        plasma.addRevenue(100)
+        await plasma.storeBlock(101, now())
+        plasma.addRevenue(100)
+        plasma.addRevenue(100)
+        await plasma.storeBlock(102, now())
+        plasma.addRevenue(100)
+
+        // TODO: use mocha timeouts instead. They didn't seem to work well for CPU bound stuff though...
+        // TODO: make this test actually test what the name says
+        //         each getProofAt on cold cache (new block) takes about 5s
+        const startTime = Date.now()
+        //for (let j = 0; j < 10; j++) {
+        for (let i = 0; i < 20; i++) {
+            const bnum = 100 + i % 3
+            const { address } = initialMembers[(50 * i) % initialMembers.length]
+            await plasma.getProofAt(address, bnum)
+        }
+        //  await sleep(100)
+        //}
+        const timeTaken = Date.now() - startTime
+        assert(timeTaken < 30000, "too slow!")
     })
 
     it("should give revenue to adminAccount if no members present", async () => {

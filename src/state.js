@@ -36,6 +36,11 @@ module.exports = class MonoplasmaState {
         /** @property {Array<Block>} latestBlocks that have been stored. Kept to figure out  */
         this.latestBlocks = []
 
+        // TODO: consider something like https://www.npmjs.com/package/lru-cache instead; it seems a bit complicated (length function) but could be good for limiting memory use
+        /** @property {Array<Object<number, MerkleTree>>} treeCache LRU cache of (blockNumber, cacheHitCount, tree) */
+        this.treeCache = []
+        this.treeCacheSize = 5  // TODO: make tuneable? Must be at least 2
+
         /** @property {Number} currentBlock that was last processed. State described by this object is after that block and all its transactions. */
         this.currentBlock = initialBlockNumber
         /** @property {Number} currentTimestamp that was last processed. State described by this object is at or after that time. */
@@ -123,6 +128,7 @@ module.exports = class MonoplasmaState {
         if (cachedBlock) {
             return cachedBlock
         }
+        // TODO: add LRU cache of old blocks?
         if (!await this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
         const block = await this.store.loadBlock(blockNumber)
         return block
@@ -165,6 +171,44 @@ module.exports = class MonoplasmaState {
     }
 
     /**
+     * Cache recently asked blocks' MerkleTrees
+     * NOTE: this function is potentially CPU heavy (lots of members)
+     *       Also, it's on "heavy load path" for Monoplasma API server
+     *         because members will probably query for their balances often
+     *         and proofs are generated at the same (because why not)
+     */
+    async getTreeAt(blockNumber) {
+        if (!blockNumber && blockNumber !== 0) { throw new Error("Must give blockNumber") }
+        let cached = this.treeCache.find(c => c.blockNumber === blockNumber)
+        if (!cached) {
+            // evict the least used if cache is full
+            if (this.treeCache.length >= this.treeCacheSize) {
+                let minIndex = -1
+                let minHits = Number.MAX_SAFE_INTEGER
+                this.treeCache.forEach((c, i) => {
+                    if (c.hitCount < minHits) {
+                        minHits = c.hitCount
+                        minIndex = i
+                    }
+                })
+                this.treeCache.splice(minIndex, 1)  // delete 1 item at minIndex
+            }
+
+            const block = await this.getBlock(blockNumber)
+            const members = block.members.map(m => MonoplasmaMember.fromObject(m))
+            const tree = new MerkleTree(members)
+            cached = {
+                blockNumber,
+                tree,
+                hitCount: 0,
+            }
+            this.treeCache.push(cached)
+        }
+        cached.hitCount += 1
+        return cached.tree
+    }
+
+    /**
      * Get hypothetical proof of earnings from current status
      * @param {string} address with earnings to be verified
      * @returns {Array|null} of bytes32 hashes ["0x123...", "0xabc..."], or null if address not found
@@ -185,8 +229,7 @@ module.exports = class MonoplasmaState {
         if (!member) {
             throw new Error(`Member ${address} not found in block ${blockNumber}`)
         }
-        const members = block.members.map(m => MonoplasmaMember.fromObject(m))
-        const tree = new MerkleTree(members)
+        const tree = await this.getTreeAt(blockNumber)
         const path = tree.getPath(address)
         return path
     }
@@ -198,8 +241,7 @@ module.exports = class MonoplasmaState {
     async getRootHashAt(blockNumber) {
         if (!this.store.blockExists(blockNumber)) { throw new Error(`Block #${blockNumber} not found in published blocks`) }
         const block = await this.store.loadBlock(blockNumber)
-        const members = block.map(m => MonoplasmaMember.fromObject(m))
-        const tree = new MerkleTree(members)
+        const tree = await this.getTreeAt(blockNumber)
         const rootHash = tree.getRootHash()
         return rootHash
     }
