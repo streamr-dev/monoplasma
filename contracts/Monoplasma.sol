@@ -114,7 +114,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
-        withdrawTo(recipient, recipient, withdrawable);
+        _withdraw(recipient, recipient, withdrawable);
     }
 
     /**
@@ -128,14 +128,14 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
-        withdrawTo(recipient, msg.sender, withdrawable);
+        _withdraw(recipient, msg.sender, withdrawable);
     }
 
     /**
      * Withdraw a specified amount of your own proven earnings (see `function prove`)
      */
     function withdraw(uint amount) public {
-        withdrawTo(msg.sender, msg.sender, amount);
+        _withdraw(msg.sender, msg.sender, amount);
     }
 
     /**
@@ -144,7 +144,15 @@ contract Monoplasma is BalanceVerifier, Ownable {
      *   it detects Operator malfunctioning
      */
     function withdrawFor(address recipient, uint amount) public {
-        withdrawTo(recipient, recipient, amount);
+        _withdraw(recipient, recipient, amount);
+    }
+
+    /**
+     * "Donate withdraw" function that allows you to transfer
+     *   proven earnings to a another address in one transaction
+     */
+    function withdrawTo(address recipient, uint amount) public {
+        _withdraw(recipient, msg.sender, amount);
     }
 
     /**
@@ -152,7 +160,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @dev It is up to the sidechain implementation to make sure
      * @dev  always token balance >= sum of earnings - sum of withdrawn
      */
-    function withdrawTo(address recipient, address account, uint amount) public {
+    function _withdraw(address recipient, address account, uint amount) internal {
         require(amount > 0, "error_zeroWithdraw");
         uint w = withdrawn[account].add(amount);
         require(w <= earnings[account], "error_overdraft");
