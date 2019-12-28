@@ -48,6 +48,7 @@ module.exports = class MonoplasmaMember {
     }
 
     /** Produces a hashable string representation in hex form (starts with "0x") */
+    // TODO: move to merkletree.js:hashLeaf
     toHashableString() {
         return this.address + this.earnings.toString(16, 64)
     }

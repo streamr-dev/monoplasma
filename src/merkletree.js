@@ -1,10 +1,11 @@
 /* eslint-disable no-bitwise */
 
-// node crypto can be used once it upgrades to openssl 1.1.1
-// see https://www.openssl.org/news/changelog.html#x1
-// node 9.5.0 crypto uses openssl 1.0.2f
+// TODO: node crypto should have sha3-256 support with openssl 1.1.1
 // const crypto = require("crypto")
-// For now, use replacement:
+
+// TODO: following should also be a more modern drop-in replacement:
+//const createKeccakHash = require("keccak")
+
 const { keccak256 } = require("eth-lib").hash
 
 /**
@@ -12,8 +13,31 @@ const { keccak256 } = require("eth-lib").hash
  * @returns {Buffer}
  */
 function hash(data) {
+    // TODO: following should be drop-in replacement:
+    //return createKeccakHash("keccak256").update(data).digest()
+
     return Buffer.from(keccak256(data).slice(2), "hex")
 }
+
+/**
+ * Hash a merkle tree leaf
+ * Corresponding code in BalanceVerifier.sol:
+ *   bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
+ * @param {MonoplasmaMember} member
+ * @param {Number} blockNumber
+ */
+function hashLeaf(member, blockNumber) {    // eslint-disable-line no-unused-vars
+    const data = blockNumber + member.address + member.earnings.toString(16, 64)
+    return hash(data)
+}
+
+/**
+ * Hash intermediate branch nodes together
+ * Corresponding code in BalanceVerifier.sol:
+ *     root = keccak256(abi.encodePacked(root, other));
+ * @param {Buffer} data1
+ * @param {Buffer} data2
+ */
 function hashCombined(data1, data2) {
     if (typeof data1 === "string") {
         data1 = Buffer.from(data1.startsWith("0x") ? data1.slice(2) : data1, "hex")
@@ -53,10 +77,13 @@ function buildMerkleTree(leafContents) {
     const indexOf = {}
     hashes[0] = branchCount
 
-    // leaf hashes: hash(address + balance)
+    // leaf hashes: hash(blockNumber + address + balance)
     let i = branchCount
     leafContents.forEach(m => {
         indexOf[m.address] = i
+        // TODO: move toHashableString back to this file, into a function hashLeaf
+        // TODO: add relevant blockNumber everywhere (used for salt)
+        // hashes[i++] = hashLeaf(member, blockNumber)
         hashes[i++] = hash(m.toHashableString()) // eslint-disable-line no-plusplus
     })
 
