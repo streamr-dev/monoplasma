@@ -1,6 +1,6 @@
 {
   "name": "monoplasma",
-  "version": "0.1.10",
+  "version": "0.2.1",
   "description": "Unidirectional payment sidechain with monotonically increasing balances (no in-chain transfers)",
   "author": "Streamr Network AG",
   "license": "AGPL-3.0",
@@ -23,7 +23,6 @@
     "mocha": "^5.2.0",
     "node-fetch": "^2.2.0",
     "sinon": "^7.2.2",
-    "truffle": "5.0.0-next.26",
     "truffle-flattener": "^1.2.10"
   },
   "dependencies": {
@@ -38,10 +37,12 @@
     "ganache-core": "^2.3.1",
     "mz": "^2.7.0",
     "number-to-bn": "^1.7.0",
-    "openzeppelin-solidity": "2.0.0",
+    "openzeppelin-solidity": "2.4.0",
     "prettyjson": "^1.2.1",
     "promise-events": "^0.1.4",
     "source-map-support": "^0.5.9",
+    "solc": "0.5.12",
+    "truffle": "^5.1.8",
     "truffle-resolver": "^4.0.4",
     "web3": "1.0.0-beta.37",
     "websocket": "^1.0.28",

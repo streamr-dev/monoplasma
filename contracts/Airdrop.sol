@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
@@ -23,7 +23,7 @@ contract Airdrop is BalanceVerifier, Ownable {
     /**
      * Owner creates the side-chain blocks
      */
-    function onCommit(uint, bytes32, string) internal {
+    function onCommit(uint, bytes32, string memory) internal {
         require(msg.sender == owner, "error_notPermitted");
     }
 

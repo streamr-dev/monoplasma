@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
@@ -73,7 +73,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Operator creates the side-chain blocks
      */
-    function onCommit(uint blockNumber, bytes32, string) internal {
+    function onCommit(uint blockNumber, bytes32, string memory) internal {
         require(msg.sender == operator, "error_notPermitted");
         blockTimestamp[blockNumber] = now;
     }
@@ -88,7 +88,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
         require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
         require(earnings[account] < newEarnings, "error_oldEarnings");
         totalProven = totalProven.add(newEarnings).sub(earnings[account]);
-        require(totalProven.sub(totalWithdrawn) <= token.balanceOf(this), "error_missingBalance");
+        require(totalProven.sub(totalWithdrawn) <= token.balanceOf(address(this)), "error_missingBalance");
         earnings[account] = newEarnings;
     }
 
@@ -98,7 +98,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+    function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
         withdrawAllFor(msg.sender, blockNumber, totalEarnings, proof);
     }
 
@@ -111,7 +111,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) public {
+    function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] memory proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
         _withdraw(recipient, recipient, withdrawable);
@@ -125,7 +125,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      */
-    function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] proof) external {
+    function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
         _withdraw(recipient, msg.sender, withdrawable);
