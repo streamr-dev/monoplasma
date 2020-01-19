@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 
 /**
  * Abstract contract, requires implementation to specify who can commit blocks and what
@@ -43,7 +43,7 @@ contract BalanceVerifier {
     /**
      * Implementing contract should should do access checks for committing
      */
-    function onCommit(uint blockNumber, bytes32 rootHash, string ipfsHash) internal;
+    function onCommit(uint blockNumber, bytes32 rootHash, string memory ipfsHash) internal;
 
     /**
      * Side-chain operator submits commitments to main chain. These
@@ -52,7 +52,7 @@ contract BalanceVerifier {
      * @param rootHash root of the balances merkle-tree
      * @param ipfsHash where the whole balances object can be retrieved in JSON format
      */
-    function commit(uint blockNumber, bytes32 rootHash, string ipfsHash) external {
+    function commit(uint blockNumber, bytes32 rootHash, string calldata ipfsHash) external {
         require(blockHash[blockNumber] == 0, "error_overwrite");
         string memory _hash = ipfsHash;
         onCommit(blockNumber, rootHash, _hash);
