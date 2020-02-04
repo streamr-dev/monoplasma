@@ -140,7 +140,7 @@ class MerkleTree {
 
     includes(address) {
         const { indexOf } = this.getContents()
-        return indexOf.hasOwnProperty(address)
+        return Object.prototype.hasOwnProperty.call(indexOf, address)
     }
 
     /**
