@@ -89,7 +89,7 @@ In `WATCHED_ACCOUNTS`, give a comma separated list of accounts you'd like the va
 
 ## Setting up the browser and Metamask
 
-- Point your browser to http://0.0.0.0:8000/
+- Point your browser to http://0.0.0.0:8080/
 - Metamask might pop up, asking you to unlock and/or give permissions to the page use it. Accept.
 - In your Metamask, select the "Localhost 8545" network if it's listed. If it isn't, add a custom network with RPC URL http://127.0.0.1:8545.
 - You should see the control panel with everything empty and zero.
