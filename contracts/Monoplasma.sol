@@ -139,7 +139,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the side-chain
      * @param proof list of hashes to prove the totalEarnings
      * @param tokensWithdrawnBefore replay protection for the signature. After this withdraw completes, withdrawn tokens will not match this signature anymore
-     * @param signature from the community member, message is abi.encodePacked(recipient, tokensWithdrawnBefore)
+     * @param signature from the community member, web3.eth.sign(recipient + tokensWithdrawnBefore.toString(16, 64))
      */
     function withdrawAllToSigned(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof, uint tokensWithdrawnBefore, bytes calldata signature) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
