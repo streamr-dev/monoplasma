@@ -183,5 +183,20 @@ contract("Monoplasma", accounts => {
             await increaseTime(blockFreezePeriodSeconds + 1)
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
+
+        it("can withdraw with a signature", async () => {
+            block = await addRevenue(1000)
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+            const withdrawable = new BN(earnings).sub(withdrawn)
+            const balanceBefore = await token.balanceOf(producer)
+
+            const message = producer + withdrawn.toString(16, 64)
+            const signature = await web3.eth.sign(message, anotherProducer)
+
+            await rootchain.withdrawAllToSigned(producer, block.blockNumber, earnings, proof, signature, withdrawn, {from: admin})
+            assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
+        })
     })
 })

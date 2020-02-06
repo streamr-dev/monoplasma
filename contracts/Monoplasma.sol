@@ -114,7 +114,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] memory proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
-        _withdraw(recipient, recipient, withdrawable);
+        withdrawFor(recipient, withdrawable);
     }
 
     /**
@@ -128,7 +128,23 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
-        _withdraw(recipient, msg.sender, withdrawable);
+        withdrawTo(recipient, withdrawable);
+    }
+
+    /**
+     * Do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     * @param recipient the address the tokens will be sent to (instead of msg.sender)
+     * @param blockNumber of the leaf to verify
+     * @param totalEarnings in the side-chain
+     * @param proof list of hashes to prove the totalEarnings
+     * @param tokensWithdrawnBefore replay protection for the signature. After this withdraw completes, withdrawn tokens will not match this signature anymore
+     * @param signature from the community member, message is abi.encodePacked(recipient, tokensWithdrawnBefore)
+     */
+    function withdrawAllToSigned(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof, uint tokensWithdrawnBefore, bytes calldata signature) external {
+        prove(blockNumber, msg.sender, totalEarnings, proof);
+        uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
+        withdrawToSigned(recipient, tokensWithdrawnBefore, signature, withdrawable);
     }
 
     /**
@@ -153,6 +169,34 @@ contract Monoplasma is BalanceVerifier, Ownable {
      */
     function withdrawTo(address recipient, uint amount) public {
         _withdraw(recipient, msg.sender, amount);
+    }
+
+    /**
+     * Do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     */
+    function withdrawToSigned(address recipient, uint tokensWithdrawnBefore, bytes memory signature, uint amount) public {
+        require(signature.length == 65, "error_badSignature");
+
+        // Divide the signature in r, s and v variables
+        bytes32 r; bytes32 s; uint8 v;
+        assembly {
+            r := mload(add(signature, 32))
+            s := mload(add(signature, 64))
+            v := byte(0, mload(add(signature, 96)))
+        }
+        if (v < 27) {
+            v += 27;
+        }
+        require(v == 27 || v == 28, "error_badSignatureVersion");
+
+        //bytes32 messageHash = keccak256(abi.encodePacked(recipient, tokensWithdrawnBefore));
+        //bytes32 prefixedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
+        bytes32 prefixedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n52", recipient, tokensWithdrawnBefore)); // TODO: message length?
+        address signer = ecrecover(prefixedHash, v, r, s);
+
+        require(tokensWithdrawnBefore == withdrawn[signer], "error_oldSignature");
+        _withdraw(recipient, signer, amount);
     }
 
     /**
