@@ -4,3 +4,4 @@ build/contracts
 static_web/airdrop/0x*
 test/e2e/test-store-*
 coverage.json
+coverage
