@@ -114,7 +114,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] memory proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
-        _withdraw(recipient, recipient, withdrawable);
+        withdrawFor(recipient, withdrawable);
     }
 
     /**
@@ -128,7 +128,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
-        _withdraw(recipient, msg.sender, withdrawable);
+        withdrawTo(recipient, withdrawable);
     }
 
     /**

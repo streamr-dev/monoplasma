@@ -90,7 +90,7 @@ contract("Monoplasma", accounts => {
             await rootchain.transferOwnership(admin, {from: newAdmin})
             assertEvent(await rootchain.claimOwnership({from: admin}), "OwnershipTransferred", [newAdmin, admin])
         })
-        
+
 
         it("can publish blocks", async () => {
             const block = await publishBlock()
@@ -121,13 +121,14 @@ contract("Monoplasma", accounts => {
 
     describe("Member", () => {
         let block
-        it("can withdraw earnings", async () => {
+        it("can withdraw earnings (two step: prove, then withdraw)", async () => {
             block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             assertEqual(await token.balanceOf(producer), 0)
             await increaseTime(blockFreezePeriodSeconds + 1)
-            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
+            await rootchain.prove(block.blockNumber, producer, earnings, proof, {from: producer})
+            await rootchain.withdraw(earnings, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
         })
 
