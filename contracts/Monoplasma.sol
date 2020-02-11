@@ -64,10 +64,10 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Fixed-point decimal in the same way as ether: 50% === 0.5 ether
      * Smart contract doesn't use it, it's here just for storing purposes
      */
-    function setAdminFee(uint _adminFee) public onlyOwner {
-        require(adminFee <= 1 ether, "Admin fee cannot be greater than 1");
-        adminFee = _adminFee;
-        emit AdminFeeChanged(_adminFee);
+    function setAdminFee(uint newAdminFee) public onlyOwner {
+        require(newAdminFee <= 1 ether, "error_adminFee");
+        adminFee = newAdminFee;
+        emit AdminFeeChanged(adminFee);
     }
 
     /**
