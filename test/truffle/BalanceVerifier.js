@@ -2,6 +2,9 @@
 const Airdrop = artifacts.require("./Airdrop.sol")
 const DemoToken = artifacts.require("./DemoToken.sol")
 
+const FailTokenJson = require("./FailToken.json")
+const FailToken = new web3.eth.Contract(FailTokenJson.abi)
+
 const { assertEqual, assertFails } = require("../utils/web3Assert")
 
 const MonoplasmaMember = require("../../src/member")
@@ -58,12 +61,12 @@ contract("BalanceVerifier", accounts => {
 
     describe("prove & proofIsCorrect & calculateRootHash", () => {
         // see test/merklepath.js
-        let block, member, proof
+        let block, member, proof, root
         it("correctly validate a proof", async () => {
             plasma.addRevenue(1000)
             const memberObj = plasma.getMember(anotherRecipient)
             member = MonoplasmaMember.fromObject(memberObj)
-            const root = plasma.tree.getRootHash()
+            root = plasma.tree.getRootHash()
             proof = plasma.getProof(anotherRecipient)
             block = await publishBlock(root)
             // check that block was published correctly
@@ -91,20 +94,12 @@ contract("BalanceVerifier", accounts => {
             await assertFails(airdrop.prove(block.blockNumber, member.address, member.earnings, [], {from: admin, gas: 4000000}), "error_proof")
         })
 
-        it("fails with error_transfer if contract doesn't have enough tokens", async () => {
-            const badState = new MonoplasmaState(0, [], { saveBlock: () => {} }, admin, 0)
-            badState.addMember(recipient)
-            badState.addMember(anotherRecipient)
-            const tokens = await token.balanceOf(airdrop.address)
-            badState.addRevenue(tokens * 10)
-
-            const memberObj = plasma.getMember(recipient)
-            const member = MonoplasmaMember.fromObject(memberObj)
-            const root = plasma.tree.getRootHash()
-            const proof = plasma.getProof(recipient)
-            const block = await publishBlock(root)
-            assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof))
-            await assertFails(airdrop.prove(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000}, "error_transfer"))
+        it("fails with error_transfer if token transfer returns false", async () => {
+            const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 4000000})
+            const airdrop2 = await Airdrop.new(token2.options.address, {from: admin, gas: 4000000})
+            await airdrop2.commit(1, root, "ipfs lol", {from: admin})
+            assert(await airdrop2.proofIsCorrect(1, member.address, member.earnings, proof))
+            await assertFails(airdrop2.prove(1, member.address, member.earnings, proof, {from: admin, gas: 4000000}), "error_transfer")
         })
     })
 })
