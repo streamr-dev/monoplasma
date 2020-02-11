@@ -14,7 +14,7 @@
     "test-js": "mocha test/mocha --exit",
     "test-e2e": "mocha test/e2e --exit",
     "test-contracts": "truffle test test/truffle/*",
-    "coverage": "truffle run coverage",
+    "coverage": "truffle run coverage --file=test/truffle/*.js",
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -f build/flattened/*",
     "clean-demo": "rm -rf demo/public/data/*"
