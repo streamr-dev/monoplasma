@@ -69,7 +69,6 @@ contract("Monoplasma", accounts => {
         })
     })
 
-
     describe("Admin", () => {
         it("admin can set fee and receives correct fee", async () => {
             const adminFee = toWei(".5", "ether")
@@ -79,7 +78,11 @@ contract("Monoplasma", accounts => {
         })
 
         it("non-admin can't set fee", async () => {
-            await assertFails(rootchain.setAdminFee(123, {from: producer}))
+            await assertFails(rootchain.setAdminFee(123, {from: producer}), "error_onlyOwner")
+        })
+
+        it("can't set fee higher than 100%", async () => {
+            await assertFails(rootchain.setAdminFee(toWei("2", "ether"), {from: admin}), "error_adminFee")
         })
 
         it("ownership can be transferred", async () => {
@@ -90,7 +93,6 @@ contract("Monoplasma", accounts => {
             await rootchain.transferOwnership(admin, {from: newAdmin})
             assertEvent(await rootchain.claimOwnership({from: admin}), "OwnershipTransferred", [newAdmin, admin])
         })
-
 
         it("can publish blocks", async () => {
             const block = await publishBlock()
@@ -130,6 +132,13 @@ contract("Monoplasma", accounts => {
             await rootchain.prove(block.blockNumber, producer, earnings, proof, {from: producer})
             await rootchain.withdraw(earnings, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
+        })
+
+        it("fails if member tries later with an old (though valid) proof", async () => {
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof))
+            await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
         })
 
         it("can withdraw earnings on behalf of another", async () => {
@@ -183,6 +192,14 @@ contract("Monoplasma", accounts => {
             const { earnings } = plasma.getMember(producer)
             await increaseTime(blockFreezePeriodSeconds + 1)
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
+        })
+
+        it("can not withdraw zero tokens", async () => {
+            await assertFails(rootchain.withdraw(0, {from: producer}), "error_zeroWithdraw")
+        })
+
+        it("can not withdraw too many tokens", async () => {
+            await assertFails(rootchain.withdraw(10000000, {from: producer}), "error_overdraft")
         })
     })
 })
