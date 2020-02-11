@@ -82,6 +82,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Called from BalanceVerifier.prove
      * Prove can be called directly to withdraw less than the whole share,
      *   or just "cement" the earnings so far into root chain even without withdrawing
+     * Missing balance test is an extra layer of defense against fraudulent operator who tries to steal ALL tokens.
+     *   If any member can exit within freeze period, that fraudulent commit will fail.
      */
     function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
         uint blockFreezeStart = blockTimestamp[blockNumber];
