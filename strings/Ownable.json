@@ -1,0 +1,4 @@
+{
+    "error_onlyOwner": "Only owner is allowed to call this function",
+    "error_onlyPendingOwner": "Only pending owner is allowed to call this function"
+}
