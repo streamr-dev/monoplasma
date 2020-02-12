@@ -101,7 +101,7 @@ describe("MonoplasmaState", () => {
         this.timeout(40000)
 
         const initialMembers = []
-        while (initialMembers.length < 200000) {
+        while (initialMembers.length < 5000) {
             initialMembers.push({
                 address: `0x${crypto.randomBytes(20).toString("hex")}`,
                 earnings: 0,
@@ -121,16 +121,13 @@ describe("MonoplasmaState", () => {
         // TODO: make this test actually test what the name says
         //         each getProofAt on cold cache (new block) takes about 5s
         const startTime = Date.now()
-        //for (let j = 0; j < 10; j++) {
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 200; i++) {
             const bnum = 100 + i % 3
             const { address } = initialMembers[(50 * i) % initialMembers.length]
             await plasma.getProofAt(address, bnum)
+            const timeTaken = Date.now() - startTime
+            assert(timeTaken < 10000, "too slow!")
         }
-        //  await sleep(100)
-        //}
-        const timeTaken = Date.now() - startTime
-        assert(timeTaken < 30000, "too slow!")
     })
 
     it("should give revenue to adminAccount if no members present", async () => {
