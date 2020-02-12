@@ -7,8 +7,9 @@ import "./BalanceVerifier.sol";
 import "./Ownable.sol";
 
 /**
- * Continuous airdrop where recipients can withdraw tokens allocated in side-chain.
- * Simplest root chain contract implementation
+ * "Continuous airdrop" where recipients can withdraw tokens allocated in side-chain.
+ * Simplest root chain contract implementation.
+ * For purposes of illustrating the use of BalanceVerifier, and for testing it.
  */
 contract Airdrop is BalanceVerifier, Ownable {
     using SafeMath for uint256;
@@ -31,9 +32,9 @@ contract Airdrop is BalanceVerifier, Ownable {
      * Called from BalanceVerifier.prove, perform payout directly
      */
     function onVerifySuccess(uint, address account, uint balance) internal {
-        require(withdrawn[account] < balance, "err_oldEarnings");
+        require(withdrawn[account] < balance, "error_oldEarnings");
         uint withdrawable = balance.sub(withdrawn[account]);
         withdrawn[account] = balance;
-        require(token.transfer(account, withdrawable), "err_transfer");
+        require(token.transfer(account, withdrawable), "error_transfer");
     }
 }

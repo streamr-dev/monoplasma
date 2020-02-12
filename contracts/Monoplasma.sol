@@ -64,10 +64,10 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Fixed-point decimal in the same way as ether: 50% === 0.5 ether
      * Smart contract doesn't use it, it's here just for storing purposes
      */
-    function setAdminFee(uint _adminFee) public onlyOwner {
-        require(adminFee <= 1 ether, "Admin fee cannot be greater than 1");
-        adminFee = _adminFee;
-        emit AdminFeeChanged(_adminFee);
+    function setAdminFee(uint newAdminFee) public onlyOwner {
+        require(newAdminFee <= 1 ether, "error_adminFee");
+        adminFee = newAdminFee;
+        emit AdminFeeChanged(adminFee);
     }
 
     /**
@@ -82,6 +82,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Called from BalanceVerifier.prove
      * Prove can be called directly to withdraw less than the whole share,
      *   or just "cement" the earnings so far into root chain even without withdrawing
+     * Missing balance test is an extra layer of defense against fraudulent operator who tries to steal ALL tokens.
+     *   If any member can exit within freeze period, that fraudulent commit will fail.
      */
     function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
         uint blockFreezeStart = blockTimestamp[blockNumber];
@@ -114,7 +116,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] memory proof) public {
         prove(blockNumber, recipient, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[recipient]);
-        _withdraw(recipient, recipient, withdrawable);
+        withdrawFor(recipient, withdrawable);
     }
 
     /**
@@ -128,7 +130,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
         prove(blockNumber, msg.sender, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[msg.sender]);
-        _withdraw(recipient, msg.sender, withdrawable);
+        withdrawTo(recipient, withdrawable);
     }
 
     /**

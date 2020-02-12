@@ -1,7 +1,13 @@
 const BN = require("bn.js")
 
+const MerkleTree = require("../../src/merkletree")
+const MonoplasmaMember = require("../../src/member")
+
 const RootChainContract = artifacts.require("./Monoplasma.sol")
 const ERC20Mintable = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol")
+
+const FailTokenJson = require("./FailToken.json")
+const FailToken = new web3.eth.Contract(FailTokenJson.abi)
 
 const { assertEqual, assertFails, assertEvent } = require("../utils/web3Assert")
 const increaseTime = require("../utils/increaseTime")
@@ -13,7 +19,6 @@ const JoinPartChannel = require("../../src/joinPartChannel")
 const FileStore = require("../../src/fileStore")
 const fileStore = new FileStore("/tmp/mono", console.log)
 let currentBlockNumber = 1
-
 
 contract("Monoplasma", accounts => {
     let token
@@ -49,10 +54,10 @@ contract("Monoplasma", accounts => {
     }
 
     // simulate a block being published by the MonoplasmaOperator
-    async function publishBlock(rootHash, operator) {
+    async function publishBlock(rootHash, operatorAddress) {
         const root = rootHash || plasma.getRootHash()
         const blockNumber = currentBlockNumber++
-        const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: operator || admin})
+        const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: operatorAddress || admin})
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
@@ -69,7 +74,6 @@ contract("Monoplasma", accounts => {
         })
     })
 
-
     describe("Admin", () => {
         it("admin can set fee and receives correct fee", async () => {
             const adminFee = toWei(".5", "ether")
@@ -79,7 +83,11 @@ contract("Monoplasma", accounts => {
         })
 
         it("non-admin can't set fee", async () => {
-            await assertFails(rootchain.setAdminFee(123, {from: producer}))
+            await assertFails(rootchain.setAdminFee(123, {from: producer}), "error_onlyOwner")
+        })
+
+        it("can't set fee higher than 100%", async () => {
+            await assertFails(rootchain.setAdminFee(toWei("2", "ether"), {from: admin}), "error_adminFee")
         })
 
         it("ownership can be transferred", async () => {
@@ -90,7 +98,6 @@ contract("Monoplasma", accounts => {
             await rootchain.transferOwnership(admin, {from: newAdmin})
             assertEvent(await rootchain.claimOwnership({from: admin}), "OwnershipTransferred", [newAdmin, admin])
         })
-        
 
         it("can publish blocks", async () => {
             const block = await publishBlock()
@@ -121,14 +128,22 @@ contract("Monoplasma", accounts => {
 
     describe("Member", () => {
         let block
-        it("can withdraw earnings", async () => {
+        it("can withdraw earnings (two step: prove, then withdraw)", async () => {
             block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             assertEqual(await token.balanceOf(producer), 0)
             await increaseTime(blockFreezePeriodSeconds + 1)
-            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
+            await rootchain.prove(block.blockNumber, producer, earnings, proof, {from: producer})
+            await rootchain.withdraw(earnings, {from: producer})
             assertEqual(await token.balanceOf(producer), earnings)
+        })
+
+        it("fails if member tries later with an old (though valid) proof", async () => {
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof))
+            await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
         })
 
         it("can withdraw earnings on behalf of another", async () => {
@@ -182,6 +197,39 @@ contract("Monoplasma", accounts => {
             const { earnings } = plasma.getMember(producer)
             await increaseTime(blockFreezePeriodSeconds + 1)
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
+        })
+
+        it("can not withdraw zero tokens", async () => {
+            await assertFails(rootchain.withdraw(0, {from: producer}), "error_zeroWithdraw")
+        })
+
+        it("can not withdraw too many tokens", async () => {
+            await assertFails(rootchain.withdraw(10000000, {from: producer}), "error_overdraft")
+        })
+
+        it("withdraw fails with error_transfer if token transfer returns false", async () => {
+            const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 4000000})
+            const rootchain2 = await RootChainContract.new(token2.options.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 4000000})
+            await token2.methods.transfer(rootchain2.address, toWei("1000", "ether")).send({from: admin})
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            const root = plasma.getRootHash()
+            await rootchain2.commit(1, root, "ipfs lol", {from: admin})
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await assertFails(rootchain2.withdrawAll(1, earnings, proof, {from: producer}), "error_transfer")
+        })
+
+        // see /stealAllTokens route of routers/revenueDemo.js
+        it("proving fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
+            const fakeTokens = toWei("1000", "ether")
+            const fakeMemberList = [new MonoplasmaMember("thief", producer, fakeTokens)]
+            const fakeTree = new MerkleTree(fakeMemberList)
+            const fakeProof = ["0x0000000000000000000000000000000000000000000000000000000000000000"]
+            const root = fakeTree.getRootHash()
+            const block = await publishBlock(root)
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, fakeTokens, fakeProof))
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await assertFails(rootchain.prove(block.blockNumber, producer, fakeTokens, fakeProof, {from: admin, gas: 4000000}), "error_missingBalance")
         })
     })
 })
