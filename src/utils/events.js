@@ -2,7 +2,7 @@ const {
     QUIET,
 } = process.env
 
-const log = QUIET ? () => {} : console.log
+const log = QUIET ? () => {} : console.log // eslint-disable-line no-console
 
 async function replayEvent(plasma, event) {
     switch (event.event) {

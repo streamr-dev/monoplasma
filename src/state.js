@@ -265,7 +265,6 @@ module.exports = class MonoplasmaState {
         if (adminFeeFraction.ltn(0) || adminFeeFraction.gt(toBN(toWei("1")))) {
             throw Error("setAdminFeeFraction: adminFeeFraction must be between 0 and 1")
         }
-        //console.log(`Setting adminFeeFraction = ${adminFeeFraction}`)
         this.adminFeeFraction = adminFeeFraction
     }
 
@@ -276,12 +275,11 @@ module.exports = class MonoplasmaState {
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = activeMembers.length
         if (activeCount === 0) {
-            console.warn(`No active members in community! Allocating ${amount} to admin account ${this.adminMember.address}`)
+            console.warn(`No active members in community! Allocating ${amount} to admin account ${this.adminMember.address}`) // eslint-disable-line no-console
             this.adminMember.addRevenue(amount)
         } else {
             const amountBN = new BN(amount)
             const adminFeeBN = amountBN.mul(this.adminFeeFraction).div(new BN(toWei("1", "ether")))
-            //console.log("received tokens amount: "+amountBN + " adminFee: "+adminFeeBN +" fraction * 10^18: "+this.adminFeeFraction)
             const share = amountBN.sub(adminFeeBN).divn(activeCount)    // TODO: remainder to admin too, let's not waste them!
             this.adminMember.addRevenue(adminFeeBN)
             activeMembers.forEach(m => m.addRevenue(share))

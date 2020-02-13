@@ -17,7 +17,7 @@ module.exports = class MonoplasmaWatcher {
         this.state = Object.assign({}, startState)
         this.store = store
         this.log = logFunc || (() => {})
-        this.error = errorFunc || console.error
+        this.error = errorFunc || console.error // eslint-disable-line no-console
         this.explorerUrl = this.state.explorerUrl
         this.filters = {}
         this.eventLogIndex = +new Date()
@@ -60,7 +60,7 @@ module.exports = class MonoplasmaWatcher {
         //console.log("state: "+ JSON.stringify(this.state))
         const self = this
         function handleEvent(event) {
-            console.log("seen event: " + JSON.stringify(event))
+            //console.log("seen event: " + JSON.stringify(event))
             self.state.lastBlockNumber = +event.blockNumber
             replayEvent(self.plasma, event).catch(self.error)
             return self.store.saveState(self.state).catch(self.error)
