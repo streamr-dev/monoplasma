@@ -6,7 +6,7 @@ const {
     QUIET,
 } = process.env
 
-const log = QUIET ? () => {} : console.log
+const log = QUIET ? () => {} : console.log // eslint-disable-line no-console
 
 /** Don't send the full member list back, only member count */
 function blockToApiObject(block) {
