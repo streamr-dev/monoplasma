@@ -31,8 +31,8 @@ contract("Monoplasma", accounts => {
     const joinPartChannel = new JoinPartChannel()
     let watcher
     before(async () => {
-        token = await ERC20Mintable.new({from: admin, gas: 4000000})
-        rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 4000000})
+        token = await ERC20Mintable.new({from: admin, gas: 6000000})
+        rootchain = await RootChainContract.new(token.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 6000000})
         const startState = {
             contractAddress: rootchain.address,
             tokenAddress: token.address,
@@ -126,9 +126,9 @@ contract("Monoplasma", accounts => {
         })
     })
 
-    describe("Member", () => {
+    describe("Withdrawing", () => {
         let block
-        it("can withdraw earnings (two step: prove, then withdraw)", async () => {
+        it("works when done in two steps: prove, then withdraw", async () => {
             block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
@@ -146,7 +146,7 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
         })
 
-        it("can withdraw earnings on behalf of another", async () => {
+        it("can be done on behalf of another member", async () => {
             const proof = plasma.getProof(anotherProducer)
             const { earnings } = plasma.getMember(anotherProducer)
             assertEqual(await token.balanceOf(anotherProducer), 0)
@@ -154,7 +154,7 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(anotherProducer), earnings)
         })
 
-        it("can withdraw earnings a second time", async () => {
+        it("works second time around, too", async () => {
             block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
@@ -163,7 +163,7 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(producer), earnings)
         })
 
-        it("can donate earnings to another", async () => {
+        it("can donate earnings to elsewhere", async () => {
             const proof = plasma.getProof(anotherProducer)
             const { earnings } = plasma.getMember(anotherProducer)
             const withdrawn = await rootchain.withdrawn(anotherProducer)
@@ -173,14 +173,14 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
         })
 
-        it("can not withdraw earnings before freeze period is over", async () => {
+        it("fails before freeze period is over", async () => {
             const block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_frozen")
         })
 
-        it("can not withdraw wrong amount", async () => {
+        it("fails for wrong amount", async () => {
             const block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = { earnings: 50000 }
@@ -188,7 +188,7 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
 
-        it("can not withdraw with bad proof", async () => {
+        it("fails with bad proof", async () => {
             const block = await addRevenue(1000)
             const proof = [
                 "0x3e6ef21b9ffee12d86b9ac8713adaba889b551c5b1fbd3daf6c37f62d7f162bc",
@@ -199,32 +199,99 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
 
-        it("can withdraw with a signature", async () => {
+        it("works for another member's earnings with a signature (withdrawAllToSigned)", async () => {
+            // admin withdraws anotherProducer's earnings to producer's account
             block = await addRevenue(1000)
             const proof = plasma.getProof(anotherProducer)
             const { earnings } = plasma.getMember(anotherProducer)
             const withdrawn = await rootchain.withdrawn(anotherProducer)
-            const withdrawable = new BN(earnings).sub(withdrawn)
-            const balanceBefore = await token.balanceOf(producer)
 
             const message = producer + withdrawn.toString(16, 64)
             const signature = await web3.eth.sign(message, anotherProducer)
 
-            await rootchain.withdrawAllToSigned(producer, block.blockNumber, earnings, proof, signature, withdrawn, {from: admin})
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            const balanceBefore = await token.balanceOf(producer)
+            await rootchain.withdrawAllToSigned(producer, block.blockNumber, earnings, proof, withdrawn, signature, {from: admin})
+            const withdrawable = new BN(earnings).sub(withdrawn)
             assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
         })
 
-        it("can not withdraw zero tokens", async () => {
+        it("works for another member's earnings with a signature, also in 2 steps: prove, then withdrawToSigned", async () => {
+            block = await addRevenue(1000)
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+
+            const message = producer + withdrawn.toString(16, 64)
+            const signature = await web3.eth.sign(message, anotherProducer)
+
+            // admin proves anotherProducer's earnings to smart contract (anyone can do this)
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await rootchain.prove(block.blockNumber, anotherProducer, earnings, proof, {from: admin})
+            assertEqual(await rootchain.earnings(anotherProducer), earnings)
+
+            // then withdraws with signature to producer's account
+            const balanceBefore = await token.balanceOf(producer)
+            const withdrawable = new BN(earnings).sub(withdrawn)
+            await rootchain.withdrawToSigned(producer, withdrawn, signature, withdrawable, {from: admin})
+            assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
+        })
+
+        it("fails for otherwise valid earnings with a signature if attempted in 2 pieces", async () => {
+            // see the above test before reading this one (keep them in sync if you modify!)
+            block = await addRevenue(1000)
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+
+            const message = producer + withdrawn.toString(16, 64)
+            const signature = await web3.eth.sign(message, anotherProducer)
+
+            // admin proves anotherProducer's earnings to smart contract (anyone can do this)
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await rootchain.prove(block.blockNumber, anotherProducer, earnings, proof, {from: admin})
+            assertEqual(await rootchain.earnings(anotherProducer), earnings)
+
+            // then withdraws with signature to producer's account
+            const balanceBefore = await token.balanceOf(producer)
+            const balance2Before = await token.balanceOf(anotherProducer)
+            const withdrawable = new BN(earnings).sub(withdrawn)
+            await rootchain.withdrawToSigned(producer, withdrawn, signature, withdrawable.subn(100), {from: admin})
+            await assertFails(rootchain.withdrawToSigned(producer, withdrawn, signature, "100", {from: admin}), "error_oldSignature")
+            await rootchain.withdraw("100", {from: anotherProducer})
+            assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable).subn(100))
+            assertEqual(await token.balanceOf(anotherProducer), balance2Before.addn(100))
+        })
+
+        it("fails for badly formed signatures", async () => {
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+            const message = producer + withdrawn.toString(16, 64)
+            const signature = await web3.eth.sign(message, anotherProducer)
+            assertEqual(await rootchain.checkSignature(producer, withdrawn, signature), anotherProducer)
+
+            console.log(signature)
+
+            await assertFails(rootchain.withdrawToSigned(producer, withdrawn, signature.slice(0, -10), "100", {from: admin}), "error_badSignature")
+            await assertFails(rootchain.withdrawToSigned(producer, withdrawn, signature.slice(0, -2) + "30", "100", {from: admin}), "error_badSignatureVersion")
+
+            //const ret = await rootchain.checkSignature(producer, withdrawn, signature.slice(0, -10))
+            //console.log(ret)
+
+            await assertFails(rootchain.checkSignature(producer, withdrawn, signature.slice(0, -10)), "error_badSignature")
+            await assertFails(rootchain.checkSignature(producer, withdrawn, signature.slice(0, -2) + "30"), "error_badSignatureVersion")
+        })
+
+        it("fails for zero tokens", async () => {
             await assertFails(rootchain.withdraw(0, {from: producer}), "error_zeroWithdraw")
         })
 
-        it("can not withdraw too many tokens", async () => {
+        it("fails for too many tokens", async () => {
             await assertFails(rootchain.withdraw(10000000, {from: producer}), "error_overdraft")
         })
 
-        it("withdraw fails with error_transfer if token transfer returns false", async () => {
-            const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 4000000})
-            const rootchain2 = await RootChainContract.new(token2.options.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 4000000})
+        it("fails with error_transfer if token transfer returns false", async () => {
+            const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 6000000})
+            const rootchain2 = await RootChainContract.new(token2.options.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 6000000})
             await token2.methods.transfer(rootchain2.address, toWei("1000", "ether")).send({from: admin})
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
@@ -235,7 +302,8 @@ contract("Monoplasma", accounts => {
         })
 
         // see /stealAllTokens route of routers/revenueDemo.js
-        it("proving fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
+        it("fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
+            // actually proving fails, not only withdrawing
             const fakeTokens = toWei("1000", "ether")
             const fakeMemberList = [new MonoplasmaMember("thief", producer, fakeTokens)]
             const fakeTree = new MerkleTree(fakeMemberList)
