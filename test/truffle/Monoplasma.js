@@ -61,28 +61,15 @@ contract("Monoplasma", accounts => {
         return resp.logs.find(L => L.event === "BlockCreated").args
     }
 
-    describe("commit & blockHash", () => {
-        it("correctly saves and retrieves a block timestamp", async () => {
-            const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
-            const resp = await rootchain.commit(123, root, "ipfs lol", {from: admin})
-            const event = resp.logs.find(L => L.event === "BlockCreated")
-            const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
-            assertEqual(event.args.blockNumber, 123)
-            assertEqual(event.args.rootHash, root)
-            assertEqual(await rootchain.blockHash(123), root)
-            assertEqual(await rootchain.blockTimestamp(123), timestamp)
-        })
-    })
-
     describe("Admin", () => {
-        it("admin can set fee and receives correct fee", async () => {
+        it("can set fee and receives correct fee", async () => {
             const adminFee = toWei(".5", "ether")
             assertEvent(await rootchain.setAdminFee(adminFee, {from: admin}), "AdminFeeChanged", [adminFee])
             assertEqual(await rootchain.adminFee(), adminFee)
             assertEvent(await rootchain.setAdminFee(0, {from: admin}), "AdminFeeChanged", [0])
         })
 
-        it("non-admin can't set fee", async () => {
+        it("fee can't be set by non-admins", async () => {
             await assertFails(rootchain.setAdminFee(123, {from: producer}), "error_onlyOwner")
         })
 
@@ -90,7 +77,7 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.setAdminFee(toWei("2", "ether"), {from: admin}), "error_adminFee")
         })
 
-        it("ownership can be transferred", async () => {
+        it("can transfer ownership", async () => {
             const newAdmin = accounts[8]
             await rootchain.transferOwnership(newAdmin, {from: admin})
             assertEvent(await rootchain.claimOwnership({from: newAdmin}), "OwnershipTransferred", [admin, newAdmin])
@@ -115,7 +102,7 @@ contract("Monoplasma", accounts => {
         })
 
         // for the lack of per-testcase cleanup in mocha, made another testcase for cleanup...
-        it("changes the operator back", async () => {
+        it("can change the operator back", async () => {
             const operator = await rootchain.operator()
             if (operator !== admin) {
                 assertEvent(await rootchain.setOperator(admin, {from: admin}), "OperatorChanged", [admin])
@@ -300,10 +287,22 @@ contract("Monoplasma", accounts => {
             await increaseTime(blockFreezePeriodSeconds + 1)
             await assertFails(rootchain2.withdrawAll(1, earnings, proof, {from: producer}), "error_transfer")
         })
+    })
+
+    describe("Low level stuff", () => {
+        it("commit & blockHash correctly saves and retrieves a block timestamp", async () => {
+            const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
+            const resp = await rootchain.commit(123, root, "ipfs lol", {from: admin})
+            const event = resp.logs.find(L => L.event === "BlockCreated")
+            const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
+            assertEqual(event.args.blockNumber, 123)
+            assertEqual(event.args.rootHash, root)
+            assertEqual(await rootchain.blockHash(123), root)
+            assertEqual(await rootchain.blockTimestamp(123), timestamp)
+        })
 
         // see /stealAllTokens route of routers/revenueDemo.js
-        it("fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
-            // actually proving fails, not only withdrawing
+        it("proving fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
             const fakeTokens = toWei("1000", "ether")
             const fakeMemberList = [new MonoplasmaMember("thief", producer, fakeTokens)]
             const fakeTree = new MerkleTree(fakeMemberList)
