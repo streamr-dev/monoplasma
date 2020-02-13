@@ -2,12 +2,13 @@
 
 [![Build Status](https://travis-ci.com/streamr-dev/monoplasma.svg?token=9unddqKugX2cPcyhtVxp&branch=master)](https://travis-ci.com/streamr-dev/monoplasma)
 [![npm package](https://badge.fury.io/js/monoplasma.svg)](https://badge.fury.io/js/monoplasma)
-![web3 1.0.0](https://img.shields.io/badge/web3-1.0.0-green.svg?longCache=true "web3 1.0.0")
-![truffle 5.0.0](https://img.shields.io/badge/truffle-5.0.0-green.svg?longCache=true "truffle 5.0.0")
+![web3 1.2.4](https://img.shields.io/badge/web3-1.2.4-green.svg?longCache=true "web3 1.2.4")
+![truffle 5.1.9](https://img.shields.io/badge/truffle-5.1.9-green.svg?longCache=true "truffle 5.1.9")
+![solidity 5.0.16](https://img.shields.io/badge/solidity-5.0.16-green.svg?longCache=true "solidity 5.0.16")
 
-## Background
+## Summary
 
-Monoplasma is a unidirectional token distribution channel. It was originally created to enable the [Community Products](https://medium.com/streamrblog/community-products-crowdselling-big-data-iot-blockchain-streamr-fbaa794c7bc9) feature on the [Streamr Marketplace](https://marketplace.streamr.com).
+Monoplasma is a unidirectional [Ethereum token](https://en.wikipedia.org/wiki/Ethereum) distribution channel. It was originally created to enable [Data Unions](https://medium.com/streamrblog/tagged/data-unions) to sell crowdsourced data (for [DATA](https://medium.com/streamrblog/streamr-datacoin-and-where-it-can-be-obtained-988bd02b8d4b)) on the [Streamr Marketplace](https://streamr.network/marketplace/).
 
 ## Use cases
 
@@ -20,19 +21,25 @@ Monoplasma is a unidirectional token distribution channel. It was originally cre
 - Pension/benefit payments
 - etc.
 
-Basically wherever you repeatedly fan out value to a dynamic set of accounts, and want self-service withdrawals.
+Basically wherever you repeatedly fan out value to a dynamic set of accounts, and want self-service withdrawals (to minimize number of Ethereum transactions).
 
 ## What is Monoplasma?
 
-Monoplasma is a framework for scalable one-to-many payments of ERC-20 tokens on Ethereum.
+Monoplasma is a framework for scalable one-to-many payments of [ERC-20 tokens](https://eips.ethereum.org/EIPS/eip-20) on Ethereum.
 
 It is a side-chain with monotonously increasing balances. Like in Plasma, side-chain state hash is committed to root chain. It is not a blockchain: blocks are not linked to earlier side-chain blocks, but rather to the root chain blocks. Unlike Plasma, unidirectionality meaning no transfers between (withdrawable) accounts means no double-spend problem. This simplifies the exit procedure remarkably. No challenge periods are needed, and exit proofs are non-interactive. User experience is thus instant withdrawal, minus the lag (waiting while the newest block are frozen, see threat scenario below).
 
-Operator's job is to allocate tokens to community members, and publish "side-chain blocks" to root chain. In case the allocations can't deterministically be deduced from root chain events, the operator also must provide upon request the complete contents of the "block" corresponding to that hash, e.g. over HTTP or IPFS. In the MVP case, revenues are split equally, and a validator doesn't need to communicate with the operator in order to sync the side-chain state and verify the published blocks.
+Operator's job is to allocate tokens to community members, update the balances, and commit them to root chain. In case the allocations can't deterministically be deduced from root chain events, the operator also must provide upon request the complete contents of the "block" corresponding to that hash, e.g. over HTTP or IPFS. In the MVP case, revenues are split equally, and a validator doesn't need to communicate with the operator in order to sync the side-chain state and verify the published blocks.
 
-The name was so chosen because we wanted a sidechain to handle the token distribution calculation, and chose Plasma as the inspiration. Of course Plasma is not a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).
+The name was so chosen because we wanted a sidechain to handle the token distribution calculation, and chose to look first at Plasma for inspiration. Of course Plasma is not only a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).
 
 For more information, also check out [this blog post](https://medium.com/streamrblog/monoplasma-revenue-share-dapps-off-chain-6cb7ee8b42fa).
+
+## What is Monoplasma not?
+
+- It's not Plasma as specified in [Plasma white-paper](https://plasma.io/plasma.pdf).
+- It's not a generic payment channel, where everyone can arbitrarily transact with each other.
+- No, there's no ICO for it. :)
 
 ## Attacks
 
@@ -41,12 +48,6 @@ Main threat scenario: plasma side-chain operator creates a sock-puppet account, 
 There could be fraud proofs for this particular scenario: (interactive) proof that sum of balances is greater than amount of tokens held in the root chain contract; proof that a particular balance decreased; etc.
 
 But in case the operator simply doesn't provide the fudged accounts book (operator availability failure), exits from old blocks could be used as proxy for suspicion of admin's behaviour. Freeze period could, for instance, be extended in case members use on old block to exit, giving other members more time to react. This must be balanced with DoS griefing, but should definitely increase the likelihood of everyone getting their tokens out in case of operator fails.
-
-## What is Monoplasma not?
-
-- It's not Plasma as specified in [Plasma white-paper](https://plasma.io/plasma.pdf).
-- It's not a generic payment channel, where everyone can arbitrarily transact with each other.
-- No, there's no ICO for it. :)
 
 ## Revenue sharing demo
 
