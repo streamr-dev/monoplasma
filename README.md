@@ -25,13 +25,13 @@ Basically wherever you repeatedly fan out value to a dynamic set of accounts, an
 
 ## What is Monoplasma?
 
-Monoplasma is a framework for scalable one-to-many payments of [ERC-20 tokens](https://eips.ethereum.org/EIPS/eip-20) on Ethereum.
+Monoplasma is a [layer-2 framework](https://github.com/Awesome-Layer-2/awesome-layer-2#intro) for scalable one-to-many payments of [ERC-20 tokens](https://eips.ethereum.org/EIPS/eip-20) on Ethereum.
 
-It is a side-chain with monotonously increasing balances. Like in Plasma, side-chain state hash is committed to root chain. It is not a blockchain: blocks are not linked to earlier side-chain blocks, but rather to the root chain blocks. Unlike Plasma, unidirectionality meaning no transfers between (withdrawable) accounts means no double-spend problem. This simplifies the exit procedure remarkably. No challenge periods are needed, and exit proofs are non-interactive. User experience is thus instant withdrawal, minus the lag (waiting while the newest block are frozen, see threat scenario below).
+It is an off-chain balance book with monotonously increasing balances. Like in Plasma, the off-chain state hash is committed to the root-chain. It is not a blockchain: states are not linked to earlier side-chain states, but rather to the root-chain blocks. Unlike Plasma, unidirectionality meaning no transfers between (withdrawable) accounts means no double-spend problem. This simplifies the exit procedure remarkably. No challenge periods are needed, and exit proofs are non-interactive. User experience is thus instant withdrawal, minus the lag (waiting while the newest commits are frozen, see threat scenario below).
 
-Operator's job is to allocate tokens to community members, update the balances, and commit them to root chain. In case the allocations can't deterministically be deduced from root chain events, the operator also must provide upon request the complete contents of the "block" corresponding to that hash, e.g. over HTTP or IPFS. In the MVP case, revenues are split equally, and a validator doesn't need to communicate with the operator in order to sync the side-chain state and verify the published blocks.
+Operator's job is to allocate tokens to community members, update the balances, and commit them to the root-chain. In case the allocations can't deterministically be deduced from root-chain events, the operator also must provide the complete contents of the balance book state corresponding to that hash, e.g. over HTTP or IPFS. In the MVP case, revenues are split equally, and a validator doesn't need to communicate with the operator in order to sync the state and verify the commits.
 
-The name was so chosen because we wanted a sidechain to handle the token distribution calculation, and chose to look first at Plasma for inspiration. Of course Plasma is not only a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).
+The name Monoplasma was so chosen because we wanted to handle the token distribution calculations off-chain, and chose to look first at Plasma for inspiration. Of course Plasma is not only a payment channel, and while it might have worked for our use-case, the overhead of the exit game was not desired (mainly the challenge period in the happy path case).
 
 For more information, also check out [this blog post](https://medium.com/streamrblog/monoplasma-revenue-share-dapps-off-chain-6cb7ee8b42fa).
 
@@ -41,9 +41,15 @@ For more information, also check out [this blog post](https://medium.com/streamr
 - It's not a generic payment channel, where everyone can arbitrarily transact with each other.
 - No, there's no ICO for it. :)
 
-## Attacks
+## Threat model
 
-Main threat scenario: plasma side-chain operator creates a sock-puppet account, assigns it infinity tokens, publishes the hash, and drains the root chain contract by withdrawing. To combat this, there's a freeze period after the side chain block hash is published. In case of faulty or missing (withheld) side chain block contents, everyone can exit using old unfrozen root hashes.
+Main threat scenario: the side-chain operator creates a sock-puppet account, assigns it all the tokens held in the root-chain, commits the state into root-chain contract, and drains it by withdrawing.
+
+To combat this, in Monoplasma there's a freeze period after the state commit is published. In case of faulty or missing (withheld) state (balance book) contents, everyone can exit using old unfrozen root hashes.
+
+Monoplasma uses block timestamps for determining the start and end of the block freeze period. Value at stake isn't sensitive to time, however. What a bad operator could accomplish by colluding with miners and faking a future timestamp is bypassing the freeze period. Hence as long as the freeze period is longer than the 15 minutes that the [whitepaper allows blocktimes to be off](https://github.com/ethereum/wiki/wiki/White-Paper#blockchain-and-mining). While the yellow paper contains no strict specification of how much "within reasonable Unix time" is, as of 2020-02-13, [Geth allows the block times to be only 15 seconds off](https://github.com/ethereum/go-ethereum/blob/master/consensus/ethash/consensus.go#L45). A one minute freeze period would be enough to settle the freeze period bypass in Ethereum mainnet without compromising the UX. For smaller or private networks, perhaps a longer freeze period can be in order, depending on how feasible the operator-miner collusion is.
+
+### Ideas for future work to mitigate this attack
 
 There could be fraud proofs for this particular scenario: (interactive) proof that sum of balances is greater than amount of tokens held in the root chain contract; proof that a particular balance decreased; etc.
 
