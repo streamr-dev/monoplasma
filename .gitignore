@@ -1,6 +1,6 @@
 node_modules
 .idea/workspace.xml
-build/contracts
+build
 static_web/airdrop/0x*
 test/e2e/test-store-*
 coverage.json
