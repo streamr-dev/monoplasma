@@ -220,10 +220,12 @@ contract Monoplasma is BalanceVerifier, Ownable {
         }
         require(v == 27 || v == 28, "error_badSignatureVersion");
 
+        // When changing the message, remember to double-check that message length is correct!
         bytes32 messageHash = keccak256(abi.encodePacked(
-            "\x19Ethereum Signed Message:\n52", recipient, tokensWithdrawnBefore)); // TODO: is message length correct?
+            "\x19Ethereum Signed Message:\n72", recipient, address(this), tokensWithdrawnBefore));
         signer = ecrecover(messageHash, v, r, s);
 
+        // TODO: change error message, since invalid signature also produces an (invalid) address
         require(tokensWithdrawnBefore == withdrawn[signer], "error_oldSignature");
     }
 }

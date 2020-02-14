@@ -193,7 +193,7 @@ contract("Monoplasma", accounts => {
             const { earnings } = plasma.getMember(anotherProducer)
             const withdrawn = await rootchain.withdrawn(anotherProducer)
 
-            const message = producer + withdrawn.toString(16, 64)
+            const message = producer + rootchain.address.slice(2) + withdrawn.toString(16, 64)
             const signature = await web3.eth.sign(message, anotherProducer)
 
             await increaseTime(blockFreezePeriodSeconds + 1)
@@ -209,7 +209,7 @@ contract("Monoplasma", accounts => {
             const { earnings } = plasma.getMember(anotherProducer)
             const withdrawn = await rootchain.withdrawn(anotherProducer)
 
-            const message = producer + withdrawn.toString(16, 64)
+            const message = producer + rootchain.address.slice(2) + withdrawn.toString(16, 64)
             const signature = await web3.eth.sign(message, anotherProducer)
 
             // admin proves anotherProducer's earnings to smart contract (anyone can do this)
@@ -231,7 +231,7 @@ contract("Monoplasma", accounts => {
             const { earnings } = plasma.getMember(anotherProducer)
             const withdrawn = await rootchain.withdrawn(anotherProducer)
 
-            const message = producer + withdrawn.toString(16, 64)
+            const message = producer + rootchain.address.slice(2) + withdrawn.toString(16, 64)
             const signature = await web3.eth.sign(message, anotherProducer)
 
             // admin proves anotherProducer's earnings to smart contract (anyone can do this)
@@ -252,7 +252,7 @@ contract("Monoplasma", accounts => {
 
         it("fails for badly formed signatures", async () => {
             const withdrawn = await rootchain.withdrawn(anotherProducer)
-            const message = producer + withdrawn.toString(16, 64)
+            const message = producer + rootchain.address.slice(2) + withdrawn.toString(16, 64)
             const signature = await web3.eth.sign(message, anotherProducer)
             assertEqual(await rootchain.checkSignature(producer, withdrawn, signature), anotherProducer)
 
