@@ -261,9 +261,6 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.withdrawToSigned(producer, withdrawn, signature.slice(0, -10), "100", {from: admin}), "error_badSignature")
             await assertFails(rootchain.withdrawToSigned(producer, withdrawn, signature.slice(0, -2) + "30", "100", {from: admin}), "error_badSignatureVersion")
 
-            //const ret = await rootchain.checkSignature(producer, withdrawn, signature.slice(0, -10))
-            //console.log(ret)
-
             await assertFails(rootchain.checkSignature(producer, withdrawn, signature.slice(0, -10)), "error_badSignature")
             await assertFails(rootchain.checkSignature(producer, withdrawn, signature.slice(0, -2) + "30"), "error_badSignatureVersion")
         })
