@@ -66,7 +66,11 @@ async function assertFails(promise, reason) {
     } catch (e) {
         failed = true
         if (reason) {
-            assert.strictEqual(e.reason, reason)
+            // truffle 5.1.9 seems to throw different kind of exceptions from constant methods, without "reason"
+            //   so instead scrape the reason from string like "Returned error: VM Exception while processing transaction: revert error_badSignatureVersion"
+            //   it might end in a period.
+            const actualReason = e.reason || e.message.match(/.* (\w*)\.?/)[1]
+            assert.strictEqual(actualReason, reason)
         }
     }
     if (!failed) {

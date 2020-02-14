@@ -33,8 +33,8 @@ const privateKeys = [
  * @returns {Promise<GanacheInfo>}
  */
 module.exports = async function startGanache(port, log, error, blockDelaySeconds, timeoutMs) {
-    error = error || log || console.error
-    log = log || console.log
+    error = error || log || console.error   // eslint-disable-line no-console
+    log = log || console.log                // eslint-disable-line no-console
     port = port || 8545
     const delay = blockDelaySeconds || 0
     const ganache = spawn(process.execPath, [

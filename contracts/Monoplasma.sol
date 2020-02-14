@@ -134,6 +134,24 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
+     * Do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     * @param recipient the address the tokens will be sent to (instead of msg.sender)
+     * @param blockNumber of the leaf to verify
+     * @param totalEarnings in the side-chain
+     * @param proof list of hashes to prove the totalEarnings
+     * @param tokensWithdrawnBefore replay protection for the signature. After this withdraw completes, withdrawn tokens will not match this signature anymore
+     * @param signature from the community member, see {checkSignature}
+     */
+    function withdrawAllToSigned(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof,
+                                 uint tokensWithdrawnBefore, bytes calldata signature) external {
+        address signer = checkSignature(recipient, tokensWithdrawnBefore, signature);
+        prove(blockNumber, signer, totalEarnings, proof);
+        uint withdrawable = totalEarnings.sub(withdrawn[signer]);
+        _withdraw(recipient, signer, withdrawable);
+    }
+
+    /**
      * Withdraw a specified amount of your own proven earnings (see `function prove`)
      */
     function withdraw(uint amount) public {
@@ -158,6 +176,15 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
+     * Do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     */
+    function withdrawToSigned(address recipient, uint tokensWithdrawnBefore, bytes memory signature, uint amount) public {
+        address signer = checkSignature(recipient, tokensWithdrawnBefore, signature);
+        _withdraw(recipient, signer, amount);
+    }
+
+    /**
      * Execute token withdrawal into specified recipient address from specified member account
      * @dev It is up to the sidechain implementation to make sure
      * @dev  always token balance >= sum of earnings - sum of withdrawn
@@ -169,5 +196,36 @@ contract Monoplasma is BalanceVerifier, Ownable {
         withdrawn[account] = w;
         totalWithdrawn = totalWithdrawn.add(amount);
         require(token.transfer(recipient, amount), "error_transfer");
+    }
+
+    /**
+     * Check signature from a member authorizing withdrawing its earnings to another account
+     * Throws if the signature is bad
+     * @param recipient of the tokens
+     * @param tokensWithdrawnBefore replay protection: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdrawAll
+     * @param signature generated with web3.eth.accounts.sign(recipientAddress + tokensWithdrawnBefore.toString(16, 64), signerPrivateKey)
+     * @return signer of the authorization, that is, the member whose earnings are going to be withdrawn
+     */
+    function checkSignature(address recipient, uint tokensWithdrawnBefore, bytes memory signature) public view returns (address signer) {
+        require(signature.length == 65, "error_badSignature");
+
+        bytes32 r; bytes32 s; uint8 v;
+        assembly {      // solium-disable-line security/no-inline-assembly
+            r := mload(add(signature, 32))
+            s := mload(add(signature, 64))
+            v := byte(0, mload(add(signature, 96)))
+        }
+        if (v < 27) {
+            v += 27;
+        }
+        require(v == 27 || v == 28, "error_badSignatureVersion");
+
+        // When changing the message, remember to double-check that message length is correct!
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            "\x19Ethereum Signed Message:\n72", recipient, address(this), tokensWithdrawnBefore));
+        signer = ecrecover(messageHash, v, r, s);
+
+        // TODO: change error message, since invalid signature also produces an (invalid) address
+        require(tokensWithdrawnBefore == withdrawn[signer], "error_oldSignature");
     }
 }

@@ -1,3 +1,5 @@
 {
-    "javascript.implicitProjectConfig.checkJs": true
+    "javascript.implicitProjectConfig.checkJs": true,
+
+    "solidity.compileUsingRemoteVersion": "0.5.16+commit.9c3226c"
 }

@@ -98,7 +98,7 @@ module.exports = class FileStore {
         const path = this.getBlockPath(block.blockNumber)
         const raw = JSON.stringify(block)
         this.log(`Saving block ${block.blockNumber} to ${path}: ${this.sanitize(raw)}`)
-        if (await fs.exists(path)) { console.error(`Overwriting block ${block.blockNumber}!`) }
+        if (await fs.exists(path)) { console.error(`Overwriting block ${block.blockNumber}!`) } // eslint-disable-line no-console
         return fs.writeFile(path, raw)
     }
 

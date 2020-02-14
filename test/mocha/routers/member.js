@@ -6,7 +6,7 @@ const assert = require("assert")
 const http = require("http")
 
 const MonoplasmaState = require("../../../src/state")
-const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} })
+const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} }, "0x0000000000000000000000000000000000000001", 0.5)
 const router = require("../../../src/routers/member")(plasma)
 
 describe("Express app / Monoplasma router", () => {

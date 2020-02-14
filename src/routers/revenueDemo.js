@@ -1,3 +1,4 @@
+/* eslint-disable no-console */     // demo file, console logging is ok
 const express = require("express")
 const MonoplasmaMember = require("../member")
 
