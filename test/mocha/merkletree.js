@@ -2,12 +2,11 @@
 const assert = require("assert")
 const MonoplasmaMember = require("../../src/member")
 const MerkleTree = require("../../src/merkletree")
-const { hash, hashCombined } = MerkleTree
+const { hashLeaf, hashCombined } = MerkleTree
 
 // calculate the root hash using the path (sync with SidechainCommunity.sol:rootHash)
 function calculateRootHash(hash, path) {
     for (let i = 0; i < path.length; i += 1) {
-        if (Number(path[i]) === 0) { continue }                    // eslint-disable-line no-continue
         const other = Buffer.from(path[i].slice(2), "hex")
         if (hash.compare(other) === -1) {
             hash = hashCombined(hash, other)
@@ -35,120 +34,139 @@ describe("Merkle tree", () => {
     const testLarge = n => Array.from(Array(n)).map((undef, i) => new MonoplasmaMember(`Acco${i}`, buildValidAddress(i), i))
 
     it("is constructed correctly for 3 items", () => {
-        const tree = new MerkleTree(testSmall(3))
+        const tree = new MerkleTree(testSmall(3), 1234)
         const { hashes } = tree.getContents()
         const hashList = hashes.map(buf => (typeof buf === "object" ? buf.toString("hex") : buf))
         assert.deepStrictEqual(hashList, [4,  // "branchCount", i.e. the index where leaf hashes start
-            "dd9789560ea2c9f1bd696fb348d239063d2bf078902b4c6b5e2ccfc2b45cde21",     //     root
-            "2c0851c9ca186c6a34e6b83f056f9cb9121430bf6f04c951a7ba655b513f6059",   //  left
-            "00c99bd92a2211cbeaab19380a2aa0b9a36980228b5695c69f8265f9055444e1",   //            right
-            "80cbbaa563d509ffd388bd6e716bd85c0c35da5c87bbfb457c9c8cff0d518419", //   A
-            "3f37e976185114769bdf46f66cdd0ec8e51a4a81cd378679513fd4ab5645450c", //       B
-            "00c99bd92a2211cbeaab19380a2aa0b9a36980228b5695c69f8265f9055444e1", //              C
-            "0000000000000000000000000000000000000000000000000000000000000000", //                 (missing)
+            "88a894579dc1ac11242da55444d92e406ff2686556630c81162a27965157deac",     //     root
+            "e9d23210548554e271f8ff4a5208cf5233bb56d6e7294c78fcad5ecc42e096bd",   //  left
+            "814b26e10015a87381c08291f2b16577c101d87fc66157ed237b88f67257c76a",   //            right
+            "ed5a0925a9a579df831e5319f7c04a49a7895ebe7c8236546920783b0bad5a4f", //   A
+            "d49a469ba14e622f0fa2ff5ec1bed6f967a68cd6886b3bea4a7631fbaaf4bc61", //       B
+            "814b26e10015a87381c08291f2b16577c101d87fc66157ed237b88f67257c76a", //              C
+            "0000000000000000000000000000000000000000000000000000000000000000"  //                 (missing)
         ])
-        assert.strictEqual(hashList[4], hash(a.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[5], hash(b.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[6], hash(c.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[4], hashLeaf(a, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[5], hashLeaf(b, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[6], hashLeaf(c, tree.salt).toString("hex"))
         assert.strictEqual(hashList[3], hashList[6].toString("hex"))
-        assert.strictEqual(hashList[2], hashCombined(hashList[5], hashList[4]).toString("hex"))
-        assert.strictEqual(hashList[1], hashCombined(hashList[3], hashList[2]).toString("hex"))
+        assert.strictEqual(hashList[2], hashCombined(hashList[4], hashList[5]).toString("hex"))
+        assert.strictEqual(hashList[1], hashCombined(hashList[2], hashList[3]).toString("hex"))
     })
 
     it("is constructed correctly for 5 items", () => {
-        const tree = new MerkleTree(testSmall(5))
+        const tree = new MerkleTree(testSmall(5), 3456)
         const { hashes } = tree.getContents()
         const hashList = hashes.map(buf => (typeof buf === "object" ? buf.toString("hex") : buf))
         assert.deepStrictEqual(hashList, [8,  // "branchCount", i.e. the index where leaf hashes start
-            "68d7d43f9603a819e00ad7a8003eba2a0d96a9c5bd89841c42d62e0bead09b5d",             //       root
-            "39720c89aa9c0c443c3c9e9e283a8bf1064c15bb8cd066c78a98fa31573aa95a",         //     left
-            "82dd6ef28bf5a82738985884f1d599fc2e15109ab21d3c361c88397c5e36e59f",         //                right
-            "2c0851c9ca186c6a34e6b83f056f9cb9121430bf6f04c951a7ba655b513f6059",     //    left
-            "006a9f9553ae503d31a22eb2589ac9eafe3740b29c9451210313031fcea49efa",     //         right
-            "82dd6ef28bf5a82738985884f1d599fc2e15109ab21d3c361c88397c5e36e59f",     //                  left
+            "1b6cd614f4f2c86ccc82cd3c8df23c794790e22cf8e56f3255611950a681efe3",             //       root
+            "a4eb1454b3e945355a5a23d1562f21c54367f9a315ff2793c530b5c1f9bec559",         //     left
+            "f2156cb0dea8913ac515f0c3ad231414ece7dfb23973bb89dbc4ee0049b9e172",         //                right
+            "99638428d261a3da604f873c9e2f6779a84aa0b2e001c164c59a3e4377495b80",     //    left
+            "db5f253a21520c6be38fda228dc0938e6ac3b6ed61606f4ecccacf4f666c5881",     //         right
+            "f2156cb0dea8913ac515f0c3ad231414ece7dfb23973bb89dbc4ee0049b9e172",     //                  left
             "0000000000000000000000000000000000000000000000000000000000000000", //                       (missing)
-            "80cbbaa563d509ffd388bd6e716bd85c0c35da5c87bbfb457c9c8cff0d518419", //  A
-            "3f37e976185114769bdf46f66cdd0ec8e51a4a81cd378679513fd4ab5645450c", //    B
-            "00c99bd92a2211cbeaab19380a2aa0b9a36980228b5695c69f8265f9055444e1", //          C
-            "cf3c370bef592b8da4ad2d1d7ff5085d70be954f2d9f6167d97726ad6b940b1f", //             D
-            "82dd6ef28bf5a82738985884f1d599fc2e15109ab21d3c361c88397c5e36e59f", //                  E
+            "cbd929789577d192c9747193f8ff6be257df5bacb18953d263402b12dde6fbfb", //  A
+            "dd49055da64dc81c5c9da9be3792f57c6bb4d9adab124556ad5f06e5837c71c4", //    B
+            "b59af9905674879b38932c92d91ee3c978b2b94dc2e097934990edc71f685cfb", //          C
+            "64b989e4735794ace37acb89c36db9a97ecb6d2c324c24c1a4e7baa3df307f9c", //             D
+            "f2156cb0dea8913ac515f0c3ad231414ece7dfb23973bb89dbc4ee0049b9e172", //                  E
             "0000000000000000000000000000000000000000000000000000000000000000", //                   (missing)
         ])
 
-        assert.strictEqual(hashList[8], hash(a.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[9], hash(b.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[10], hash(c.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[11], hash(d.toHashableString()).toString("hex"))
-        assert.strictEqual(hashList[12], hash(e.toHashableString()).toString("hex"))
+        assert.strictEqual(hashList[8], hashLeaf(a, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[9], hashLeaf(b, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[10], hashLeaf(c, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[11], hashLeaf(d, tree.salt).toString("hex"))
+        assert.strictEqual(hashList[12], hashLeaf(e, tree.salt).toString("hex"))
         assert.strictEqual(hashList[1], hashCombined(hashList[2],  hashList[3]).toString("hex"))
-        assert.strictEqual(hashList[2], hashCombined(hashList[5],  hashList[4]).toString("hex"))
+        assert.strictEqual(hashList[2], hashCombined(hashList[4],  hashList[5]).toString("hex"))
         assert.strictEqual(hashList[3], hashList[6])    // odd needs no hashing
-        assert.strictEqual(hashList[4], hashCombined(hashList[9],  hashList[8]).toString("hex"))
+        assert.strictEqual(hashList[4], hashCombined(hashList[8],  hashList[9]).toString("hex"))
         assert.strictEqual(hashList[5], hashCombined(hashList[10], hashList[11]).toString("hex"))
         assert.strictEqual(hashList[6], hashList[12])    // odd needs no hashing
     })
 
     it("is constructed correctly for 1 item", () => {
-        const tree = new MerkleTree(testSmall(1))
+        const tree = new MerkleTree(testSmall(1), 5678)
         const { hashes } = tree.getContents()
         const hashList = hashes.map(buf => (typeof buf === "object" ? buf.toString("hex") : buf))
         assert.deepStrictEqual(hashList, [2,
-            "80cbbaa563d509ffd388bd6e716bd85c0c35da5c87bbfb457c9c8cff0d518419",
-            "80cbbaa563d509ffd388bd6e716bd85c0c35da5c87bbfb457c9c8cff0d518419",
+            "0152b424402445bb5c05369975e54ce015caf6142f50f740a8a740182e93da87",
+            "0152b424402445bb5c05369975e54ce015caf6142f50f740a8a740182e93da87",
             "0000000000000000000000000000000000000000000000000000000000000000",
         ])
     })
 
     it("fails for 0 items", () => {
         assert.throws(() => {
-            const tree = new MerkleTree(testSmall(0))
+            const tree = new MerkleTree(testSmall(0), 123)
             tree.getContents()
         })
     })
 
     it("gives a correct path for 5 items", () => {
         const members = testSmall(5)
-        const tree = new MerkleTree(members)
-        const path = tree.getPath("0x5f428050ea2448ed2e4409be47e1a50ebac0b2d2")
+        const tree = new MerkleTree(members, 4321)
+        const paths = members.map(m => tree.getPath(m.address))
         const root = tree.getRootHash()
-        assert.deepStrictEqual(path, [
-            //"0x0000000000000000000000000000000000000000000000000000000000000000",
-            //"0x0000000000000000000000000000000000000000000000000000000000000000",
-            "0x39720c89aa9c0c443c3c9e9e283a8bf1064c15bb8cd066c78a98fa31573aa95a",
+        assert.deepStrictEqual(paths, [
+            [
+                "0x5c4c79458b136b3102e8785f038c2757aad7a26bfd5300c59e3190c06615bb68",
+                "0x2ce424905e0e1614b3639a6814651c36acc28fd7a6be33d8d5fbb6dfdf4c6a01",
+                "0x0882200b8014f3ce8cbc72e87b4cdceca89cfb75bff2e34a846cca948738ae04"
+            ],
+            [
+                "0x4ddc37d69d26076eb5241c5c6d82a5a09c7dbae04e7ecba86b1c3e04c344e2a5",
+                "0x2ce424905e0e1614b3639a6814651c36acc28fd7a6be33d8d5fbb6dfdf4c6a01",
+                "0x0882200b8014f3ce8cbc72e87b4cdceca89cfb75bff2e34a846cca948738ae04"
+            ],
+            [
+                "0x9d03445f44cac137e08067550568f4e415e0c51c81d3586274547208043aa593",
+                "0xaa76ab2f486b35fd6d49b79557ad85c4ad60d520665250749efd463a04cfaa3b",
+                "0x0882200b8014f3ce8cbc72e87b4cdceca89cfb75bff2e34a846cca948738ae04"
+            ],
+            [
+                "0x8e67188dc47dc839031732d207f245405a790baf1b276f69af172ccb043d0b29",
+                "0xaa76ab2f486b35fd6d49b79557ad85c4ad60d520665250749efd463a04cfaa3b",
+                "0x0882200b8014f3ce8cbc72e87b4cdceca89cfb75bff2e34a846cca948738ae04"
+            ],
+            [
+                "0xfe71407574dbdb95f250e638be7e9a7ac4a6c53df57b2a7ea54aee4f293510b4"
+            ]
         ])
 
-        const memberHash = hash(e.toHashableString())
-        const hashed = calculateRootHash(memberHash, path)
+        const memberHash = MerkleTree.hashLeaf(e, tree.salt)
+        const hashed = calculateRootHash(memberHash, paths[4])
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
 
     it("gives a correct path for 100 items", () => {
         const members = testLarge(100)
-        const tree = new MerkleTree(members)
+        const tree = new MerkleTree(members, 2020)
         const path = tree.getPath("0x50428050ea2448ed2e4409be47e1a50ebac0b2d2")
         const root = tree.getRootHash()
         assert.deepStrictEqual(path, [
-            "0x3899f1e3196adaca54e5fce47c83478bbc68d82e1c4db340ff4d5be077da5809",
-            "0xc27f2d90363c8681b7703d71466b0d29bc971e176548d925e9252568f9b93a4a",
-            "0x22a472070f84cb2259fc2dcdf5b7b387390e0fc01fd949dd113f4b2426af24d7",
-            "0xc09fb967d65193de64670085a09a814f51be24c9461b361c960f9fe049be724d",
-            "0xc49d351e156eedeff8dc29f1414835e8d243d9d98cb8ab0d62b76e4e159fa7c5",
-            "0x368cc389cf2618d7c101a854fff75ed5a547d0986bf78da6153da23b8fea16ee",
-            "0xa697780bec0c72e7a647f0cc067dd2b30732cbbb362d63f2eccee67dee345690"
+            "0xb8c4babc1431a10d6935da7d76278e433a58b9c70304bcb365e7de7fa3f2e6ff",
+            "0xd05327947ae0c1f4b26d437a4f5b8150d9f0b2c6729e718982b40a577da85598",
+            "0xaa29de5ffc83e24b1a69bb4aa549958357cbdb973bf2db15f1d9c488864f5302",
+            "0x0d7c8aa66aabdc0f1a77d3ca80b443b02d250ae955b2e78afde4925a1c1ba7b2",
+            "0x44181ef37ba7f9aab650c50cfa7b571465cdbb58e67c0e45fc7e277ac049190d",
+            "0xbfb3e4c6f0a7dcef1514359ec11b66e6097090a027c3be07554489b8022802bd",
+            "0x583e976f703c0c398f95f8eed803c6dece9153a76d4d22a18f2c3fc8669cc973"
         ])
 
-        const memberHash = hash(members.find(m => m.address === "0x50428050ea2448ed2e4409be47e1a50ebac0b2d2").toHashableString())
+        const memberHash = hashLeaf(members.find(m => m.address === "0x50428050ea2448ed2e4409be47e1a50ebac0b2d2"), tree.salt)
         const hashed = calculateRootHash(memberHash, path)
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
 
     it("includes", () => {
         const members = testLarge(100)
-        const tree = new MerkleTree(members)
+        const tree = new MerkleTree(members, 6453)
         for (let i = 0; i < 100; i++) {
             const a = buildValidAddress(i)
-            const m = tree.includes(a)
-            assert(m)
+            assert(tree.includes(a), "Member not found")
         }
     })
 })

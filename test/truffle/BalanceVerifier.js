@@ -30,12 +30,13 @@ contract("BalanceVerifier", accounts => {
         // these should be performed by the watcher
         plasma.addMember(recipient)
         plasma.addMember(anotherRecipient)
-        plasma.addRevenue(1000)
+        plasma.addRevenue(1000, 0)
     })
 
     async function publishBlock(rootHash) {
-        const root = rootHash || plasma.getRootHash()
         const blockNumber = await web3.eth.getBlockNumber()
+        plasma.setBlockNumber(blockNumber)
+        const root = rootHash || plasma.getRootHash()
         const resp = await airdrop.commit(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "NewCommit").args
     }
@@ -72,7 +73,9 @@ contract("BalanceVerifier", accounts => {
             // check that block was published correctly
             assertEqual(block.rootHash, root)
             // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.hash(member.toHashableString()).toString("hex")
+            console.log(plasma.tree.salt)
+            console.log(block.blockNumber)
+            const hash = "0x" + MerkleTree.hashLeaf(member, plasma.tree.salt).toString("hex")
             assertEqual(await airdrop.calculateRootHash(hash, proof), root)
             // check that contract checks proof correctly
             assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof), "Contract says: Bad proof")

@@ -7,6 +7,7 @@
 //const createKeccakHash = require("keccak")
 
 const { keccak256 } = require("eth-lib").hash
+const BN = require("bn.js")
 
 const ZERO = Buffer.alloc(32)
 
@@ -26,10 +27,11 @@ function hash(data) {
  * Corresponding code in BalanceVerifier.sol:
  *   bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
  * @param {MonoplasmaMember} member
- * @param {Number} blockNumber
+ * @param {Number} salt e.g. blockNumber
+ * @returns {Buffer}
  */
-function hashLeaf(member, blockNumber) {    // eslint-disable-line no-unused-vars
-    const data = blockNumber + member.address + member.earnings.toString(16, 64)
+function hashLeaf(member, salt) {
+    const data = member.address + member.earnings.toString(16, 64) + salt
     return hash(data)
 }
 
@@ -47,7 +49,9 @@ function hashCombined(data1, data2) {
     if (typeof data2 === "string") {
         data2 = Buffer.from(data2.startsWith("0x") ? data2.slice(2) : data2, "hex")
     }
-    return hash(Buffer.concat([data1, data2]))
+    return data1.compare(data2) === -1 ?
+        hash(Buffer.concat([data1, data2])) :
+        hash(Buffer.concat([data2, data1]))
 }
 
 function roundUpToPowerOfTwo(x) {
@@ -71,7 +75,7 @@ function roundUpToPowerOfTwo(x) {
  */
 // TODO: --omg-optimisation: tree contents could be one big Buffer too! Hash digests are constant 32 bytes in length.
 //          Currently the tree contents is Array<MonoplasmaMember>
-function buildMerkleTree(leafContents) {
+function buildMerkleTree(leafContents, salt) {
     const leafCount = leafContents.length + (leafContents.length % 2)   // room for zero next to odd leaf
     const branchCount = roundUpToPowerOfTwo(leafCount)
     const treeSize = branchCount + leafCount
@@ -81,12 +85,9 @@ function buildMerkleTree(leafContents) {
 
     // leaf hashes: hash(blockNumber + address + balance)
     let i = branchCount
-    leafContents.forEach(m => {
-        indexOf[m.address] = i
-        // TODO: move toHashableString back to this file, into a function hashLeaf
-        // TODO: add relevant blockNumber everywhere (used for salt)
-        // hashes[i++] = hashLeaf(member, blockNumber)
-        hashes[i++] = hash(m.toHashableString()) // eslint-disable-line no-plusplus
+    leafContents.forEach(member => {
+        indexOf[member.address] = i
+        hashes[i++] = hashLeaf(member, salt) // eslint-disable-line no-plusplus
     })
 
     // Branch hashes: start from leaves, populate branches with hash(hash of left + right child)
@@ -104,7 +105,7 @@ function buildMerkleTree(leafContents) {
                 hashes[targetI] = hash1     // no need to hash since no new information was added
                 break
             } else {
-                hashes[targetI] = (hash1.compare(hash2) === -1) ? hashCombined(hash1, hash2) : hashCombined(hash2, hash1)
+                hashes[targetI] = hashCombined(hash1, hash2)
             }
             sourceI += 2
             targetI += 1
@@ -115,17 +116,19 @@ function buildMerkleTree(leafContents) {
 }
 
 class MerkleTree {
-    constructor(initialContents) {
-        this.update(initialContents || [])
+    constructor(initialContents = [], initialSalt = 0) {
+        this.update(initialContents, initialSalt)
     }
 
     /**
      * Lazy update, the merkle tree is recalculated only when info is asked from it
-     * @param newContents
+     * @param newContents list of MonoplasmaMembers
+     * @param {String | Number} newSalt a number or hex string, e.g. blockNumber
      */
-    update(newContents) {
+    update(newContents, newSalt) {
         this.isDirty = true
         this.contents = newContents
+        this.salt = new BN(newSalt).toString(16, 64).slice(-64)    // Solidity uint256
     }
 
     getContents() {
@@ -134,7 +137,7 @@ class MerkleTree {
         }
         if (this.isDirty) {
             // TODO: sort, to enforce determinism?
-            this.cached = buildMerkleTree(this.contents)
+            this.cached = buildMerkleTree(this.contents, this.salt)
             this.isDirty = false
         }
         return this.cached
@@ -148,10 +151,6 @@ class MerkleTree {
     /**
      * Construct a "Merkle path", that is list of "other" hashes along the way from leaf to root
      * This will be sent to the root chain contract as a proof of balance
-     * TODO: --omg-optimisation: the path could be compacted for paths containing odd nodes
-     *        main benefit from that would be shorter proofs (no need to send 32-byte 0x0's)
-     *        second benefit: no need to check for 0x0 in smart contract
-     *        drawback: the reported index would not be "real" index (bad for debugging maybe)
      * @param address of the balance that the path is supposed to verify
      * @returns {Array} of bytes32 hashes ["0x123...", "0xabc..."]
      */
@@ -177,6 +176,7 @@ class MerkleTree {
     }
 }
 MerkleTree.hash = hash
+MerkleTree.hashLeaf = hashLeaf
 MerkleTree.hashCombined = hashCombined
 
 module.exports = MerkleTree
