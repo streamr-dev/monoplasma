@@ -125,7 +125,7 @@ module.exports = class MonoplasmaWatcher {
         // TODO interim solution: take members from a recent block
         this.log(`Playing back blocks ${fromBlock}...${toBlock}`)
         const joinPartEvents = await this.store.loadEvents(fromBlock, toBlock + 1)       // +1 to catch events after the very latest block, see join/part listening above
-        const blockCreateEvents = await this.contract.getPastEvents("BlockCreated", { fromBlock, toBlock })
+        const blockCreateEvents = await this.contract.getPastEvents("NewCommit", { fromBlock, toBlock })
         const adminFeeChangeEvents = await this.contract.getPastEvents("AdminFeeChanged", { fromBlock, toBlock })
         const transferEvents = await this.token.getPastEvents("Transfer", { filter: { to: this.state.contractAddress }, fromBlock, toBlock })
 

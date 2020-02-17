@@ -7,8 +7,8 @@ import "./BalanceVerifier.sol";
 import "./Ownable.sol";
 
 /**
- * Monoplasma that is managed by an owner, likely the side-chain operator
- * Owner can add and remove recipients.
+ * Monoplasma that is managed by an owner, who also appoints a trusted (but verifiable) operator.
+ * Owner should be able to add and remove recipients through an off-chain mechanism not specified here.
  */
 contract Monoplasma is BalanceVerifier, Ownable {
     using SafeMath for uint256;
@@ -16,7 +16,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     event OperatorChanged(address indexed newOperator);
     event AdminFeeChanged(uint adminFee);
     /**
-     * Freeze period during which all side-chain participants should be able to
+     * Freeze period during which all participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
      *   and validate that the published rootHash is correct
      * In case of incorrect rootHash, all members should issue withdrawals from the
@@ -31,7 +31,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Block number => timestamp
      * Publish time of a block, where the block freeze period starts from.
      * Note that block number points to the block after which the root hash is calculated,
-     *   not the block where BlockCreated was emitted (event must come later)
+     *   not the block where NewCommit was emitted (event must come later)
      */
     mapping (uint => uint) public blockTimestamp;
 
@@ -71,7 +71,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Operator creates the side-chain blocks
+     * Operator commits the off-chain balances
      */
     function onCommit(uint blockNumber, bytes32, string memory) internal {
         require(msg.sender == operator, "error_notPermitted");
@@ -97,7 +97,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Prove and withdraw the whole revenue share from sidechain in one transaction
      * @param blockNumber of the leaf to verify
-     * @param totalEarnings in the side-chain
+     * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAll(uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
@@ -110,7 +110,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      *   it detects Operator malfunctioning
      * @param recipient the address we're proving and withdrawing
      * @param blockNumber of the leaf to verify
-     * @param totalEarnings in the side-chain
+     * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAllFor(address recipient, uint blockNumber, uint totalEarnings, bytes32[] memory proof) public {
@@ -124,7 +124,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      *   your earnings to a another address in one transaction
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param blockNumber of the leaf to verify
-     * @param totalEarnings in the side-chain
+     * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
      */
     function withdrawAllTo(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof) external {
@@ -138,7 +138,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param blockNumber of the leaf to verify
-     * @param totalEarnings in the side-chain
+     * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
      * @param tokensWithdrawnBefore replay protection for the signature. After this withdraw completes, withdrawn tokens will not match this signature anymore
      * @param signature from the community member, see {checkSignature}

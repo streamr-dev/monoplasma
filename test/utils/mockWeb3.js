@@ -10,7 +10,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         ownershipListeners: {},
         pastEvents: Object.assign({
             Transfer: [],
-            BlockCreated: [],
+            NewCommit: [],
         }, pastEvents)
     }
     web3.eth.getBlockNumber = () => bnum
@@ -53,7 +53,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
             if (!web3.ownershipListeners[eventCode]) { web3.ownershipListeners[eventCode] = [] }
             web3.ownershipListeners[eventCode].push(func)
         }}),
-        BlockCreated: () => ({ on: (eventCode, func) => {
+        NewCommit: () => ({ on: (eventCode, func) => {
             if (!web3.blockListeners[eventCode]) { web3.blockListeners[eventCode] = [] }
             web3.blockListeners[eventCode].push(func)
         }}),
@@ -77,7 +77,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
     }
     web3.mockCommit = async (blockNumber=11, rootHash="hash", ipfsHash="ipfs") => {
         const event = {
-            event: "BlockCreated",
+            event: "NewCommit",
             blockNumber,
             returnValues: {
                 blockNumber,
@@ -85,7 +85,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
                 ipfsHash
             }
         }
-        web3.pastEvents.BlockCreated.push(event)
+        web3.pastEvents.NewCommit.push(event)
         for (const func of web3.blockListeners.data || []) {
             await func(event)
         }

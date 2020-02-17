@@ -58,7 +58,7 @@ contract("Monoplasma", accounts => {
         const root = rootHash || plasma.getRootHash()
         const blockNumber = currentBlockNumber++
         const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: operatorAddress || admin})
-        return resp.logs.find(L => L.event === "BlockCreated").args
+        return resp.logs.find(L => L.event === "NewCommit").args
     }
 
     describe("Admin", () => {
@@ -290,7 +290,7 @@ contract("Monoplasma", accounts => {
         it("commit & blockHash correctly saves and retrieves a block timestamp", async () => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
             const resp = await rootchain.commit(123, root, "ipfs lol", {from: admin})
-            const event = resp.logs.find(L => L.event === "BlockCreated")
+            const event = resp.logs.find(L => L.event === "NewCommit")
             const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
             assertEqual(event.args.blockNumber, 123)
             assertEqual(event.args.rootHash, root)
