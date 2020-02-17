@@ -8,6 +8,8 @@
 
 const { keccak256 } = require("eth-lib").hash
 
+const ZERO = Buffer.alloc(32)
+
 /**
  * @param data to hash; a {String} or a {Buffer}
  * @returns {Buffer}
@@ -161,7 +163,10 @@ class MerkleTree {
         }
         const path = []
         for (let i = index; i > 1; i >>= 1) {
-            path.push(hashes[i ^ 1])  // the other sibling
+            const otherSibling = hashes[i ^ 1]
+            if (otherSibling.compare(ZERO) !== 0) {
+                path.push(otherSibling)
+            }
         }
         return path.map(buffer => `0x${buffer.toString("hex")}`)
     }

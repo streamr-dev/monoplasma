@@ -129,7 +129,7 @@ contract("Monoplasma", accounts => {
         it("fails if member tries later with an old (though valid) proof", async () => {
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
-            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof))
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof), "Bad proof")
             await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
         })
 
@@ -303,10 +303,10 @@ contract("Monoplasma", accounts => {
             const fakeTokens = toWei("1000", "ether")
             const fakeMemberList = [new MonoplasmaMember("thief", producer, fakeTokens)]
             const fakeTree = new MerkleTree(fakeMemberList)
-            const fakeProof = ["0x0000000000000000000000000000000000000000000000000000000000000000"]
+            const fakeProof = []
             const root = fakeTree.getRootHash()
             const block = await publishBlock(root)
-            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, fakeTokens, fakeProof))
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, fakeTokens, fakeProof), "Bad proof")
             await increaseTime(blockFreezePeriodSeconds + 1)
             await assertFails(rootchain.prove(block.blockNumber, producer, fakeTokens, fakeProof, {from: admin, gas: 4000000}), "error_missingBalance")
         })

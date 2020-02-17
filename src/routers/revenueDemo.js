@@ -38,7 +38,7 @@ module.exports = operator => {
             operator.plasma.members = realMemberList
             operator.plasma.tree.update(realMemberList)
             const blockNumber = block.blockNumber
-            const proof = ["0x0000000000000000000000000000000000000000000000000000000000000000"]
+            const proof = []
             res.send({ blockNumber, tokens, proof })
         }).catch(error => {
             operator.plasma = realMemberList

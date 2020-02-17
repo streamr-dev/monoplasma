@@ -93,7 +93,6 @@ contract BalanceVerifier {
         root = hash;
         for (uint8 i = 0; i < others.length; i++) {
             bytes32 other = others[i];
-            if (other == 0x0) continue;     // odd branch, no need to hash
             if (root < other) {
                 // TODO: consider hashing in blockNumber and i
                 root = keccak256(abi.encodePacked(root, other));
