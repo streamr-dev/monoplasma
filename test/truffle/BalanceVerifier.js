@@ -40,14 +40,14 @@ contract("BalanceVerifier", accounts => {
         return resp.logs.find(L => L.event === "NewCommit").args
     }
 
-    describe("commit & blockHash", () => {
+    describe("commit & committedHash", () => {
         it("correctly publishes and retrieves a block hash", async () => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
             const resp = await airdrop.commit(123, root, "ipfs lol", {from: admin})
             const block = resp.logs.find(L => L.event === "NewCommit").args
             assertEqual(block.blockNumber, 123)
             assertEqual(block.rootHash, root)
-            assertEqual(await airdrop.blockHash(123), root)
+            assertEqual(await airdrop.committedHash(123), root)
         })
         it("won't let operator overwrite a root hash (with same block number)", async () => {
             await airdrop.commit(124, "0x1234", "ipfs lol", {from: admin})

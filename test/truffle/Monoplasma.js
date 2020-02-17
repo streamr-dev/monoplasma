@@ -88,7 +88,7 @@ contract("Monoplasma", accounts => {
 
         it("can publish blocks", async () => {
             const block = await publishBlock()
-            assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)
+            assertEqual(await rootchain.committedHash(block.blockNumber), block.rootHash)
         })
 
         it("can change the operator", async () => {
@@ -98,7 +98,7 @@ contract("Monoplasma", accounts => {
             const blockNumber = currentBlockNumber++
             await assertFails(rootchain.commit(blockNumber, root, "fail", {from: admin}), "error_notPermitted")
             const block = await publishBlock(root, operator)
-            assertEqual(await rootchain.blockHash(block.blockNumber), block.rootHash)
+            assertEqual(await rootchain.committedHash(block.blockNumber), block.rootHash)
         })
 
         // for the lack of per-testcase cleanup in mocha, made another testcase for cleanup...
@@ -287,14 +287,14 @@ contract("Monoplasma", accounts => {
     })
 
     describe("Low level stuff", () => {
-        it("commit & blockHash correctly saves and retrieves a block timestamp", async () => {
+        it("commit & committedHash correctly saves and retrieves a block timestamp", async () => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
             const resp = await rootchain.commit(123, root, "ipfs lol", {from: admin})
             const event = resp.logs.find(L => L.event === "NewCommit")
             const timestamp = (await web3.eth.getBlock(event.blockNumber)).timestamp
             assertEqual(event.args.blockNumber, 123)
             assertEqual(event.args.rootHash, root)
-            assertEqual(await rootchain.blockHash(123), root)
+            assertEqual(await rootchain.committedHash(123), root)
             assertEqual(await rootchain.blockTimestamp(123), timestamp)
         })
 
