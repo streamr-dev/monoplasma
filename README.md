@@ -81,9 +81,18 @@ npm run build
 
 ## Start the operator
 
-`npm start`
+In Monoplasma repository directory:
+```
+npm start
+```
+The API will be run in http://localhost:8080/
 
-The demo UI will be started at http://0.0.0.0:8080/
+To start the demo UI as well:
+```
+cd demo
+npm start
+```
+The demo UI will be started at http://localhost:8000/
 
 ## Start a validator
 
@@ -96,7 +105,7 @@ In `WATCHED_ACCOUNTS`, give a comma separated list of accounts you'd like the va
 
 ## Setting up the browser and Metamask
 
-- Point your browser to http://0.0.0.0:8080/
+- Point your browser to http://0.0.0.0:8000/
 - Metamask might pop up, asking you to unlock and/or give permissions to the page use it. Accept.
 - In your Metamask, select the "Localhost 8545" network if it's listed. If it isn't, add a custom network with RPC URL http://127.0.0.1:8545.
 - You should see the control panel with everything empty and zero.
