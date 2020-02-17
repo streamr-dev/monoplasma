@@ -19,9 +19,9 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
     async start() {
         await super.start()
 
-        this.log("Starting validator's BlockCreated listener")
+        this.log("Validator starts listening to Operator's commits")
         const self = this
-        const blockFilter = this.contract.events.BlockCreated({})
+        const blockFilter = this.contract.events.NewCommit({})
         blockFilter.on("data", event => self.checkBlock(event.returnValues).catch(this.error))
     }
 
@@ -37,7 +37,7 @@ module.exports = class MonoplasmaValidator extends MonoplasmaWatcher {
 
         // check that the hash at that point in history matches
         // TODO: get hash from this.lastSavedBlock
-        // TODO: if there's a Transfer after BlockCreated in same block, current approach breaks
+        // TODO: if there's a Transfer after NewCommit in same block, current approach breaks
         const hash = this.validatedPlasma.getRootHash()
         if (hash === block.rootHash) {
             this.log(`Root hash @ ${blockNumber} validated.`)

@@ -43,7 +43,7 @@ For more information, also check out [this blog post](https://medium.com/streamr
 
 ## Threat model
 
-Main threat scenario: the side-chain operator creates a sock-puppet account, assigns it all the tokens held in the root-chain, commits the state into root-chain contract, and drains it by withdrawing.
+Main threat scenario: the trusted operator creates a sock-puppet account, assigns it all the tokens held in the root-chain, commits the state into root-chain contract, and drains it by withdrawing.
 
 To combat this, in Monoplasma there's a freeze period after the state commit is published. In case of faulty or missing (withheld) state (balance book) contents, everyone can exit using old unfrozen root hashes.
 

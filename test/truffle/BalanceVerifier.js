@@ -37,17 +37,17 @@ contract("BalanceVerifier", accounts => {
         const root = rootHash || plasma.getRootHash()
         const blockNumber = await web3.eth.getBlockNumber()
         const resp = await airdrop.commit(blockNumber, root, "ipfs lol", {from: admin})
-        return resp.logs.find(L => L.event === "BlockCreated").args
+        return resp.logs.find(L => L.event === "NewCommit").args
     }
 
-    describe("commit & blockHash", () => {
+    describe("commit & committedHash", () => {
         it("correctly publishes and retrieves a block hash", async () => {
             const root = "0x1234000000000000000000000000000000000000000000000000000000000000"
             const resp = await airdrop.commit(123, root, "ipfs lol", {from: admin})
-            const block = resp.logs.find(L => L.event === "BlockCreated").args
+            const block = resp.logs.find(L => L.event === "NewCommit").args
             assertEqual(block.blockNumber, 123)
             assertEqual(block.rootHash, root)
-            assertEqual(await airdrop.blockHash(123), root)
+            assertEqual(await airdrop.committedHash(123), root)
         })
         it("won't let operator overwrite a root hash (with same block number)", async () => {
             await airdrop.commit(124, "0x1234", "ipfs lol", {from: admin})
@@ -75,7 +75,7 @@ contract("BalanceVerifier", accounts => {
             const hash = "0x" + MerkleTree.hash(member.toHashableString()).toString("hex")
             assertEqual(await airdrop.calculateRootHash(hash, proof), root)
             // check that contract checks proof correctly
-            assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof))
+            assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof), "Contract says: Bad proof")
             // check that contract proves earnings correctly (freeze period)
             assertEqual(await token.balanceOf(member.address), 0)
             await airdrop.prove(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})

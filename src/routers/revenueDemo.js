@@ -28,13 +28,13 @@ module.exports = operator => {
         operator.getContractTokenBalance().then(res => {
             tokens = res
             const fakeMemberList = [new MonoplasmaMember("thief", address, tokens)]
-            console.log("Swapping operator's side-chain with something where we have all the tokens")
+            console.log("Swapping operator's balance books with something where we have all the tokens")
             operator.plasma.members = fakeMemberList
             operator.plasma.tree.update(fakeMemberList)
             return operator.publishBlock(operator.state.lastPublishedBlock + 1)
         }).then(block => {
             console.log(`Block published: ${JSON.stringify(block)}`)
-            console.log("Swapping back the real side-chain like nothing happened.")
+            console.log("Swapping back the real balance books like nothing happened.")
             operator.plasma.members = realMemberList
             operator.plasma.tree.update(realMemberList)
             const blockNumber = block.blockNumber

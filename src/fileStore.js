@@ -48,7 +48,7 @@ module.exports = class FileStore {
     }
 
     /**
-     * @param {number} blockNumber Root-chain block number corresponding to a published side-chain block
+     * @param {number} blockNumber Root-chain block number after which the commit was produced
      */
     async loadBlock(blockNumber) {
         const path = this.getBlockPath(blockNumber)
@@ -59,7 +59,7 @@ module.exports = class FileStore {
     }
 
     /**
-     * @param {number} blockNumber Root-chain block number corresponding to a published side-chain block
+     * @param {number} blockNumber Root-chain block number after which the commit was produced
      */
     async blockExists(blockNumber) {
         const path = this.getBlockPath(blockNumber)
@@ -84,8 +84,8 @@ module.exports = class FileStore {
     }
 
     /**
-     * @typedef {Object} Block Monoplasma side-chain block, see monoplasma.js:storeBlock
-     * @property {number} blockNumber Root-chain block number corresponding to a published side-chain block
+     * @typedef {Object} Block Monoplasma commit, see monoplasma.js:storeBlock
+     * @property {number} blockNumber Root-chain block number after which the commit was produced
      * @property {Array<Object>} members MonoplasmaMember.toObject()s with their earnings etc.
      * @property {number} timestamp seconds since epoch, similar to Ethereum block.timestamp
      * @property {number} totalEarnings sum of members.earnings, to avoid re-calculating it (often needed)
