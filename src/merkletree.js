@@ -12,6 +12,7 @@ const BN = require("bn.js")
 const ZERO = Buffer.alloc(32)
 
 /**
+ * Corresponding code in BalanceVerifier.sol: keccak256 Solidity function
  * @param data to hash; a {String} or a {Buffer}
  * @returns {Buffer}
  */
@@ -23,9 +24,9 @@ function hash(data) {
 }
 
 /**
- * Hash a merkle tree leaf
+ * Hash a member's data in the merkle tree leaf
  * Corresponding code in BalanceVerifier.sol:
- *   bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
+ *   bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
  * @param {MonoplasmaMember} member
  * @param {Number} salt e.g. blockNumber
  * @returns {Buffer}
@@ -37,8 +38,6 @@ function hashLeaf(member, salt) {
 
 /**
  * Hash intermediate branch nodes together
- * Corresponding code in BalanceVerifier.sol:
- *     root = keccak256(abi.encodePacked(root, other));
  * @param {Buffer} data1
  * @param {Buffer} data2
  */
@@ -49,9 +48,10 @@ function hashCombined(data1, data2) {
     if (typeof data2 === "string") {
         data2 = Buffer.from(data2.startsWith("0x") ? data2.slice(2) : data2, "hex")
     }
-    return data1.compare(data2) === -1 ?
-        hash(Buffer.concat([data1, data2])) :
-        hash(Buffer.concat([data2, data1]))
+    const combined = data1.compare(data2) === -1 ?
+        Buffer.concat([data1, data2]) :
+        Buffer.concat([data2, data1])
+    return hash(combined)
 }
 
 function roundUpToPowerOfTwo(x) {
