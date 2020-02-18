@@ -4,18 +4,18 @@ const MonoplasmaMember = require("../../src/member")
 const MerkleTree = require("../../src/merkletree")
 const { hash, hashCombined } = MerkleTree
 
-// calculate the root hash using the path (sync with SidechainCommunity.sol:rootHash)
-function calculateRootHash(hash, path) {
-    for (let i = 0; i < path.length; i += 1) {
-        if (Number(path[i]) === 0) { continue }                    // eslint-disable-line no-continue
-        const other = Buffer.from(path[i].slice(2), "hex")
-        if (hash.compare(other) === -1) {
-            hash = hashCombined(hash, other)
+// calculate the root hash using the path (sync with BalanceVerifier.sol:calculateRootHash)
+function calculateRootHash(memberHash, others) {
+    let root = memberHash
+    for (let i = 0; i < others.length; i += 1) {
+        const other = Buffer.from(others[i].slice(2), "hex")
+        if (root.compare(other) === -1) {
+            root = hash(Buffer.concat([root, other]))
         } else {
-            hash = hashCombined(other, hash)
+            root = hash(Buffer.concat([other, root]))
         }
     }
-    return hash
+    return root
 }
 
 describe("Merkle tree", () => {

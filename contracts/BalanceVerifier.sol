@@ -15,8 +15,8 @@ pragma solidity ^0.5.16;
  * succeeds iff you end up with the known root hash when you get to the top of the tree.
  * See https://medium.com/crypto-0-nite/merkle-proofs-explained-6dd429623dc5
  *
- * Merkle-tree inclusion proof is a RELATED concept to the blockchain Merkle tree, but a somewhat DIFFERENT application.
- * BalanceVerifier posts the root hash of the CURRENT ledger only, and this does NOT depend on the hash of previous ledgers.
+ * Merkle-tree inclusion proof is a related concept to the blockchain Merkle tree, but a somewhat different application.
+ * BalanceVerifier posts the root hash of the current ledger only, and this does not depend on the hash of previous ledgers.
  * This is different from the blockchain, where each block contains the hash of the previous block.
  *
  * TODO: see if it could be turned into a library, so many contracts could use it
@@ -78,23 +78,23 @@ contract BalanceVerifier {
     function proofIsCorrect(uint blockNumber, address account, uint balance, bytes32[] memory proof) public view returns(bool) {
         // TODO: prevent rainbow-tabling leaf nodes by salting with block number
         // bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
-        bytes32 hash = keccak256(abi.encodePacked(account, balance));
+        bytes32 leafHash = keccak256(abi.encodePacked(account, balance));
         bytes32 rootHash = committedHash[blockNumber];
         require(rootHash != 0x0, "error_blockNotFound");
-        return rootHash == calculateRootHash(hash, proof);
+        return rootHash == calculateRootHash(leafHash, proof);
     }
 
     /**
      * Calculate root hash of a Merkle tree, given
-     * @param hash of the leaf to verify
+     * @param leafHash of the member whose balances are being be verified
      * @param others list of hashes of "other" branches
      */
-    function calculateRootHash(bytes32 hash, bytes32[] memory others) public pure returns (bytes32 root) {
-        root = hash;
+    function calculateRootHash(bytes32 leafHash, bytes32[] memory others) public pure returns (bytes32 root) {
+        root = leafHash;
         for (uint8 i = 0; i < others.length; i++) {
             bytes32 other = others[i];
             if (root < other) {
-                // TODO: consider hashing in blockNumber and i
+                // TODO: consider hashing in i to defend from https://en.wikipedia.org/wiki/Merkle_tree#Second_preimage_attack
                 root = keccak256(abi.encodePacked(root, other));
             } else {
                 root = keccak256(abi.encodePacked(other, root));
