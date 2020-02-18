@@ -28,7 +28,7 @@ describe("Express app / Monoplasma router", () => {
             // dirty hack? Directly manipulating server's state...
             plasma.addMember("0xb3428050ea2448ed2e4409be47e1a50ebac0b2d2", "Tester1")
             plasma.addMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef", "Tester2")
-            plasma.addRevenue(100)
+            plasma.addRevenue(100, 1)
 
             const m2 = await fetchMember("0xe5019d79c3fc34c811e68e68c9bd9966f22370ef")
 

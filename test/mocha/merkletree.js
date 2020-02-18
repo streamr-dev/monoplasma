@@ -6,7 +6,7 @@ const { hash, hashLeaf, hashCombined } = MerkleTree
 
 // calculate the root hash using the path (sync with BalanceVerifier.sol:calculateRootHash)
 function calculateRootHash(memberHash, others) {
-    let root = Buffer.from(memberHash.slice(2), "hex")
+    let root = memberHash
     for (let i = 0; i < others.length; i += 1) {
         const other = Buffer.from(others[i].slice(2), "hex")
         if (root.compare(other) === -1) {

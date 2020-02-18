@@ -49,7 +49,7 @@ contract("Monoplasma", accounts => {
     // simulate added revenue: tokens appear in the contract, MonoplasmaWatcher updates the MonoplasmaState
     async function addRevenue(tokens) {
         await token.mint(rootchain.address, tokens, {from: admin})
-        plasma.addRevenue(tokens)
+        plasma.addRevenue(tokens, currentBlockNumber)
         return publishBlock()
     }
 
