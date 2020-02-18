@@ -11,6 +11,7 @@ const { keccak256 } = require("eth-lib").hash
 const ZERO = Buffer.alloc(32)
 
 /**
+ * Corresponding code in BalanceVerifier.sol: keccak256 Solidity function
  * @param data to hash; a {String} or a {Buffer}
  * @returns {Buffer}
  */
@@ -22,21 +23,20 @@ function hash(data) {
 }
 
 /**
- * Hash a merkle tree leaf
+ * Hash a member's data in the merkle tree leaf
  * Corresponding code in BalanceVerifier.sol:
- *   bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
+ *   bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
  * @param {MonoplasmaMember} member
- * @param {Number} blockNumber
+ * @param {Number} salt e.g. blockNumber
+ * @returns {Buffer}
  */
-function hashLeaf(member, blockNumber) {    // eslint-disable-line no-unused-vars
-    const data = blockNumber + member.address + member.earnings.toString(16, 64)
+function hashLeaf(member, salt) {
+    const data = member.address + member.earnings.toString(16, 64) + salt
     return hash(data)
 }
 
 /**
  * Hash intermediate branch nodes together
- * Corresponding code in BalanceVerifier.sol:
- *     root = keccak256(abi.encodePacked(root, other));
  * @param {Buffer} data1
  * @param {Buffer} data2
  */
@@ -177,6 +177,7 @@ class MerkleTree {
     }
 }
 MerkleTree.hash = hash
+MerkleTree.hashLeaf = hashLeaf
 MerkleTree.hashCombined = hashCombined
 
 module.exports = MerkleTree
