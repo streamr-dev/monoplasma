@@ -14,7 +14,7 @@ const ZERO = Buffer.alloc(32)
 /**
  * Corresponding code in BalanceVerifier.sol: keccak256 Solidity function
  * @param data to hash; a {String} or a {Buffer}
- * @returns {Buffer}
+ * @returns {Buffer} keccak256 hash
  */
 function hash(data) {
     // TODO: following should be drop-in replacement:
@@ -29,7 +29,7 @@ function hash(data) {
  *   bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
  * @param {MonoplasmaMember} member
  * @param {Number} salt e.g. blockNumber
- * @returns {Buffer}
+ * @returns {Buffer} keccak256 hash
  */
 function hashLeaf(member, salt) {
     const data = member.address + member.earnings.toString(16, 64) + salt
@@ -38,8 +38,9 @@ function hashLeaf(member, salt) {
 
 /**
  * Hash intermediate branch nodes together
- * @param {Buffer} data1
- * @param {Buffer} data2
+ * @param {Buffer} data1 left branch
+ * @param {Buffer} data2 right branch
+ * @returns {Buffer} keccak256 hash
  */
 function hashCombined(data1, data2) {
     if (typeof data1 === "string") {

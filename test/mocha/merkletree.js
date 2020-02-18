@@ -137,7 +137,7 @@ describe("Merkle tree", () => {
             ]
         ])
 
-        const memberHash = MerkleTree.hashLeaf(e, tree.salt)
+        const memberHash = hashLeaf(e, tree.salt)
         const hashed = calculateRootHash(memberHash, paths[4])
         assert.strictEqual(root, `0x${hashed.toString("hex")}`)
     })
