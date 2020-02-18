@@ -47,13 +47,17 @@ contract Monoplasma is BalanceVerifier, Ownable {
     uint public totalWithdrawn;
     uint public totalProven;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds, uint _adminFee) public {
+    constructor(address tokenAddress, uint blockFreezePeriodSeconds, uint initialAdminFee) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
         token = IERC20(tokenAddress);
         operator = msg.sender;
-        setAdminFee(_adminFee);
+        setAdminFee(initialAdminFee);
     }
 
+    /**
+     * Admin can appoint the operator
+     * @param newOperator that is allowed to commit the off-chain balances
+     */
     function setOperator(address newOperator) public onlyOwner {
         operator = newOperator;
         emit OperatorChanged(newOperator);
@@ -61,8 +65,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Admin fee as a fraction of revenue
-     * Fixed-point decimal in the same way as ether: 50% === 0.5 ether
      * Smart contract doesn't use it, it's here just for storing purposes
+     * @param newAdminFee fixed-point decimal in the same way as ether: 50% === 0.5 ether === "500000000000000000"
      */
     function setAdminFee(uint newAdminFee) public onlyOwner {
         require(newAdminFee <= 1 ether, "error_adminFee");
@@ -72,6 +76,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Operator commits the off-chain balances
+     * @param blockNumber after which balances were submitted
      */
     function onCommit(uint blockNumber, bytes32, string memory) internal {
         require(msg.sender == operator, "error_notPermitted");
