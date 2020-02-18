@@ -164,7 +164,7 @@ class MerkleTree {
         const path = []
         for (let i = index; i > 1; i >>= 1) {
             const otherSibling = hashes[i ^ 1]
-            if (otherSibling.compare(ZERO) !== 0) {
+            if (!otherSibling.equals(ZERO)) {
                 path.push(otherSibling)
             }
         }
