@@ -15,15 +15,15 @@ module.exports = class FileStore {
         this.maxLogLen = maxLogLen || 840
 
         this.log(`Setting up fileStore directories under ${storeDir}...`)
-        const blocksDir = path.join(storeDir, "blocks")
+        this.blocksDir = path.join(storeDir, "blocks")
         const eventsDir = path.join(storeDir, "events")
         fs.mkdirSync(storeDir, { recursive: true })
-        fs.mkdirSync(blocksDir, { recursive: true })
+        fs.mkdirSync(this.blocksDir, { recursive: true })
         fs.mkdirSync(eventsDir, { recursive: true })
         this.blockNameRE = /(\d*)\.json/
 
         this.stateStorePath = path.join(storeDir, "state.json")
-        this.getBlockPath = blockNumber => path.join(blocksDir, blockNumber + ".json")
+        this.getBlockPath = blockNumber => path.join(this.blocksDir, blockNumber + ".json")
         this.getEventPath = blockNumber => path.join(eventsDir, blockNumber + ".json")
     }
 
