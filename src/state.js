@@ -291,6 +291,7 @@ module.exports = class MonoplasmaState {
             activeMembers.forEach(m => m.addRevenue(share))
             this.totalEarnings.iadd(amountBN)
         }
+        this.currentBlock = blockNumber
         this.tree.update(this.members, blockNumber)
     }
 
