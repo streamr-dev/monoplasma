@@ -15,6 +15,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     event OperatorChanged(address indexed newOperator);
     event AdminFeeChanged(uint adminFee);
+
     /**
      * Freeze period during which all participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
@@ -35,17 +36,32 @@ contract Monoplasma is BalanceVerifier, Ownable {
      */
     mapping (uint => uint) public blockTimestamp;
 
+    /// operator is the address who is allowed to commit the earnings
     address public operator;
 
-    //fee fraction = adminFee/10^18
+    /// fee fraction = adminFee/10^18
     uint public adminFee;
 
     IERC20 public token;
 
-    mapping (address => uint) public earnings;      // earnings for which proof has been submitted
-    mapping (address => uint) public withdrawn;     // earnings that have been sent out already
+    /// track lifetime total of tokens withdrawn from contract
     uint public totalWithdrawn;
+
+    /**
+     * Track lifetime total of earnings proven, as extra protection from malicious operator.
+     * The difference of what CAN be withdrawn and what HAS been withdrawn must be covered with tokens in contract,
+     *   in other words: totalProven - totalWithdrawn <= token.balanceOf(this)
+     * This is to prevent a "bank run" situation where more earnings have been proven in the contract than there are tokens to cover them.
+     * Of course this only moves the "bank run" outside the contract, to a race to prove earnings.
+     *   But at least the contract should never go into a state where it couldn't cover what's been proven.
+     */
     uint public totalProven;
+
+    /// earnings for which proof has been submitted
+    mapping (address => uint) public earnings;
+
+    /// earnings that have been sent out already
+    mapping (address => uint) public withdrawn;
 
     constructor(address tokenAddress, uint blockFreezePeriodSeconds, uint initialAdminFee) public {
         blockFreezeSeconds = blockFreezePeriodSeconds;
@@ -76,11 +92,13 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Operator commits the off-chain balances
+     * This starts the freeze period (measured from block.timestamp)
+     * See README under "Threat model" for discussion on safety of using "now"
      * @param blockNumber after which balances were submitted
      */
     function onCommit(uint blockNumber, bytes32, string memory) internal {
         require(msg.sender == operator, "error_notPermitted");
-        blockTimestamp[blockNumber] = now;
+        blockTimestamp[blockNumber] = now; // solium-disable-line security/no-block-members
     }
 
     /**
@@ -89,10 +107,15 @@ contract Monoplasma is BalanceVerifier, Ownable {
      *   or just "cement" the earnings so far into root chain even without withdrawing
      * Missing balance test is an extra layer of defense against fraudulent operator who tries to steal ALL tokens.
      *   If any member can exit within freeze period, that fraudulent commit will fail.
+     * Only earnings that have been committed longer than blockFreezeSeconds ago can be proven, see {onCommit}
+     * See README under "Threat model" for discussion on safety of using "now"
+     * @param blockNumber after which balances were submitted in {onCommit}
+     * @param account whose earnings were successfully proven and updated
+     * @param newEarnings the updated total lifetime earnings
      */
     function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
         uint blockFreezeStart = blockTimestamp[blockNumber];
-        require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen");
+        require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen"); // solium-disable-line security/no-block-members
         require(earnings[account] < newEarnings, "error_oldEarnings");
         totalProven = totalProven.add(newEarnings).sub(earnings[account]);
         require(totalProven.sub(totalWithdrawn) <= token.balanceOf(address(this)), "error_missingBalance");
@@ -113,7 +136,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Prove and withdraw the whole revenue share for someone else
      * Validator needs to exit those it's watching out for, in case
      *   it detects Operator malfunctioning
-     * @param recipient the address we're proving and withdrawing
+     * @param recipient the address we're proving and withdrawing to
      * @param blockNumber of the leaf to verify
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
@@ -139,7 +162,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Do an "unlimited donate withdraw" on behalf of someone else, to an address they've specified
      * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param blockNumber of the leaf to verify
@@ -158,6 +181,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Withdraw a specified amount of your own proven earnings (see `function prove`)
+     * @param amount of tokens to withdraw
      */
     function withdraw(uint amount) public {
         _withdraw(msg.sender, msg.sender, amount);
@@ -165,8 +189,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Do the withdrawal on behalf of someone else
-     * Validator needs to exit those it's watching out for, in case
-     *   it detects Operator malfunctioning
+     * Validator needs to exit those it's watching out for, in case it detects Operator malfunctioning
+     * @param recipient whose tokens will be withdrawn (instead of msg.sender)
+     * @param amount of tokens to withdraw
      */
     function withdrawFor(address recipient, uint amount) public {
         _withdraw(recipient, recipient, amount);
@@ -175,6 +200,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * "Donate withdraw" function that allows you to transfer
      *   proven earnings to a another address in one transaction
+     * @param recipient the address the tokens will be sent to (instead of msg.sender)
+     * @param amount of tokens to withdraw
      */
     function withdrawTo(address recipient, uint amount) public {
         _withdraw(recipient, msg.sender, amount);
@@ -191,8 +218,12 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Execute token withdrawal into specified recipient address from specified member account
-     * @dev It is up to the sidechain implementation to make sure
-     * @dev  always token balance >= sum of earnings - sum of withdrawn
+     * The prevent "bank runs", it is up to the sidechain implementation to make sure that always:
+     *   sum of committed earnings <= token.balanceOf(this) + totalWithdrawn
+     * Smart contract can't verify that, because it can't see inside the commit hash.
+     * @param recipient of the tokens
+     * @param account whose earnings are being debited
+     * @param amount of tokens that is sent out
      */
     function _withdraw(address recipient, address account, uint amount) internal {
         require(amount > 0, "error_zeroWithdraw");
@@ -206,6 +237,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Check signature from a member authorizing withdrawing its earnings to another account
      * Throws if the signature is bad
+     * Signature has parts the act as replay protection:
+     *   address(this): signature can't be used for other contracts
+     *   withdrawn[signer]: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
      * @param recipient of the tokens
      * @param tokensWithdrawnBefore replay protection: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdrawAll
      * @param signature generated with web3.eth.accounts.sign(recipientAddress + tokensWithdrawnBefore.toString(16, 64), signerPrivateKey)
