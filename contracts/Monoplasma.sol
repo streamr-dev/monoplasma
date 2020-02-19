@@ -210,6 +210,10 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Do a "donate withdraw" on behalf of someone else, to an address they've specified
      * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     * @param recipient of the tokens
+     * @param tokensWithdrawnBefore must match withdrawn[signer]
+     * @param signature generated with web3.eth.accounts.sign(recipientAddress + tokensWithdrawnBefore.toString(16, 64), signerPrivateKey)
+     * @param amount of tokens to withdraw
      */
     function withdrawToSigned(address recipient, uint tokensWithdrawnBefore, bytes memory signature, uint amount) public {
         address signer = checkSignature(recipient, tokensWithdrawnBefore, signature);
@@ -239,9 +243,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Throws if the signature is bad
      * Signature has parts the act as replay protection:
      *   address(this): signature can't be used for other contracts
-     *   withdrawn[signer]: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
+     *   tokensWithdrawnBefore: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
      * @param recipient of the tokens
-     * @param tokensWithdrawnBefore replay protection: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdrawAll
+     * @param tokensWithdrawnBefore must match withdrawn[signer]
      * @param signature generated with web3.eth.accounts.sign(recipientAddress + tokensWithdrawnBefore.toString(16, 64), signerPrivateKey)
      * @return signer of the authorization, that is, the member whose earnings are going to be withdrawn
      */
