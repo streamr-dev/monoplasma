@@ -74,6 +74,10 @@ contract BalanceVerifier {
 
     /**
      * Check the merkle proof of balance in the given commit (after blockNumber in root-chain) for given account
+     * @param blockNumber the block after which the balances were recorded
+     * @param account whose balances will be verified
+     * @param balance off-chain account balance
+     * @param proof list of hashes to prove the totalEarnings
      */
     function proofIsCorrect(uint blockNumber, address account, uint balance, bytes32[] memory proof) public view returns(bool) {
         bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
