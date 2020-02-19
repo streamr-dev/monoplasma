@@ -62,7 +62,7 @@ But in case the operator simply doesn't provide the fudged accounts book (operat
 ### Prerequisites:
 
 - Browser with Metamask installed
-- node.js (tested on v10.14.0)
+- node.js (version 10 or newer, tested on v10.14.0)
 - git
 
 ## Building
