@@ -169,11 +169,16 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
      * @param tokensWithdrawnBefore replay protection for the signature. After this withdraw completes, withdrawn tokens will not match this signature anymore
-     * @param signature from the community member, see {checkSignature}
+     * @param signature from the community member, see {signatureIsValid} how it's generated
      */
-    function withdrawAllToSigned(address recipient, uint blockNumber, uint totalEarnings, bytes32[] calldata proof,
-                                 uint tokensWithdrawnBefore, bytes calldata signature) external {
-        address signer = checkSignature(recipient, tokensWithdrawnBefore, signature);
+    function withdrawAllToSigned(
+        address recipient,
+        uint blockNumber, uint totalEarnings, bytes32[] calldata proof,     // proof arguments
+        address signer, bytes calldata signature                            // signature arguments
+    )
+        external
+    {
+        require(signatureIsValid(recipient, signer, 0, signature), "error_badSignature");
         prove(blockNumber, signer, totalEarnings, proof);
         uint withdrawable = totalEarnings.sub(withdrawn[signer]);
         _withdraw(recipient, signer, withdrawable);
@@ -209,10 +214,14 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Do a "donate withdraw" on behalf of someone else, to an address they've specified
-     * Sponsored withdraw is paid by admin, but target account could be whatever the member specifies
+     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
+     * @param recipient of the tokens
+     * @param signer whose earnings are being withdrawn
+     * @param amount how much is authorized for withdrawing by the signature
+     * @param signature from the community member, see {signatureIsValid} how it's generated
      */
-    function withdrawToSigned(address recipient, uint tokensWithdrawnBefore, bytes memory signature, uint amount) public {
-        address signer = checkSignature(recipient, tokensWithdrawnBefore, signature);
+    function withdrawToSigned(address recipient, address signer, uint amount, bytes memory signature) public {
+        require(signatureIsValid(recipient, signer, amount, signature), "error_badSignature");
         _withdraw(recipient, signer, amount);
     }
 
@@ -236,17 +245,19 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Check signature from a member authorizing withdrawing its earnings to another account
-     * Throws if the signature is bad
+     * Throws if the signature is badly formatted or doesn't match the given signer and amount.
      * Signature has parts the act as replay protection:
      *   address(this): signature can't be used for other contracts
      *   withdrawn[signer]: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
+     * Generated with web3.eth.accounts.sign(recipientAddress + amount.toString(16, 64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)
      * @param recipient of the tokens
-     * @param tokensWithdrawnBefore replay protection: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdrawAll
-     * @param signature generated with web3.eth.accounts.sign(recipientAddress + tokensWithdrawnBefore.toString(16, 64), signerPrivateKey)
+     * @param signer whose earnings are being withdrawn
+     * @param amount how much is authorized for withdraw, or zero for unlimited (withdrawAll)
+     * @param signature byte array from web3.eth.accounts.sign
      * @return signer of the authorization, that is, the member whose earnings are going to be withdrawn
      */
-    function checkSignature(address recipient, uint tokensWithdrawnBefore, bytes memory signature) public view returns (address signer) {
-        require(signature.length == 65, "error_badSignature");
+    function signatureIsValid(address recipient, address signer, uint amount, bytes memory signature) public view returns (bool isValid) {
+        require(signature.length == 65, "error_badSignatureLength");
 
         bytes32 r; bytes32 s; uint8 v;
         assembly {      // solium-disable-line security/no-inline-assembly
@@ -261,10 +272,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
         // When changing the message, remember to double-check that message length is correct!
         bytes32 messageHash = keccak256(abi.encodePacked(
-            "\x19Ethereum Signed Message:\n72", recipient, address(this), tokensWithdrawnBefore));
-        signer = ecrecover(messageHash, v, r, s);
+            "\x19Ethereum Signed Message:\n102", recipient, amount, address(this), withdrawn[signer]));
+        address calculatedSigner = ecrecover(messageHash, v, r, s);
 
-        // TODO: change error message, since invalid signature also produces an (invalid) address
-        require(tokensWithdrawnBefore == withdrawn[signer], "error_oldSignature");
+        return calculatedSigner == signer;
     }
 }
