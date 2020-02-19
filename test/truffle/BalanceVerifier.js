@@ -30,12 +30,13 @@ contract("BalanceVerifier", accounts => {
         // these should be performed by the watcher
         plasma.addMember(recipient)
         plasma.addMember(anotherRecipient)
-        plasma.addRevenue(1000)
+        plasma.addRevenue(1000, 1)
     })
 
-    async function publishBlock(rootHash) {
-        const root = rootHash || plasma.getRootHash()
+    async function publishBlock() {
         const blockNumber = await web3.eth.getBlockNumber()
+        plasma.setBlockNumber(blockNumber)
+        const root = plasma.getRootHash()
         const resp = await airdrop.commit(blockNumber, root, "ipfs lol", {from: admin})
         return resp.logs.find(L => L.event === "NewCommit").args
     }
@@ -60,22 +61,28 @@ contract("BalanceVerifier", accounts => {
     })
 
     describe("prove & proofIsCorrect & calculateRootHash", () => {
-        // see test/merklepath.js
         let block, member, proof, root
+
+        // see also test/mocha/merkletree.js
         it("correctly validate a proof", async () => {
-            plasma.addRevenue(1000)
+            plasma.addRevenue(1000, 1)
+            block = await publishBlock(root)
+
             const memberObj = plasma.getMember(anotherRecipient)
             member = MonoplasmaMember.fromObject(memberObj)
             root = plasma.tree.getRootHash()
             proof = plasma.getProof(anotherRecipient)
-            block = await publishBlock(root)
+
             // check that block was published correctly
             assertEqual(block.rootHash, root)
+
             // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.hash(member.toHashableString()).toString("hex")
+            const hash = "0x" + MerkleTree.hashLeaf(member, plasma.tree.salt).toString("hex")
             assertEqual(await airdrop.calculateRootHash(hash, proof), root)
+
             // check that contract checks proof correctly
             assert(await airdrop.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof), "Contract says: Bad proof")
+
             // check that contract proves earnings correctly (freeze period)
             assertEqual(await token.balanceOf(member.address), 0)
             await airdrop.prove(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000})
@@ -97,9 +104,9 @@ contract("BalanceVerifier", accounts => {
         it("fails with error_transfer if token transfer returns false", async () => {
             const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 4000000})
             const airdrop2 = await Airdrop.new(token2.options.address, {from: admin, gas: 4000000})
-            await airdrop2.commit(1, root, "ipfs lol", {from: admin})
-            assert(await airdrop2.proofIsCorrect(1, member.address, member.earnings, proof))
-            await assertFails(airdrop2.prove(1, member.address, member.earnings, proof, {from: admin, gas: 4000000}), "error_transfer")
+            await airdrop2.commit(block.blockNumber, root, "ipfs lol", {from: admin})
+            assert(await airdrop2.proofIsCorrect(block.blockNumber, member.address, member.earnings, proof), "Contract says: bad proof")
+            await assertFails(airdrop2.prove(block.blockNumber, member.address, member.earnings, proof, {from: admin, gas: 4000000}), "error_transfer")
         })
     })
 })

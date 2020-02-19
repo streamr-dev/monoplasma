@@ -76,9 +76,7 @@ contract BalanceVerifier {
      * Check the merkle proof of balance in the given commit (after blockNumber in root-chain) for given account
      */
     function proofIsCorrect(uint blockNumber, address account, uint balance, bytes32[] memory proof) public view returns(bool) {
-        // TODO: prevent rainbow-tabling leaf nodes by salting with block number
-        // bytes32 hash = keccak256(abi.encodePacked(blockNumber, account, balance));
-        bytes32 leafHash = keccak256(abi.encodePacked(account, balance));
+        bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
         bytes32 rootHash = committedHash[blockNumber];
         require(rootHash != 0x0, "error_blockNotFound");
         return rootHash == calculateRootHash(leafHash, proof);

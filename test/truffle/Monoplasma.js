@@ -49,14 +49,15 @@ contract("Monoplasma", accounts => {
     // simulate added revenue: tokens appear in the contract, MonoplasmaWatcher updates the MonoplasmaState
     async function addRevenue(tokens) {
         await token.mint(rootchain.address, tokens, {from: admin})
-        plasma.addRevenue(tokens)
+        plasma.addRevenue(tokens, currentBlockNumber)
         return publishBlock()
     }
 
     // simulate a block being published by the MonoplasmaOperator
     async function publishBlock(rootHash, operatorAddress) {
-        const root = rootHash || plasma.getRootHash()
         const blockNumber = currentBlockNumber++
+        plasma.setBlockNumber(blockNumber)
+        const root = rootHash || plasma.getRootHash()
         const resp = await rootchain.commit(blockNumber, root, "ipfs lol", {from: operatorAddress || admin})
         return resp.logs.find(L => L.event === "NewCommit").args
     }
@@ -277,12 +278,13 @@ contract("Monoplasma", accounts => {
             const token2 = await FailToken.deploy({data: FailTokenJson.bytecode}).send({from: admin, gas: 6000000})
             const rootchain2 = await RootChainContract.new(token2.options.address, blockFreezePeriodSeconds, 0, {from: admin, gas: 6000000})
             await token2.methods.transfer(rootchain2.address, toWei("1000", "ether")).send({from: admin})
+            const blockNumber = plasma.currentBlock
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
             const root = plasma.getRootHash()
-            await rootchain2.commit(1, root, "ipfs lol", {from: admin})
+            await rootchain2.commit(blockNumber, root, "ipfs lol", {from: admin})
             await increaseTime(blockFreezePeriodSeconds + 1)
-            await assertFails(rootchain2.withdrawAll(1, earnings, proof, {from: producer}), "error_transfer")
+            await assertFails(rootchain2.withdrawAll(blockNumber, earnings, proof, {from: producer}), "error_transfer")
         })
     })
 
@@ -302,7 +304,7 @@ contract("Monoplasma", accounts => {
         it("proving fails with error_missingBalance if there's not enough tokens to cover the purported earnings", async () => {
             const fakeTokens = toWei("1000", "ether")
             const fakeMemberList = [new MonoplasmaMember("thief", producer, fakeTokens)]
-            const fakeTree = new MerkleTree(fakeMemberList)
+            const fakeTree = new MerkleTree(fakeMemberList, currentBlockNumber)
             const fakeProof = []
             const root = fakeTree.getRootHash()
             const block = await publishBlock(root)

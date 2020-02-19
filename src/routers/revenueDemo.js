@@ -30,7 +30,7 @@ module.exports = operator => {
             const fakeMemberList = [new MonoplasmaMember("thief", address, tokens)]
             console.log("Swapping operator's balance books with something where we have all the tokens")
             operator.plasma.members = fakeMemberList
-            operator.plasma.tree.update(fakeMemberList)
+            operator.plasma.tree.update(fakeMemberList, 1)
             return operator.publishBlock(operator.state.lastPublishedBlock + 1)
         }).then(block => {
             console.log(`Block published: ${JSON.stringify(block)}`)

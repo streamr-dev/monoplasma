@@ -49,7 +49,7 @@ module.exports = class MonoplasmaState {
         /** @property {Array<MonoplasmaMember>} members */
         this.members = initialMembers.map(m => new MonoplasmaMember(undefined, m.address, m.earnings))
         /** @property {MerkleTree} tree The MerkleTree for calculating the hashes */
-        this.tree = new MerkleTree(this.members)
+        this.tree = new MerkleTree(this.members, initialBlockNumber)
         /** @property {string}  adminAddress the owner address who receives the admin fee and the default payee if no memebers */
         this.adminAddress = adminAddress
         /** @property {BN}  adminFeeFraction fraction of revenue that goes to admin */
@@ -165,7 +165,7 @@ module.exports = class MonoplasmaState {
             throw new Error(`Member ${address} not found in block ${blockNumber}`)
         }
         const members = block.members.map(m => MonoplasmaMember.fromObject(m))
-        const tree = new MerkleTree(members)
+        const tree = new MerkleTree(members, blockNumber)
         member.proof = tree.getPath(address)
         return member
     }
@@ -196,7 +196,7 @@ module.exports = class MonoplasmaState {
 
             const block = await this.getBlock(blockNumber)
             const members = block.members.map(m => MonoplasmaMember.fromObject(m))
-            const tree = new MerkleTree(members)
+            const tree = new MerkleTree(members, blockNumber)
             cached = {
                 blockNumber,
                 tree,
@@ -245,6 +245,11 @@ module.exports = class MonoplasmaState {
         return rootHash
     }
 
+    setBlockNumber(blockNumber) {
+        this.currentBlock = blockNumber
+        this.tree.update(this.tree.contents, blockNumber)
+    }
+
     // ///////////////////////////////////
     //      ADMIN API
     // ///////////////////////////////////
@@ -271,7 +276,8 @@ module.exports = class MonoplasmaState {
     /**
      * @param {number} amount of tokens that was added to the Community revenues
      */
-    addRevenue(amount) {
+    addRevenue(amount, blockNumber) {
+        if (typeof blockNumber === "undefined") { throw new Error("must supply blockNumber") }
         const activeMembers = this.members.filter(m => m.isActive())
         const activeCount = activeMembers.length
         if (activeCount === 0) {
@@ -285,7 +291,8 @@ module.exports = class MonoplasmaState {
             activeMembers.forEach(m => m.addRevenue(share))
             this.totalEarnings.iadd(amountBN)
         }
-        this.tree.update(this.members)
+        this.currentBlock = blockNumber
+        this.tree.update(this.members, blockNumber)
     }
 
     /**

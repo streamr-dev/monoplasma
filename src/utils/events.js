@@ -23,7 +23,7 @@ async function replayEvent(plasma, event) {
         case "Transfer": {
             const { value } = event.returnValues
             log(`${value} tokens received @ block ${event.blockNumber}`)
-            plasma.addRevenue(value)
+            plasma.addRevenue(value, event.blockNumber)
         } break
         // event NewCommit(uint blockNumber, bytes32 rootHash, string ipfsHash);
         case "NewCommit": {

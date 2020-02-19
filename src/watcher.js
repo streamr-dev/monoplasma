@@ -137,6 +137,7 @@ module.exports = class MonoplasmaWatcher {
         for (const event of allEvents) {
             await replayEvent(plasma, event)
         }
+        plasma.setBlockNumber(toBlock)
     }
 
     async getContractTokenBalance() {
