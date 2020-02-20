@@ -188,6 +188,30 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
+     * Prove and do a "donate withdraw" on behalf of someone else, to an address they've specified
+     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
+     * The signature is valid only for given amount of tokens that may be different from maximum withdrawable tokens.
+     * @param recipient the address the tokens will be sent to (instead of msg.sender)
+     * @param signer whose earnings are being withdrawn
+     * @param amount of tokens to withdraw
+     * @param signature from the community member, see `signatureIsValid` how it's generated
+     * @param blockNumber of the commit that contains the earnings to verify
+     * @param totalEarnings in the off-chain balance book
+     * @param proof list of hashes to prove the totalEarnings
+     */
+    function proveAndWithdrawToSigned(
+        address recipient,
+        address signer, uint amount, bytes calldata signature,          // signature arguments
+        uint blockNumber, uint totalEarnings, bytes32[] calldata proof  // proof arguments
+    )
+        external
+    {
+        require(signatureIsValid(recipient, signer, amount, signature), "error_badSignature");
+        prove(blockNumber, signer, totalEarnings, proof);
+        _withdraw(recipient, signer, amount);
+    }
+
+    /**
      * Withdraw a specified amount of your own proven earnings (see `function prove`)
      * @param amount of tokens to withdraw
      */
