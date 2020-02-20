@@ -187,7 +187,7 @@ contract("Monoplasma", accounts => {
             await assertFails(rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer}), "error_proof")
         })
 
-        it("works for another member's earnings with a signature (withdrawAllToSigned)", async () => {
+        it("works for another member's earnings with a signature (withdrawAllToSigned or 'blank cheque')", async () => {
             // admin withdraws anotherProducer's earnings to producer's account
             block = await addRevenue(1000)
             const proof = plasma.getProof(anotherProducer)
@@ -203,6 +203,25 @@ contract("Monoplasma", accounts => {
             await rootchain.withdrawAllToSigned(producer, anotherProducer, signature, block.blockNumber, earnings, proof, {from: admin})
             const withdrawable = new BN(earnings).sub(withdrawn)
             assertEqual(await token.balanceOf(producer), balanceBefore.add(withdrawable))
+        })
+
+        it("fails if withdrawAllToSigned is attempted with (otherwise valid) non-'blank cheque' signature", async () => {
+            block = await addRevenue(1000)
+            const proof = plasma.getProof(anotherProducer)
+            const { earnings } = plasma.getMember(anotherProducer)
+            const withdrawn = await rootchain.withdrawn(anotherProducer)
+            const amount = new BN(1000)
+
+            const message = producer + amount.toString(16, 64) + rootchain.address.slice(2) + withdrawn.toString(16, 64)
+            const signature = await web3.eth.sign(message, anotherProducer)
+            assert(await rootchain.signatureIsValid(producer, anotherProducer, "1000", signature), "Contract says: bad signature")
+
+            await increaseTime(blockFreezePeriodSeconds + 1)
+            await assertFails(rootchain.withdrawAllToSigned(producer, anotherProducer, signature, block.blockNumber, earnings, proof, {from: admin}), "error_badSignature")
+
+            const message2 = producer + "0".repeat(64) + rootchain.address.slice(2) + withdrawn.toString(16, 64)
+            const signature2 = await web3.eth.sign(message2, anotherProducer)
+            await rootchain.withdrawAllToSigned(producer, anotherProducer, signature2, block.blockNumber, earnings, proof, {from: admin})
         })
 
         it("works for another member's earnings with a signature, also in 2 steps: prove, then withdrawToSigned", async () => {
@@ -257,9 +276,7 @@ contract("Monoplasma", accounts => {
             const withdrawn = await rootchain.withdrawn(anotherProducer)
             const amount = new BN(1000)
             const message = producer + amount.toString(16, 64) + rootchain.address.slice(2) + withdrawn.toString(16, 64)
-            console.log(message)
             const signature = await web3.eth.sign(message, anotherProducer)
-            console.log(signature)
             assert(await rootchain.signatureIsValid(producer, anotherProducer, "1000", signature), "Contract says: bad signature")
 
             await assertFails(rootchain.withdrawToSigned(producer, anotherProducer, "1000", signature.slice(0, -10), {from: admin}), "error_badSignatureLength")
