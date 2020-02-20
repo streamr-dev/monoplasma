@@ -7,5 +7,8 @@
     "error_zeroWithdraw": "Can't withdraw zero tokens",
     "error_overdraft": "Can't withdraw that many tokens",
     "error_transfer": "Error during token transfer; does contract have enough tokens?",
-    "error_missingBalance": "Inadequate token balance to cover the verified earnings; suspect Operator malfunction"
+    "error_missingBalance": "Inadequate token balance to cover the verified earnings; suspect Operator malfunction",
+    "error_badSignature": "Invalid signature. It can be old, to another contract, or from another signer.",
+    "error_badSignatureLength": "Signature must be 32 bytes long",
+    "error_badSignatureVersion": "Signature version must be 0, 1, 27 or 28"
 }
