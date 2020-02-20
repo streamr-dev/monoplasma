@@ -165,11 +165,11 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Prove and do an "unlimited donate withdraw" on behalf of someone else, to an address they've specified
      * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
      * The signature gives a "blank cheque" for admin to withdraw all tokens to `recipient` in the future,
-     *   and it's valid until next withdraw (and so can be nullified by withdrawing any amount)
+     *   and it's valid until next withdraw (and so can be nullified by withdrawing any amount).
      * A new signature needs to be obtained for each subsequent future withdraw.
      * @param recipient the address the tokens will be sent to (instead of `msg.sender`)
      * @param signer whose earnings are being withdrawn
-     * @param signature from the community member, see `signatureIsValid` how it's generated, except amount should equal zero ("blank cheque")
+     * @param signature from the community member, see `signatureIsValid` how signature generated for unlimited amount
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
@@ -256,7 +256,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * Signature has parts the act as replay protection:
      * * `address(this)`: signature can't be used for other contracts
      * * `withdrawn[signer]`: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
-     * Generated with `web3.eth.accounts.sign(recipientAddress + amount.toString(16, 64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`
+     * Generated in Javascript with: `web3.eth.accounts.sign(recipientAddress + amount.toString(16, 64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`
+     * Or for unlimited amount: `web3.eth.accounts.sign(recipientAddress + "0".repeat(64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`
      * @param recipient of the tokens
      * @param signer whose earnings are being withdrawn
      * @param amount how much is authorized for withdraw, or zero for unlimited (withdrawAll)
