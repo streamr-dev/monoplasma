@@ -18,7 +18,7 @@
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -f build/flattened/*",
     "clean-demo": "rm -rf demo/public/data/*",
-    "prepack": "jq '{contractName,updatedAt,schemaVersion} + (.metadata|fromjson|del(.output)) + {userdoc,bytecode,abi}' build/contracts/Monoplasma.json > build/Monoplasma.json"
+    "prepack": "./flatten && jq '{contractName,updatedAt,schemaVersion} + (.metadata|fromjson|del(.output)) + {userdoc,bytecode,abi}' build/contracts/Monoplasma.json > build/Monoplasma.json"
   },
   "devDependencies": {
     "eslint": "6.8.0",
@@ -54,6 +54,7 @@
   "files": [
     "contracts",
     "strings",
+    "build/flattened/Monoplasma.sol",
     "build/Monoplasma.json"
   ]
 }
