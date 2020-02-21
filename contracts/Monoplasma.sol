@@ -19,12 +19,12 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Freeze period during which all participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
-     *   and validate that the published rootHash is correct
+     *   and validate that the published rootHash is correct.
      * In case of incorrect rootHash, all members should issue withdrawals from the
-     *   latest block they have validated (that is older than blockFreezeSeconds)
-     * So: too short freeze period + bad availability => ether (needlessly) spent withdrawing earnings
-     *     long freeze period == lag between purchase and withdrawal => bad UX
-     * Blocks older than blockFreezeSeconds can be used to withdraw funds
+     *   latest block they have validated (that is older than blockFreezeSeconds).
+     * So: too short freeze period `+` bad availability `=>` ether (needlessly) spent withdrawing earnings.
+     *     Long freeze period `==` lag between purchase and withdrawal `=>` bad UX.
+     * Blocks older than blockFreezeSeconds can be used to withdraw funds.
      */
     uint public blockFreezeSeconds;
 
@@ -50,10 +50,10 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /**
      * Track lifetime total of earnings proven, as extra protection from malicious operator.
      * The difference of what CAN be withdrawn and what HAS been withdrawn must be covered with tokens in contract,
-     *   in other words: totalProven - totalWithdrawn <= token.balanceOf(this)
+     *   in other words: `totalProven - totalWithdrawn <= token.balanceOf(this)`.
      * This is to prevent a "bank run" situation where more earnings have been proven in the contract than there are tokens to cover them.
-     * Of course this only moves the "bank run" outside the contract, to a race to prove earnings.
-     *   But at least the contract should never go into a state where it couldn't cover what's been proven.
+     * Of course this only moves the "bank run" outside the contract, to a race to prove earnings,
+     *   but at least the contract should never go into a state where it couldn't cover what's been proven.
      */
     uint public totalProven;
 
@@ -71,7 +71,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Admin can appoint the operator
+     * Admin can appoint the operator.
      * @param newOperator that is allowed to commit the off-chain balances
      */
     function setOperator(address newOperator) public onlyOwner {
@@ -80,8 +80,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Admin fee as a fraction of revenue
-     * Smart contract doesn't use it, it's here just for storing purposes
+     * Admin fee as a fraction of revenue.
+     * Smart contract doesn't use it, it's here just for storing purposes.
      * @param newAdminFee fixed-point decimal in the same way as ether: 50% === 0.5 ether === "500000000000000000"
      */
     function setAdminFee(uint newAdminFee) public onlyOwner {
@@ -91,9 +91,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Operator commits the off-chain balances
-     * This starts the freeze period (measured from block.timestamp)
-     * See README under "Threat model" for discussion on safety of using "now"
+     * Operator commits the off-chain balances.
+     * This starts the freeze period (measured from block.timestamp).
+     * See README under "Threat model" for discussion on safety of using "now".
      * @param blockNumber after which balances were submitted
      */
     function onCommit(uint blockNumber, bytes32, string memory) internal {
@@ -102,13 +102,13 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Called from BalanceVerifier.prove
+     * Called from BalanceVerifier.prove.
      * Prove can be called directly to withdraw less than the whole share,
-     *   or just "cement" the earnings so far into root chain even without withdrawing
+     *   or just "cement" the earnings so far into root chain even without withdrawing.
      * Missing balance test is an extra layer of defense against fraudulent operator who tries to steal ALL tokens.
-     *   If any member can exit within freeze period, that fraudulent commit will fail.
-     * Only earnings that have been committed longer than blockFreezeSeconds ago can be proven, see {onCommit}
-     * See README under "Threat model" for discussion on safety of using "now"
+     * If any member can exit within freeze period, that fraudulent commit will fail.
+     * Only earnings that have been committed longer than blockFreezeSeconds ago can be proven, see `onCommit`.
+     * See README under "Threat model" for discussion on safety of using "now".
      * @param blockNumber after which balances were submitted in {onCommit}
      * @param account whose earnings were successfully proven and updated
      * @param newEarnings the updated total lifetime earnings
@@ -123,7 +123,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and withdraw the whole revenue share from sidechain in one transaction
+     * Prove and withdraw the whole revenue share from sidechain in one transaction.
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
@@ -133,9 +133,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and withdraw the whole revenue share on behalf of someone else
+     * Prove and withdraw the whole revenue share on behalf of someone else.
      * Validator needs to exit those it's watching out for, in case
-     *   it detects Operator malfunctioning
+     *   it detects Operator malfunctioning.
      * @param recipient the address we're proving and withdrawing to
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
@@ -149,7 +149,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     /**
      * Prove and "donate withdraw" function that allows you to prove and transfer
-     *   your earnings to a another address in one transaction
+     *   your earnings to a another address in one transaction.
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
@@ -162,8 +162,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and do an "unlimited donate withdraw" on behalf of someone else, to an address they've specified
-     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
+     * Prove and do an "unlimited donate withdraw" on behalf of someone else, to an address they've specified.
+     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies.
      * The signature gives a "blank cheque" for admin to withdraw all tokens to `recipient` in the future,
      *   and it's valid until next withdraw (and so can be nullified by withdrawing any amount).
      * A new signature needs to be obtained for each subsequent future withdraw.
@@ -188,8 +188,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Prove and do a "donate withdraw" on behalf of someone else, to an address they've specified
-     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
+     * Prove and do a "donate withdraw" on behalf of someone else, to an address they've specified.
+     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies.
      * The signature is valid only for given amount of tokens that may be different from maximum withdrawable tokens.
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param signer whose earnings are being withdrawn
@@ -212,7 +212,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Withdraw a specified amount of your own proven earnings (see `function prove`)
+     * Withdraw a specified amount of your own proven earnings (see `function prove`).
      * @param amount of tokens to withdraw
      */
     function withdraw(uint amount) public {
@@ -220,8 +220,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Withdraw a specified amount on behalf of someone else
-     * Validator needs to exit those it's watching out for, in case it detects Operator malfunctioning
+     * Withdraw a specified amount on behalf of someone else.
+     * Validator needs to exit those it's watching out for, in case it detects Operator malfunctioning.
      * @param recipient whose tokens will be withdrawn (instead of msg.sender)
      * @param amount of tokens to withdraw
      */
@@ -230,9 +230,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * "Donate withdraw"
+     * "Donate withdraw":
      * Withdraw and transfer proven earnings to a another address in one transaction,
-     *   instead of withdrawing and then transfering the tokens
+     *   instead of withdrawing and then transfering the tokens.
      * @param recipient the address the tokens will be sent to (instead of `msg.sender`)
      * @param amount of tokens to withdraw
      */
@@ -241,9 +241,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Signed "donate withdraw"
-     * Withdraw and transfer proven earnings to a third address on behalf of someone else
-     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies
+     * Signed "donate withdraw":
+     * Withdraw and transfer proven earnings to a third address on behalf of someone else.
+     * Sponsored withdraw is paid by e.g. admin, but target account could be whatever the member specifies.
      * @param recipient of the tokens
      * @param signer whose earnings are being withdrawn
      * @param amount how much is authorized for withdrawing by the signature
@@ -255,11 +255,9 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Execute token withdrawal into specified recipient address from specified member account
-     * The prevent "bank runs", it is up to the sidechain implementation to make sure that always:
-     * ```
-     * sum of committed earnings <= token.balanceOf(this) + totalWithdrawn
-     * ```
+     * Execute token withdrawal into specified recipient address from specified member account.
+     * To prevent "bank runs", it is up to the sidechain implementation to make sure that always:
+     * `sum of committed earnings <= token.balanceOf(this) + totalWithdrawn`.
      * Smart contract can't verify that, because it can't see inside the commit hash.
      * @param recipient of the tokens
      * @param account whose earnings are being debited
@@ -275,13 +273,13 @@ contract Monoplasma is BalanceVerifier, Ownable {
     }
 
     /**
-     * Check signature from a member authorizing withdrawing its earnings to another account
+     * Check signature from a member authorizing withdrawing its earnings to another account.
      * Throws if the signature is badly formatted or doesn't match the given signer and amount.
      * Signature has parts the act as replay protection:
-     * * `address(this)`: signature can't be used for other contracts
-     * * `withdrawn[signer]`: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx
-     * Generated in Javascript with: `web3.eth.accounts.sign(recipientAddress + amount.toString(16, 64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`
-     * Or for unlimited amount: `web3.eth.accounts.sign(recipientAddress + "0".repeat(64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`
+     * 1) `address(this)`: signature can't be used for other contracts;
+     * 2) `withdrawn[signer]`: signature only works once (for unspecified amount), and can be "cancelled" by sending a withdraw tx.
+     * Generated in Javascript with: `web3.eth.accounts.sign(recipientAddress + amount.toString(16, 64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`,
+     * or for unlimited amount: `web3.eth.accounts.sign(recipientAddress + "0".repeat(64) + contractAddress.slice(2) + withdrawnTokens.toString(16, 64), signerPrivateKey)`.
      * @param recipient of the tokens
      * @param signer whose earnings are being withdrawn
      * @param amount how much is authorized for withdraw, or zero for unlimited (withdrawAll)
