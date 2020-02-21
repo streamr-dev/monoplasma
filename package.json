@@ -1,6 +1,6 @@
 {
   "name": "monoplasma",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "description": "Unidirectional payment sidechain with monotonically increasing balances (no in-chain transfers)",
   "author": "Streamr Network AG",
   "license": "AGPL-3.0",
@@ -17,7 +17,8 @@
     "coverage": "truffle run coverage --file=test/truffle/*.js",
     "test": "npm run clean && truffle compile && npm run test-js && npm run test-contracts && npm run test-e2e",
     "clean": "rm -f build/contracts/* && rm -f build/flattened/*",
-    "clean-demo": "rm -rf demo/public/data/*"
+    "clean-demo": "rm -rf demo/public/data/*",
+    "prepack": "jq '{contractName,updatedAt,schemaVersion} + (.metadata|fromjson|del(.output)) + {userdoc,bytecode,abi}' build/contracts/Monoplasma.json > build/Monoplasma.json"
   },
   "devDependencies": {
     "eslint": "6.8.0",
@@ -25,9 +26,7 @@
     "node-fetch": "2.6.0",
     "sinon": "8.1.1",
     "solidity-coverage": "0.7.1",
-    "truffle-flattener": "1.4.2"
-  },
-  "dependencies": {
+    "truffle-flattener": "1.4.2",
     "bn.js": "5.1.1",
     "body-parser": "1.19.0",
     "cors": "2.8.5",
@@ -39,7 +38,6 @@
     "ganache-core": "2.9.2",
     "mz": "2.7.0",
     "number-to-bn": "1.7.0",
-    "openzeppelin-solidity": "2.4.0",
     "prettyjson": "1.2.1",
     "promise-events": "0.1.6",
     "source-map-support": "0.5.16",
@@ -50,13 +48,12 @@
     "websocket": "1.0.31",
     "zeromq": "5.2.0"
   },
+  "dependencies": {
+    "openzeppelin-solidity": "2.4.0"
+  },
   "files": [
-    "src",
     "contracts",
     "strings",
-    "test/utils",
-    "build/contracts/ERC20Mintable.json",
-    "build/contracts/Monoplasma.json",
-    "build/contracts/DemoToken.json"
+    "build/Monoplasma.json"
   ]
 }
