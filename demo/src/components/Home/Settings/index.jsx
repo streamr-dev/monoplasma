@@ -19,7 +19,7 @@ const withPlaceholder = (value: any) => (
 
 const Settings = ({ value }: Props) => {
     const {
-        blockFreezeSeconds,
+        freezePeriodSeconds,
         contractAddress,
         ethereumServer,
         operatorAddress,
@@ -31,7 +31,7 @@ const Settings = ({ value }: Props) => {
             <ul>
                 <li>
                     <strong>Block freeze period: </strong>
-                    {withPlaceholder(`${blockFreezeSeconds} seconds`)}
+                    {withPlaceholder(`${freezePeriodSeconds} seconds`)}
                 </li>
                 <li>
                     <strong>Monoplasma contract address: </strong>

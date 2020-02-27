@@ -15,26 +15,27 @@ contract Monoplasma is BalanceVerifier, Ownable {
 
     event OperatorChanged(address indexed newOperator);
     event AdminFeeChanged(uint adminFee);
+    event FreezePeriod(uint blockNumber, uint startTimestamp, uint endTimestamp);
 
     /**
      * Freeze period during which all participants should be able to
      *   acquire the whole balance book from IPFS (or HTTP server, or elsewhere)
      *   and validate that the published rootHash is correct.
      * In case of incorrect rootHash, all members should issue withdrawals from the
-     *   latest block they have validated (that is older than blockFreezeSeconds).
+     *   latest commit they have validated (that is older than freezePeriodSeconds).
      * So: too short freeze period `+` bad availability `=>` ether (needlessly) spent withdrawing earnings.
      *     Long freeze period `==` lag between purchase and withdrawal `=>` bad UX.
-     * Blocks older than blockFreezeSeconds can be used to withdraw funds.
+     * Commits older than freezePeriodSeconds can be used to withdraw funds.
      */
-    uint public blockFreezeSeconds;
+    uint public freezePeriodSeconds;
 
     /**
-     * Block number => timestamp
-     * Publish time of a block, where the block freeze period starts from.
+     * Block number referenced by commit => timestamp
+     * Commit time, where the freeze period starts from.
      * Note that block number points to the block after which the root hash is calculated,
      *   not the block where NewCommit was emitted (event must come later)
      */
-    mapping (uint => uint) public blockTimestamp;
+    mapping (uint => uint) public commitTimestamp;
 
     /// operator is the address who is allowed to commit the earnings
     address public operator;
@@ -63,8 +64,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
     /// earnings that have been sent out already
     mapping (address => uint) public withdrawn;
 
-    constructor(address tokenAddress, uint blockFreezePeriodSeconds, uint initialAdminFee) public {
-        blockFreezeSeconds = blockFreezePeriodSeconds;
+    constructor(address tokenAddress, uint freezePeriodInSeconds, uint initialAdminFee) public {
+        freezePeriodSeconds = freezePeriodInSeconds;
         token = IERC20(tokenAddress);
         operator = msg.sender;
         setAdminFee(initialAdminFee);
@@ -98,7 +99,8 @@ contract Monoplasma is BalanceVerifier, Ownable {
      */
     function onCommit(uint blockNumber, bytes32, string memory) internal {
         require(msg.sender == operator, "error_notPermitted");
-        blockTimestamp[blockNumber] = now; // solium-disable-line security/no-block-members
+        commitTimestamp[blockNumber] = now; // solium-disable-line security/no-block-members
+        emit FreezePeriod(blockNumber, now, now + freezePeriodSeconds + 1); // solium-disable-line security/no-block-members
     }
 
     /**
@@ -107,15 +109,15 @@ contract Monoplasma is BalanceVerifier, Ownable {
      *   or just "cement" the earnings so far into root chain even without withdrawing.
      * Missing balance test is an extra layer of defense against fraudulent operator who tries to steal ALL tokens.
      * If any member can exit within freeze period, that fraudulent commit will fail.
-     * Only earnings that have been committed longer than blockFreezeSeconds ago can be proven, see `onCommit`.
+     * Only earnings that have been committed longer than freezePeriodSeconds ago can be proven, see `onCommit`.
      * See README under "Threat model" for discussion on safety of using "now".
      * @param blockNumber after which balances were submitted in {onCommit}
      * @param account whose earnings were successfully proven and updated
      * @param newEarnings the updated total lifetime earnings
      */
     function onVerifySuccess(uint blockNumber, address account, uint newEarnings) internal {
-        uint blockFreezeStart = blockTimestamp[blockNumber];
-        require(now > blockFreezeStart + blockFreezeSeconds, "error_frozen"); // solium-disable-line security/no-block-members
+        uint freezeStart = commitTimestamp[blockNumber];
+        require(now > freezeStart + freezePeriodSeconds, "error_frozen"); // solium-disable-line security/no-block-members
         require(earnings[account] < newEarnings, "error_oldEarnings");
         totalProven = totalProven.add(newEarnings).sub(earnings[account]);
         require(totalProven.sub(totalWithdrawn) <= token.balanceOf(address(this)), "error_missingBalance");

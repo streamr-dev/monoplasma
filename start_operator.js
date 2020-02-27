@@ -27,7 +27,7 @@ const {
     ETHEREUM_PRIVATE_KEY,
     TOKEN_ADDRESS,
     CONTRACT_ADDRESS,
-    BLOCK_FREEZE_SECONDS,
+    FREEZE_PERIOD_SECONDS,
     GAS_PRICE_GWEI,
     RESET,
     STORE_DIR,
@@ -104,9 +104,9 @@ async function start() {
     // augment the config / saved state with variables that may be useful for the validators
     const config = RESET || ganache ? {} : await fileStore.loadState()
     config.tokenAddress = TOKEN_ADDRESS || config.tokenAddress || await deployDemoToken(web3, TOKEN_NAME, TOKEN_SYMBOL, opts, log)
-    config.blockFreezeSeconds = +BLOCK_FREEZE_SECONDS || config.blockFreezeSeconds || 20
+    config.freezePeriodSeconds = +FREEZE_PERIOD_SECONDS || config.freezePeriodSeconds || 20
     const newContractAdminFee  = ADMINFEE_WEI || 0
-    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.blockFreezeSeconds, newContractAdminFee,  opts, log)
+    config.contractAddress = CONTRACT_ADDRESS || config.contractAddress || await deployContract(web3, config.tokenAddress, config.freezePeriodSeconds, newContractAdminFee,  opts, log)
     config.ethereumServer = ethereumServer
     config.ethereumNetworkId = ETHEREUM_NETWORK_ID
     config.channelPort = JOIN_PART_CHANNEL_PORT
@@ -134,12 +134,12 @@ async function start() {
     log("[DONE]")
 }
 
-async function deployContract(web3, tokenAddress, blockFreezePeriodSeconds, adminFee, sendOptions, log) {
-    log(`Deploying root chain contract (token @ ${tokenAddress}, blockFreezePeriodSeconds = ${blockFreezePeriodSeconds})...`)
+async function deployContract(web3, tokenAddress, freezePeriodSeconds, adminFee, sendOptions, log) {
+    log(`Deploying root chain contract (token @ ${tokenAddress}, freezePeriodSeconds = ${freezePeriodSeconds})...`)
     const Monoplasma = new web3.eth.Contract(MonoplasmaJson.abi)
     const monoplasma = await Monoplasma.deploy({
         data: MonoplasmaJson.bytecode,
-        arguments: [tokenAddress, blockFreezePeriodSeconds, adminFee]
+        arguments: [tokenAddress, freezePeriodSeconds, adminFee]
     }).send(sendOptions)
     return monoplasma.options.address
 }

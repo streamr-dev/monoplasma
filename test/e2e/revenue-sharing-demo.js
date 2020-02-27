@@ -14,7 +14,7 @@ const STORE_DIR = __dirname + `/test-store-${+new Date()}`
 const GANACHE_PORT = 8296
 const WEBSERVER_PORT = 3030
 const JOIN_PART_CHANNEL_PORT = 5964
-const BLOCK_FREEZE_SECONDS = 1
+const FREEZE_PERIOD_SECONDS = 1
 
 const from = "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1"
 
@@ -30,7 +30,7 @@ describe("Revenue sharing demo", () => {
             GANACHE_PORT,
             WEBSERVER_PORT,
             JOIN_PART_CHANNEL_PORT,
-            BLOCK_FREEZE_SECONDS,
+            FREEZE_PERIOD_SECONDS,
             RESET: "yesplease",
             //QUIET: "shutup",      // TODO: this makes start_operator.js not return in time... weird
         }})

@@ -4,7 +4,7 @@ import { createContext } from 'react'
 import { type Block } from '../../components/Home/Blocks'
 
 export type Config = {
-    blockFreezeSeconds: string,
+    freezePeriodSeconds: string,
     contractAddress: string,
     ethereumServer: string,
     gasPrice: number,
