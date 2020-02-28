@@ -53,7 +53,7 @@ contract BalanceVerifier {
      * @param ipfsHash where the whole balances object can be retrieved in JSON format
      */
     function commit(uint blockNumber, bytes32 rootHash, string calldata ipfsHash) external {
-        require(committedHash[blockNumber] == 0, "error_overwrite");
+        require(committedHash[blockNumber] == 0x0, "error_overwrite");
         string memory _hash = ipfsHash;
         onCommit(blockNumber, rootHash, _hash); // Access control delegated to implementing class
         committedHash[blockNumber] = rootHash;
