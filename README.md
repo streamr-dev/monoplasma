@@ -126,6 +126,8 @@ The demo creates a demo unicorn token (🦄). Let's configure that to Metamask a
 
 ## Demo Walkthrough
 
+To just see what it's supposed to look like, check out the [Youtube video of the EthDenver 2019 announcement presentation](https://www.youtube.com/watch?v=t7vOoLBFkUA).
+
 **Let's add some accounts to the revenue sharing pool:**
 
 - Copy paste Bob's address `0x4178baBE9E5148c6D5fd431cD72884B07Ad855a0` to the textbox under "Management", and click the "Add users" button.
