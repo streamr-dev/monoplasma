@@ -47,7 +47,7 @@ Main threat scenario: the trusted operator creates a sock-puppet account, assign
 
 To combat this, in Monoplasma there's a freeze period after the state commit is published. In case of faulty or missing (withheld) state (balance book) contents, everyone can exit using old unfrozen root hashes.
 
-Monoplasma uses block timestamps for determining the start and end of the block freeze period. Value at stake isn't sensitive to time, however. What a bad operator could accomplish by colluding with miners and faking a future timestamp is bypassing the freeze period. That should be impossible as long as the freeze period is longer than the 15 minutes that the [whitepaper allows blocktimes to be off](https://github.com/ethereum/wiki/wiki/White-Paper#blockchain-and-mining).
+Monoplasma uses block timestamps for determining the start and end of the freeze period. Value at stake isn't sensitive to time, however. What a bad operator could accomplish by colluding with miners and faking a future timestamp is bypassing the freeze period. That should be impossible as long as the freeze period is longer than the 15 minutes that the [whitepaper allows blocktimes to be off](https://github.com/ethereum/wiki/wiki/White-Paper#blockchain-and-mining).
 
 In practice, much less might suffice. While the yellow paper contains no strict specification of how much "within reasonable Unix time" is, as of 2020-02-13, [Geth allows the block times to be only 15 seconds off](https://github.com/ethereum/go-ethereum/blob/master/consensus/ethash/consensus.go#L45). One minute freeze period would then be enough to completely prevent the freeze period bypass in Ethereum mainnet without compromising the UX. For smaller or private networks, a longer freeze period can be in order, depending on how feasible the operator-miner collusion is.
 
@@ -55,7 +55,7 @@ In practice, much less might suffice. While the yellow paper contains no strict 
 
 There could be fraud proofs for this particular scenario: (interactive) proof that sum of balances is greater than amount of tokens held in the root chain contract; proof that a particular balance decreased; etc.
 
-But in case the operator simply doesn't provide the fudged accounts book (operator availability failure), exits from old blocks could be used as proxy for suspicion of admin's behaviour. Freeze period could, for instance, be extended in case members use on old block to exit, giving other members more time to react. This must be balanced with DoS griefing, but should definitely increase the likelihood of everyone getting their tokens out in case of operator fails.
+But in case the operator simply doesn't provide the fudged accounts book (operator availability failure), exits from old commits could be used as proxy for suspicion of admin's behaviour. Freeze period could, for instance, be extended in case members use an old commit to exit, giving other members more time to react. This must be balanced with DoS griefing, but should definitely increase the likelihood of everyone getting their tokens out in case of operator fails.
 
 ## Revenue sharing demo
 
@@ -141,7 +141,7 @@ Now Bob is alone in the pool, and all revenue would be attributed to him. Let's 
 - Metamask should pop up and ask you to confirm the transaction.
 - In the text field beside the "Add revenue" button, enter a number of tokens, for example 100000, and click the "Add revenue" button. This just transfers a number of 🦄 to the Monoplasma smart contract.
 
-**You should see the revenue pool numbers increase by the amount of tokens, and a block published by the Operator become visible in the table.**
+**You should see the revenue pool numbers increase by the amount of tokens, and a commit published by the Operator become visible in the table.**
 
 In the demo there's a 20 second freeze period for the funds, during which they can't be withdrawn. In real life this could be a few days, enough time for validators to exit people in case the Operator commits fraud.
 

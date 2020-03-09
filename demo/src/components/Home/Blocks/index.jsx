@@ -20,10 +20,10 @@ export type Block = {
 type Props = {
     className?: string,
     items: Array<Block | number>,
-    blockFreezeSeconds: string | number,
+    freezePeriodSeconds: string | number,
 }
 
-const Blocks = ({ items, className, blockFreezeSeconds }: Props) => (
+const Blocks = ({ items, className, freezePeriodSeconds }: Props) => (
     <div className={cx(styles.root, className)}>
         <div className={cx(styles.row, styles.columnNames)}>
             <div>Block #</div>
@@ -49,7 +49,7 @@ const Blocks = ({ items, className, blockFreezeSeconds }: Props) => (
                         key={block.blockNumber}
                     >
                         {(timestamp) => {
-                            const threshold = typeof blockFreezeSeconds === 'number' ? blockFreezeSeconds : Number.parseInt(blockFreezeSeconds, 10)
+                            const threshold = typeof freezePeriodSeconds === 'number' ? freezePeriodSeconds : Number.parseInt(freezePeriodSeconds, 10)
                             const frozen = Math.floor((timestamp / 1000) - block.timestamp) < threshold
 
                             return (

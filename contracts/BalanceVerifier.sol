@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 /**
- * Abstract contract, requires implementation to specify who can commit blocks and what
+ * Abstract contract, requires implementation to specify who can publish commits and what
  *   happens when a successful proof is presented
  * Verifies Merkle-tree inclusion proofs that show that certain address has
  *   certain earnings balance, according to hash published ("signed") by a
@@ -53,7 +53,7 @@ contract BalanceVerifier {
      * @param ipfsHash where the whole balances object can be retrieved in JSON format
      */
     function commit(uint blockNumber, bytes32 rootHash, string calldata ipfsHash) external {
-        require(committedHash[blockNumber] == 0, "error_overwrite");
+        require(committedHash[blockNumber] == 0x0, "error_overwrite");
         string memory _hash = ipfsHash;
         onCommit(blockNumber, rootHash, _hash); // Access control delegated to implementing class
         committedHash[blockNumber] = rootHash;

@@ -34,7 +34,7 @@ module.exports = class MonoplasmaWatcher {
         //console.log("fee : "+ this.state.adminFeeFraction)
         //this.state.operatorAddress = await this.contract.methods.operator().call()
         this.token = new this.web3.eth.Contract(TokenJson.abi, this.state.tokenAddress)
-        this.state.blockFreezeSeconds = await this.contract.methods.blockFreezeSeconds().call()
+        this.state.freezePeriodSeconds = await this.contract.methods.freezePeriodSeconds().call()
 
         const lastBlock = this.state.lastPublishedBlock && await this.store.loadBlock(this.state.lastPublishedBlock)
         const savedMembers = lastBlock ? lastBlock.members : []
@@ -42,7 +42,7 @@ module.exports = class MonoplasmaWatcher {
         const owner = lastBlock && lastBlock.owner ? lastBlock.owner : await this.contract.methods.owner().call()
         //console.log("owner: "+ owner+ " lastBlock: "+ JSON.stringify(lastBlock))
 
-        this.plasma = new MonoplasmaState(this.state.blockFreezeSeconds, savedMembers, this.store, owner, adminFeeFraction)
+        this.plasma = new MonoplasmaState(this.state.freezePeriodSeconds, savedMembers, this.store, owner, adminFeeFraction)
 
         // TODO: playback from joinPartChannel not implemented =>
         //   playback will actually fail if there are joins or parts from the channel in the middle (during downtime)

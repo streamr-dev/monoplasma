@@ -13,7 +13,7 @@ const { throwIfBadAddress } = require("./utils/checkArguments")
  */
 module.exports = class MonoplasmaState {
     /**
-     * @param {number} blockFreezeSeconds
+     * @param {number} freezePeriodSeconds
      * @param {Array} initialMembers objects: [ { address, earnings }, { address, earnings }, ... ]
      * @param {Object} store offering persistance for blocks
      * @param {string} adminAddress where revenues go if there are no members
@@ -21,15 +21,15 @@ module.exports = class MonoplasmaState {
      * @param {Number} initialBlockNumber after which the state is described by this object
      * @param {Number} initialTimestamp after which the state is described by this object
      */
-    constructor(blockFreezeSeconds, initialMembers, store, adminAddress, adminFeeFraction, initialBlockNumber = 0, initialTimestamp = 0) {
+    constructor(freezePeriodSeconds, initialMembers, store, adminAddress, adminFeeFraction, initialBlockNumber = 0, initialTimestamp = 0) {
         throwIfBadAddress(adminAddress, "MonoplasmaState argument adminAddress")
         if (!Array.isArray(initialMembers)) {
             initialMembers = []
         }
         /** @property {fileStore} store persistence for published blocks */
         this.store = store
-        /** @property {number} blockFreezeSeconds after which blocks become withdrawable */
-        this.blockFreezeSeconds = blockFreezeSeconds
+        /** @property {number} freezePeriodSeconds after which blocks become withdrawable */
+        this.freezePeriodSeconds = freezePeriodSeconds
         /** @property {number} totalEarnings by all members together; should equal balanceOf(contract) + contract.totalWithdrawn */
         this.totalEarnings = initialMembers.reduce((sum, m) => sum.iadd(new BN(m.earnings)), new BN(0))
 
@@ -70,7 +70,7 @@ module.exports = class MonoplasmaState {
 
     clone(storeOverride) {
         return new MonoplasmaState(
-            this.blockFreezeSeconds,
+            this.freezePeriodSeconds,
             this.members,
             storeOverride || this.store,
             this.adminAddress,
@@ -112,7 +112,7 @@ module.exports = class MonoplasmaState {
     getLatestWithdrawableBlock() {
         if (this.latestBlocks.length < 1) { return null }
         const nowTimestamp = now()
-        const i = this.latestBlocks.findIndex(b => nowTimestamp - b.timestamp > this.blockFreezeSeconds, this)
+        const i = this.latestBlocks.findIndex(b => nowTimestamp - b.timestamp > this.freezePeriodSeconds, this)
         if (i === -1) { return null }         // all blocks still frozen
         this.latestBlocks.length = i + 1    // throw away older than latest withdrawable
         const block = this.latestBlocks[i]

@@ -36,7 +36,7 @@ module.exports = function getMockWeb3(bnum, pastEvents) {
         owner: () => ({ call: () => "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1" }),
         operator: () => ({ call: () => "0xa3d1f77acff0060f7213d7bf3c7fec78df847de1" }),
         token: () => ({ call: () => "tokenAddress" }),
-        blockFreezeSeconds: () => ({ call: () => 1000 }),
+        freezePeriodSeconds: () => ({ call: () => 1000 }),
         commit: (...args) => ({ send: async () => {
             // simulate tx lag
             sleep(100).then(() => {

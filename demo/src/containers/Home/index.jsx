@@ -285,7 +285,7 @@ class Home extends Component<Props, State> {
             }
             stealInstructions = res
             console.log(`Steal request successful: ${JSON.stringify(stealInstructions)}. Waiting for block to unfreeze...`)
-            return sleep(Number.parseInt(config.blockFreezeSeconds || '0', 10) * 1000)
+            return sleep(Number.parseInt(config.freezePeriodSeconds || '0', 10) * 1000)
         }).then(() => {
             const { blockNumber, tokens, proof } = stealInstructions
             return monoplasma.withdrawAll(blockNumber, tokens, proof, opts)
