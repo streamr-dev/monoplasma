@@ -171,7 +171,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * A new signature needs to be obtained for each subsequent future withdraw.
      * @param recipient the address the tokens will be sent to (instead of `msg.sender`)
      * @param signer whose earnings are being withdrawn
-     * @param signature from the community member, see `signatureIsValid` how signature generated for unlimited amount
+     * @param signature from the member, see `signatureIsValid` how signature generated for unlimited amount
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
@@ -196,7 +196,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param recipient the address the tokens will be sent to (instead of msg.sender)
      * @param signer whose earnings are being withdrawn
      * @param amount of tokens to withdraw
-     * @param signature from the community member, see `signatureIsValid` how it's generated
+     * @param signature from the member, see `signatureIsValid` how it's generated
      * @param blockNumber of the commit that contains the earnings to verify
      * @param totalEarnings in the off-chain balance book
      * @param proof list of hashes to prove the totalEarnings
@@ -249,7 +249,7 @@ contract Monoplasma is BalanceVerifier, Ownable {
      * @param recipient of the tokens
      * @param signer whose earnings are being withdrawn
      * @param amount how much is authorized for withdrawing by the signature
-     * @param signature from the community member, see `signatureIsValid` how it's generated
+     * @param signature from the member, see `signatureIsValid` how it's generated
      */
     function withdrawToSigned(address recipient, address signer, uint amount, bytes memory signature) public {
         require(signatureIsValid(recipient, signer, amount, signature), "error_badSignature");
