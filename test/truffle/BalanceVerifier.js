@@ -14,7 +14,7 @@ const admin = "0x0000000000000000000000000000000000000001"
 
 const plasma = new MonoplasmaState(0, [], { saveBlock: () => {} }, admin, 0)
 
-const MerkleTree = require("../../src/merkletree")
+const { hashLeaf } = require("../../src/merkletree")
 
 let token
 let airdrop
@@ -77,7 +77,7 @@ contract("BalanceVerifier", accounts => {
             assertEqual(block.rootHash, root)
 
             // check that contract calculates root correctly
-            const hash = "0x" + MerkleTree.hashLeaf(member, plasma.tree.salt).toString("hex")
+            const hash = hashLeaf(member, plasma.tree.salt)
             assertEqual(await airdrop.calculateRootHash(hash, proof), root)
 
             // check that contract checks proof correctly

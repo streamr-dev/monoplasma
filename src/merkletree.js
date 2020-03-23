@@ -1,27 +1,15 @@
 /* eslint-disable no-bitwise */
 
-// TODO: node crypto should have sha3-256 support with openssl 1.1.1
-// const crypto = require("crypto")
+const {
+    utils: {
+        BigNumber: BN,
+        solidityKeccak256,
+    }
+} = require("ethers")
 
-// TODO: following should also be a more modern drop-in replacement:
-//const createKeccakHash = require("keccak")
+const ZERO = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
-const { keccak256 } = require("eth-lib").hash
-const BN = require("bn.js")
-
-const ZERO = Buffer.alloc(32)
-
-/**
- * Corresponding code in BalanceVerifier.sol: keccak256 Solidity function
- * @param data to hash; a {String} or a {Buffer}
- * @returns {Buffer} keccak256 hash
- */
-function hash(data) {
-    // TODO: following should be drop-in replacement:
-    //return createKeccakHash("keccak256").update(data).digest()
-
-    return Buffer.from(keccak256(data).slice(2), "hex")
-}
+/** @typedef {string} Hash 32-byte string (64 hex characters, 256 bits) */
 
 /**
  * Hash a member's data in the merkle tree leaf
@@ -29,30 +17,22 @@ function hash(data) {
  *   bytes32 leafHash = keccak256(abi.encodePacked(account, balance, blockNumber));
  * @param {MonoplasmaMember} member
  * @param {Number} salt e.g. blockNumber
- * @returns {Buffer} keccak256 hash
+ * @returns {Hash} keccak256 hash
  */
 function hashLeaf(member, salt) {
-    const data = member.address + member.earnings.toString(16, 64) + salt
-    return hash(data)
+    return solidityKeccak256(["address", "uint256", "uint256"], [member.address, member.earnings.toString(), salt])
 }
 
 /**
  * Hash intermediate branch nodes together
- * @param {Buffer} data1 left branch
- * @param {Buffer} data2 right branch
- * @returns {Buffer} keccak256 hash
+ * @param {Hash} data1 left branch
+ * @param {Hash} data2 right branch
+ * @returns {Hash} keccak256 hash
  */
 function hashCombined(data1, data2) {
-    if (typeof data1 === "string") {
-        data1 = Buffer.from(data1.startsWith("0x") ? data1.slice(2) : data1, "hex")
-    }
-    if (typeof data2 === "string") {
-        data2 = Buffer.from(data2.startsWith("0x") ? data2.slice(2) : data2, "hex")
-    }
-    const combined = data1.compare(data2) === -1 ?
-        Buffer.concat([data1, data2]) :
-        Buffer.concat([data2, data1])
-    return hash(combined)
+    return data1 < data2 ?
+        solidityKeccak256(["uint256", "uint256"], [data1, data2]) :
+        solidityKeccak256(["uint256", "uint256"], [data2, data1])
 }
 
 function roundUpToPowerOfTwo(x) {
@@ -65,7 +45,7 @@ function roundUpToPowerOfTwo(x) {
 
 /**
  * @typedef {Object} MerkleTree
- * @property {Array<Buffer>} hashes
+ * @property {Array<Hash>} hashes
  * @property {Map<EthereumAddress, Number>} indexOf the index of given address in the hashes array
  */
 
@@ -74,8 +54,6 @@ function roundUpToPowerOfTwo(x) {
  * @param {Array<MonoplasmaMember>} leafContents
  * @returns {MerkleTree} hashes in the tree
  */
-// TODO: --omg-optimisation: tree contents could be one big Buffer too! Hash digests are constant 32 bytes in length.
-//          Currently the tree contents is Array<MonoplasmaMember>
 function buildMerkleTree(leafContents, salt) {
     const leafCount = leafContents.length + (leafContents.length % 2)   // room for zero next to odd leaf
     const branchCount = roundUpToPowerOfTwo(leafCount)
@@ -102,7 +80,7 @@ function buildMerkleTree(leafContents, salt) {
             if (!hash1) {                   // end of level in tree because rest are missing
                 break
             } else if (!hash2) {            // odd node in the end
-                hashes[sourceI + 1] = Buffer.alloc(32) // add zero on the path
+                hashes[sourceI + 1] = ZERO  // add zero on the path
                 hashes[targetI] = hash1     // no need to hash since no new information was added
                 break
             } else {
@@ -129,7 +107,7 @@ class MerkleTree {
     update(newContents, newSalt) {
         this.isDirty = true
         this.contents = newContents
-        this.salt = new BN(newSalt).toString(16, 64).slice(-64)    // Solidity uint256
+        this.salt = new BN(newSalt)
     }
 
     getContents() {
@@ -164,19 +142,18 @@ class MerkleTree {
         const path = []
         for (let i = index; i > 1; i >>= 1) {
             const otherSibling = hashes[i ^ 1]
-            if (!otherSibling.equals(ZERO)) {
+            if (otherSibling !== ZERO) {
                 path.push(otherSibling)
             }
         }
-        return path.map(buffer => `0x${buffer.toString("hex")}`)
+        return path
     }
 
     getRootHash() {
         const { hashes } = this.getContents()
-        return `0x${hashes[1].toString("hex")}`
+        return hashes[1]
     }
 }
-MerkleTree.hash = hash
 MerkleTree.hashLeaf = hashLeaf
 MerkleTree.hashCombined = hashCombined
 
