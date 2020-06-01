@@ -127,11 +127,13 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(producer), earnings)
         })
 
-        it("fails if member tries later with an old (though valid) proof", async () => {
+        it("works second time around, too", async () => {
+            block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
-            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof), "Bad proof")
-            await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
+            await increaseTime(freezePeriodSeconds + 1)
+            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
+            assertEqual(await token.balanceOf(producer), earnings)
         })
 
         it("can be done on behalf of another member", async () => {
@@ -142,13 +144,37 @@ contract("Monoplasma", accounts => {
             assertEqual(await token.balanceOf(anotherProducer), earnings)
         })
 
-        it("works second time around, too", async () => {
+        it("works on behalf of others in two steps: prove, then withdrawFor", async () => {
             block = await addRevenue(1000)
             const proof = plasma.getProof(producer)
             const { earnings } = plasma.getMember(producer)
+            const oldEarnings = await token.balanceOf(producer)
+            const newEarnings = new BN(earnings).sub(oldEarnings)
             await increaseTime(freezePeriodSeconds + 1)
-            await rootchain.withdrawAll(block.blockNumber, earnings, proof, {from: producer})
+            await rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin})
+            await rootchain.withdrawFor(producer, newEarnings, {from: admin})
             assertEqual(await token.balanceOf(producer), earnings)
+        })
+
+        it("works when 'donating' in two steps: prove, then withdrawFor", async () => {
+            block = await addRevenue(1000)
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            const oldEarnings = await token.balanceOf(producer)
+            const newEarnings = new BN(earnings).sub(oldEarnings)
+            const oldEarnings2 = await token.balanceOf(anotherProducer)
+            const expectedNewEarnings2 = oldEarnings2.add(newEarnings)
+            await increaseTime(freezePeriodSeconds + 1)
+            await rootchain.prove(block.blockNumber, producer, earnings, proof, {from: producer})
+            await rootchain.withdrawTo(anotherProducer, newEarnings, {from: producer})
+            assertEqual(await token.balanceOf(anotherProducer), expectedNewEarnings2)
+        })
+
+        it("fails if member tries later with an old (though valid) proof", async () => {
+            const proof = plasma.getProof(producer)
+            const { earnings } = plasma.getMember(producer)
+            assert(await rootchain.proofIsCorrect(block.blockNumber, producer, earnings, proof), "Bad proof")
+            await assertFails(rootchain.prove(block.blockNumber, producer, earnings, proof, {from: admin, gas: 4000000}), "error_oldEarnings")
         })
 
         it("can donate earnings to elsewhere", async () => {
